@@ -779,3 +779,144 @@ async function disconnectFromANAF() {
 
 // Refresh ANAF status every 5 minutes
 setInterval(checkANAFStatus, 5 * 60 * 1000);
+
+// ========== GPT CHAT ==========
+let gptConversationHistory = [];
+
+async function sendGPTMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Afișează mesajul utilizatorului
+    displayGPTMessage('user', message);
+    input.value = '';
+    
+    // Adaugă în istoric
+    gptConversationHistory.push({ role: 'user', content: message });
+    
+    // Afișează indicator typing
+    const messagesContainer = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message assistant';
+    typingDiv.id = 'typing-indicator';
+    typingDiv.innerHTML = `
+        <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+    messagesContainer.appendChild(typingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/gpt-chat/message', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                message: message,
+                conversationHistory: gptConversationHistory.slice(0, -1) // Ultimul e deja trimis
+            })
+        });
+        
+        // Șterge typing indicator
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayGPTMessage('assistant', data.message);
+            gptConversationHistory.push({ role: 'assistant', content: data.message });
+            
+            // Log tokens folosiți
+            if (data.usage) {
+                console.log(`💰 Tokens: ${data.usage.total_tokens} (prompt: ${data.usage.prompt_tokens}, completion: ${data.usage.completion_tokens})`);
+            }
+        } else {
+            displayGPTMessage('assistant', `❌ ${data.error || 'Eroare la procesarea mesajului'}`);
+        }
+        
+    } catch (error) {
+        // Șterge typing indicator
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+        
+        console.error('Eroare GPT Chat:', error);
+        displayGPTMessage('assistant', '❌ Eroare de conexiune. Te rog încearcă din nou.');
+    }
+}
+
+function displayGPTMessage(role, message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${role}`;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    
+    // Convert markdown-like formatting to HTML
+    let formattedMessage = message
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+        .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+        .replace(/`(.*?)`/g, '<code>$1</code>') // Code
+        .replace(/\n/g, '<br>'); // Line breaks
+    
+    bubble.innerHTML = formattedMessage;
+    
+    const time = document.createElement('div');
+    time.className = 'message-time';
+    time.textContent = new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+    
+    messageDiv.appendChild(bubble);
+    messageDiv.appendChild(time);
+    messagesContainer.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+async function clearGPTHistory() {
+    if (!confirm('Sigur vrei să ștergi istoricul conversației?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/gpt-chat/history', {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            gptConversationHistory = [];
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = `
+                <div class="gpt-welcome">
+                    <h4>👋 Istoric șters!</h4>
+                    <p>Poți începe o conversație nouă.</p>
+                </div>
+            `;
+            console.log(`🗑️ Istoric șters: ${data.deletedCount} mesaje`);
+        }
+    } catch (error) {
+        console.error('Eroare ștergere istoric:', error);
+        alert('Eroare la ștergerea istoricului');
+    }
+}
+
+// Enter key pentru GPT chat
+document.addEventListener('DOMContentLoaded', () => {
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendGPTMessage();
+            }
+        });
+    }
+});

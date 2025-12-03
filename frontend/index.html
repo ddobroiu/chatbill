@@ -366,12 +366,77 @@
             background: #28a745;
             color: white;
         }
+        
+        /* GPT Chat Styles */
+        .chat-header-gpt {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 15px 15px 0 0;
+        }
+        .chat-header-gpt h3 {
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+        .chat-header-gpt p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+        .gpt-welcome {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #667eea;
+            margin-bottom: 15px;
+        }
+        .gpt-welcome h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .gpt-welcome ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        .gpt-welcome li {
+            margin: 5px 0;
+            color: #666;
+        }
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 10px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            width: fit-content;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
         .chat-container {
             display: flex;
             flex-direction: column;
             height: 600px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            border-radius: 0 0 15px 15px;
             overflow: hidden;
         }
         .chat-messages {
@@ -567,7 +632,7 @@
             <button class="tab active" onclick="switchTab('settings')">⚙️ Setări Companie</button>
             <button class="tab" onclick="switchTab('invoice')">📄 Generare Factură</button>
             <button class="tab" onclick="switchTab('invoices')">📋 Facturi Generate</button>
-            <button class="tab" onclick="switchTab('chat')">💬 Chat (În curând)</button>
+            <button class="tab" onclick="switchTab('chat')">🤖 GPT Assistant</button>
         </div>
 
         <!-- Tab 1: Setări Companie -->
@@ -805,13 +870,28 @@
 
         <!-- Tab 4: Chat (Placeholder) -->
         <div id="chatTab" class="tab-content">
+            <div class="chat-header-gpt">
+                <h3>💬 ChatBill Assistant - Powered by GPT</h3>
+                <p>Întreabă-mă orice despre facturare, TVA, legislație fiscală sau funcționalitățile ChatBill!</p>
+                <button onclick="clearGPTHistory()" class="btn-secondary" style="font-size: 14px; padding: 8px 16px;">🗑️ Șterge istoricul</button>
+            </div>
             <div class="chat-container">
                 <div class="chat-messages" id="chatMessages">
-                    <!-- Messages will appear here -->
+                    <div class="gpt-welcome">
+                        <h4>👋 Bun venit!</h4>
+                        <p>Sunt ChatBill Assistant, asistentul tău inteligent pentru tot ce ține de facturare și contabilitate.</p>
+                        <p><strong>Exemple de întrebări:</strong></p>
+                        <ul>
+                            <li>Cum generez o factură în ChatBill?</li>
+                            <li>Ce înseamnă TVA la încasare?</li>
+                            <li>Cum mă conectez la ANAF e-Factura?</li>
+                            <li>Care sunt termenele pentru depunerea declarațiilor?</li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="chat-input-container">
-                    <input type="text" id="chatInput" placeholder="Scrie mesajul tău aici..." class="chat-input">
-                    <button onclick="sendChatMessage()" class="btn-primary">Trimite</button>
+                    <input type="text" id="chatInput" placeholder="Scrie întrebarea ta aici..." class="chat-input">
+                    <button onclick="sendGPTMessage()" class="btn-primary">✈️ Trimite</button>
                 </div>
             </div>
         </div>

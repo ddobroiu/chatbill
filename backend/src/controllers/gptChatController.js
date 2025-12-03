@@ -1,9 +1,14 @@
 const OpenAI = require('openai');
 const prisma = require('../db/prismaWrapper');
 
-const openai = new OpenAI({
+// Verifică dacă API key-ul există
+if (!process.env.OPENAI_API_KEY) {
+  console.warn('⚠️ OPENAI_API_KEY nu este setat - GPT Chat va fi dezactivat');
+}
+
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
-});
+}) : null;
 
 // Sistem prompt pentru ChatBill Assistant
 const SYSTEM_PROMPT = `Ești ChatBill Assistant, un asistent AI prietenos și competent pentru aplicația de facturare ChatBill.
@@ -32,6 +37,14 @@ Răspunde concis, clar și util. Dacă nu știi un răspuns, recunoaște-l since
 // POST /api/gpt-chat/message - Trimite mesaj către GPT
 async function sendMessage(req, res) {
   try {
+    // Verifică dacă OpenAI este configurat
+    if (!openai) {
+      return res.status(503).json({
+        success: false,
+        error: 'GPT Chat nu este configurat. Adaugă OPENAI_API_KEY în .env'
+      });
+    }
+
     const { message, conversationHistory = [] } = req.body;
     const userId = req.user.id;
 
