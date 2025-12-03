@@ -96,7 +96,175 @@ STAREA CURENTĂ:
 Răspunde utilizatorului bazat pe ce a scris și pe starea conversației.`;
 
 // Funcție pentru generare răspuns AI folosind GPT-4
-async function generateAIResponse(session, userMessage) {
+async function generateAIResponseWithGPT(session, userMessage) {
+  // Verifică dacă OpenAI este disponibil
+  if (!openai) {
+    console.warn('⚠️ OpenAI nu e configurat, folosesc logica simplă');
+    return generateAIResponseFallback(session, userMessage);
+  }
+
+  try {
+    // Construiește istoricul conversației din baza de date
+    const messages = await prisma.chatMessage.findMany({
+      where: { sessionId: session.id },
+      orderBy: { timestamp: 'asc' },
+      select: { sender: true, message: true }
+    });
+
+    const conversationHistory = messages.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.message
+    }));
+
+    // Adaugă mesajul curent
+    conversationHistory.push({
+      role: 'user',
+      content: userMessage
+    });
+
+    // Creează system prompt cu starea sesiunii
+    const sessionState = JSON.stringify({
+      step: session.currentStep,
+      clientType: session.clientType,
+      clientName: session.clientName,
+      clientCUI: session.clientCUI,
+      products: session.products || [],
+      hasClient: !!session.clientName,
+      productsCount: (session.products || []).length
+    }, null, 2);
+
+    const systemPrompt = INVOICE_SYSTEM_PROMPT.replace('{{SESSION_STATE}}', sessionState);
+
+    // Apel GPT-4
+    console.log(`🤖 Apel GPT-4 pentru sesiunea ${session.id}`);
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...conversationHistory
+      ],
+      temperature: 0.7,
+      max_tokens: 500
+    });
+
+    const aiResponse = completion.choices[0].message.content;
+    console.log(`✅ GPT răspuns: ${aiResponse.substring(0, 100)}...`);
+
+    // Analizează răspunsul pentru a determina următorul pas
+    const nextStepAnalysis = await analyzeNextStep(session, userMessage, aiResponse);
+
+    return {
+      message: aiResponse,
+      ...nextStepAnalysis
+    };
+
+  } catch (error) {
+    console.error('❌ Eroare GPT:', error);
+    // Fallback la logica simplă dacă GPT dă eroare
+    return generateAIResponseFallback(session, userMessage);
+  }
+}
+
+// Analizează ce trebuie să facă sistemul în continuare
+async function analyzeNextStep(session, userMessage, aiResponse) {
+  const lowerMsg = userMessage.toLowerCase();
+  const result = {};
+
+  // Detectează tipul clientului
+  if (session.currentStep === 'greeting' || session.currentStep === 'client_type') {
+    if (lowerMsg.match(/juridic|companie|firma|srl|sa|pj|1/i)) {
+      result.nextStep = 'client_cui';
+      result.updates = { clientType: 'company' };
+    } else if (lowerMsg.match(/fizic|persoană|pf|individ|2/i)) {
+      result.nextStep = 'client_info_individual';
+      result.updates = { clientType: 'individual' };
+    } else {
+      result.nextStep = 'client_type';
+    }
+  }
+  
+  // Detectează CUI
+  else if (session.currentStep === 'client_cui' || (!session.clientCUI && session.clientType === 'company')) {
+    const cuiMatch = userMessage.match(/\d{6,10}/);
+    if (cuiMatch) {
+      result.nextStep = 'verify_cui';
+      result.updates = { clientCUI: cuiMatch[0] };
+    } else {
+      result.nextStep = 'client_cui';
+    }
+  }
+  
+  // Confirmă compania găsită
+  else if (session.currentStep === 'confirm_company') {
+    if (lowerMsg.match(/da|yes|ok|1|corect|perfect/i)) {
+      result.nextStep = 'add_product_name';
+    } else {
+      result.nextStep = 'manual_company_name';
+    }
+  }
+  
+  // Adaugă nume produs
+  else if (session.currentStep === 'add_product_name' || session.currentStep === 'client_confirmed') {
+    result.nextStep = 'add_product_price';
+    result.tempProduct = { name: userMessage };
+  }
+  
+  // Adaugă preț produs
+  else if (session.currentStep === 'add_product_price') {
+    const priceMatch = userMessage.match(/[\d,.]+/);
+    if (priceMatch) {
+      result.nextStep = 'add_product_quantity';
+      result.tempProduct = { price: parseFloat(priceMatch[0].replace(',', '.')) };
+    } else {
+      result.nextStep = 'add_product_price';
+    }
+  }
+  
+  // Adaugă cantitate produs
+  else if (session.currentStep === 'add_product_quantity') {
+    const qtyMatch = userMessage.match(/[\d,.]+/);
+    if (qtyMatch) {
+      result.nextStep = 'confirm_add_more';
+      result.productToAdd = { quantity: parseFloat(qtyMatch[0].replace(',', '.')) };
+    } else {
+      result.nextStep = 'add_product_quantity';
+    }
+  }
+  
+  // Confirmă adăugare mai multe produse
+  else if (session.currentStep === 'confirm_add_more') {
+    if (lowerMsg.match(/da|yes|1|mai|alt/i)) {
+      result.nextStep = 'add_product_name';
+    } else if (lowerMsg.match(/nu|no|2|gata|generează|emite/i)) {
+      result.nextStep = 'generate_invoice';
+    } else {
+      result.nextStep = 'confirm_add_more';
+    }
+  }
+  
+  // Date companie manual
+  else if (session.currentStep === 'manual_company_name') {
+    result.nextStep = 'manual_company_address';
+    result.tempCompany = { name: userMessage };
+  }
+  else if (session.currentStep === 'manual_company_address') {
+    result.nextStep = 'manual_company_city';
+    result.tempCompany = { address: userMessage };
+  }
+  else if (session.currentStep === 'manual_company_city') {
+    result.nextStep = 'manual_company_county';
+    result.tempCompany = { city: userMessage };
+  }
+  else if (session.currentStep === 'manual_company_county') {
+    result.nextStep = 'add_product_name';
+    result.finalizeCompany = { county: userMessage };
+  }
+
+  return result;
+}
+
+// Fallback la logica veche dacă GPT nu e disponibil
+function generateAIResponseFallback(session, userMessage) {
   const step = session.currentStep;
   
   switch (step) {
@@ -284,8 +452,8 @@ async function sendMessage(req, res) {
       }
     });
     
-    // Procesează mesajul bazat pe step curent
-    const aiResponse = generateAIResponse(session, message);
+    // Procesează mesajul bazat pe step curent - FOLOSEȘTE GPT-4!
+    const aiResponse = await generateAIResponseWithGPT(session, message);
     
     // Cazuri speciale care necesită API calls
     if (aiResponse.nextStep === 'verify_cui' && aiResponse.updates?.clientCUI) {
