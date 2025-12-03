@@ -31,13 +31,41 @@ let companySettings = {
 // Obține setările companiei emitente
 async function getCompanySettings(req, res) {
   try {
+    const userId = req.user.id;
+    
+    // Încearcă să obții settings din DB
+    let settings = await prisma.companySettings.findUnique({
+      where: { userId }
+    });
+    
+    // Dacă nu există, returnează setări goale
+    if (!settings) {
+      settings = {
+        cui: '',
+        name: '',
+        address: '',
+        city: '',
+        county: '',
+        regCom: '',
+        phone: '',
+        email: '',
+        bank: '',
+        iban: '',
+        capital: '',
+        legalRep: ''
+      };
+    }
+    
     res.json({
       success: true,
-      settings: companySettings
+      settings
     });
   } catch (error) {
     console.error('Eroare obținere setări:', error);
-    res.status(500).json({ error: 'Eroare la obținerea setărilor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Eroare la obținerea setărilor' 
+    });
   }
 }
 
