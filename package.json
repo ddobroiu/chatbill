@@ -1,0 +1,18 @@
+{
+  "name": "chatbill",
+  "version": "1.0.0",
+  "description": "ChatBill - Sistem inteligent de facturare cu AI",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "build": "cd backend && npm install && npx prisma generate",
+    "dev": "cd backend && npm run dev"
+  },
+  "keywords": ["chatbill", "invoicing", "ai", "gpt", "anaf"],
+  "author": "ChatBill Team",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
