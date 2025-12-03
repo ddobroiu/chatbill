@@ -237,14 +237,21 @@ async function generateInvoice(event) {
     const products = [];
     const productRows = document.querySelectorAll('.product-row');
     productRows.forEach(row => {
-        products.push({
-            name: row.querySelector('input[name="productName[]"]').value,
-            unit: row.querySelector('input[name="productUnit[]"]').value,
-            quantity: parseFloat(row.querySelector('input[name="productQty[]"]').value),
-            price: parseFloat(row.querySelector('input[name="productPrice[]"]').value),
-            vat: parseFloat(row.querySelector('select[name="productVat[]"]').value)
-        });
+        const name = row.querySelector('input[name="productName[]"]').value;
+        const unit = row.querySelector('input[name="productUnit[]"]').value;
+        const quantity = parseFloat(row.querySelector('input[name="productQty[]"]').value);
+        const price = parseFloat(row.querySelector('input[name="productPrice[]"]').value);
+        const vat = parseFloat(row.querySelector('select[name="productVat[]"]').value);
+        
+        if (name && quantity > 0 && price >= 0) {
+            products.push({ name, unit, quantity, price, vat });
+        }
     });
+
+    if (products.length === 0) {
+        showMessage('invoiceMessage', '❌ Adăugați cel puțin un produs/serviciu!', 'error');
+        return;
+    }
 
     const invoiceData = {
         client: isIndividual ? {
@@ -267,10 +274,38 @@ async function generateInvoice(event) {
         products: products
     };
 
-    console.log('Invoice Data:', invoiceData);
-    
-    // TODO: Send to backend
-    showMessage('invoiceMessage', '✅ Factură generată cu succes! (TODO: Backend integration)', 'success');
+    try {
+        const response = await fetch('http://localhost:3000/api/invoices/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(invoiceData)
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage('invoiceMessage', `✅ Factură ${data.invoice.invoiceNumber} generată cu succes!`, 'success');
+            
+            // Resetează formularul
+            event.target.reset();
+            document.getElementById('productsBody').innerHTML = '';
+            addProduct(); // Adaugă un rând gol
+            
+            // Oferă opțiunea de download
+            setTimeout(() => {
+                if (confirm('Factură generată! Doriți să descărcați PDF-ul?')) {
+                    window.open(`http://localhost:3000/api/invoices/${data.invoice.id}/download`, '_blank');
+                }
+            }, 1000);
+        } else {
+            showMessage('invoiceMessage', `❌ ${data.error || 'Eroare la generarea facturii'}`, 'error');
+        }
+    } catch (error) {
+        console.error('Eroare generare factură:', error);
+        showMessage('invoiceMessage', '❌ Eroare la comunicarea cu serverul', 'error');
+    }
 }
 
 // ========== UTILITY ==========

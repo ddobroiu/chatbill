@@ -3,7 +3,7 @@ const router = express.Router();
 const invoiceController = require('../controllers/invoiceController');
 
 // Rute pentru facturi
-router.post('/generate', invoiceController.generateInvoice);
+router.post('/create', invoiceController.createInvoice);
 router.get('/', invoiceController.getInvoices);
 router.get('/:id', invoiceController.getInvoice);
 router.get('/:id/download', invoiceController.downloadInvoice);

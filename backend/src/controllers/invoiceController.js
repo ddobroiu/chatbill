@@ -158,74 +158,169 @@ async function generateInvoicePDF(invoice) {
 
     // Header
     doc.fontSize(20)
+       .font('Helvetica-Bold')
        .text('FACTURĂ', { align: 'center' })
+       .font('Helvetica')
        .moveDown();
 
     // Informații factură
     doc.fontSize(12)
-       .text(`Număr factură: ${invoice.invoiceNumber}`)
+       .text(`Serie/Număr: ${invoice.invoiceNumber}`)
        .text(`Data: ${new Date(invoice.issueDate).toLocaleDateString('ro-RO')}`)
-       .moveDown();
+       .moveDown(1.5);
 
-    // Informații furnizor
-    doc.fontSize(10)
-       .text('Furnizor:', { underline: true })
-       .text(invoice.providerName)
-       .text(`CUI: ${invoice.providerCUI}`)
-       .text(`Adresa: ${invoice.providerAddress}`)
-       .text(`Email: ${invoice.providerEmail}`)
-       .text(`Telefon: ${invoice.providerPhone}`)
-       .moveDown();
+    // Două coloane: Furnizor și Client
+    const leftColumn = 50;
+    const rightColumn = 300;
+    let yPos = doc.y;
 
-    // Informații client
-    doc.fontSize(10)
-       .text('Client:', { underline: true })
-       .text(invoice.clientName)
-       .text(`CUI: ${invoice.clientCUI}`)
-       .text(`Adresa: ${invoice.clientAddress || 'N/A'}`)
-       .text(`Email: ${invoice.clientEmail || 'N/A'}`)
-       .moveDown();
+    // Informații furnizor (stânga)
+    doc.fontSize(11)
+       .font('Helvetica-Bold')
+       .text('FURNIZOR/PRESTATOR:', leftColumn, yPos)
+       .font('Helvetica')
+       .fontSize(10)
+       .text(invoice.providerName, leftColumn, yPos + 15)
+       .text(`CUI: ${invoice.providerCUI}`, leftColumn, yPos + 30);
+    
+    if (invoice.providerRegCom) {
+      doc.text(`Reg.Com.: ${invoice.providerRegCom}`, leftColumn, yPos + 45);
+      yPos += 15;
+    }
+    
+    doc.text(`Adresa: ${invoice.providerAddress}`, leftColumn, yPos + 45, { width: 230 });
+    yPos += 30;
+    
+    if (invoice.providerCity) {
+      doc.text(`${invoice.providerCity}${invoice.providerCounty ? ', ' + invoice.providerCounty : ''}`, leftColumn, yPos + 45);
+      yPos += 15;
+    }
+    
+    if (invoice.providerPhone) {
+      doc.text(`Tel: ${invoice.providerPhone}`, leftColumn, yPos + 45);
+      yPos += 15;
+    }
+    
+    if (invoice.providerEmail) {
+      doc.text(`Email: ${invoice.providerEmail}`, leftColumn, yPos + 45);
+    }
 
-    // Tabel cu servicii
+    // Resetează yPos pentru coloana client
+    yPos = doc.y - 120;
+
+    // Informații client (dreapta)
+    doc.fontSize(11)
+       .font('Helvetica-Bold')
+       .text('CLIENT/BENEFICIAR:', rightColumn, yPos)
+       .font('Helvetica')
+       .fontSize(10)
+       .text(invoice.clientName, rightColumn, yPos + 15);
+    
+    if (invoice.clientType === 'company' && invoice.clientCUI) {
+      doc.text(`CUI: ${invoice.clientCUI}`, rightColumn, yPos + 30);
+      if (invoice.clientRegCom) {
+        doc.text(`Reg.Com.: ${invoice.clientRegCom}`, rightColumn, yPos + 45);
+        yPos += 15;
+      }
+    } else if (invoice.clientType === 'individual' && invoice.clientCNP) {
+      doc.text(`CNP: ${invoice.clientCNP}`, rightColumn, yPos + 30);
+    }
+    
+    if (invoice.clientAddress) {
+      doc.text(`Adresa: ${invoice.clientAddress}`, rightColumn, yPos + 45, { width: 230 });
+      yPos += 30;
+    }
+    
+    if (invoice.clientCity) {
+      doc.text(`${invoice.clientCity}${invoice.clientCounty ? ', ' + invoice.clientCounty : ''}`, rightColumn, yPos + 45);
+    }
+
+    // Spațiu înainte de tabel
+    doc.moveDown(8);
+
+    // Tabel cu produse/servicii
     const tableTop = doc.y;
-    doc.fontSize(10);
+    const col1 = 50;   // Denumire
+    const col2 = 280;  // UM
+    const col3 = 320;  // Cantitate
+    const col4 = 370;  // Preț
+    const col5 = 440;  // TVA
+    const col6 = 490;  // Total
+    
+    doc.fontSize(9)
+       .font('Helvetica-Bold');
     
     // Header tabel
-    doc.text('Descriere', 50, tableTop, { width: 200 })
-       .text('Cantitate', 250, tableTop, { width: 80 })
-       .text('Preț unitar', 330, tableTop, { width: 80 })
-       .text('Total', 410, tableTop, { width: 80 });
+    doc.rect(col1, tableTop - 5, 490, 20).fillAndStroke('#667eea', '#667eea');
+    doc.fillColor('white')
+       .text('Denumire produs/serviciu', col1 + 5, tableTop, { width: 220 })
+       .text('UM', col2, tableTop, { width: 30 })
+       .text('Cant.', col3, tableTop, { width: 40 })
+       .text('Preț', col4, tableTop, { width: 60 })
+       .text('TVA%', col5, tableTop, { width: 40 })
+       .text('Total', col6, tableTop, { width: 50 });
     
-    doc.moveTo(50, tableTop + 15)
-       .lineTo(500, tableTop + 15)
+    doc.fillColor('black').font('Helvetica');
+
+    // Rânduri tabel
+    let yPosition = tableTop + 25;
+    
+    invoice.items.forEach((item, index) => {
+      const bgColor = index % 2 === 0 ? '#f8f9ff' : 'white';
+      doc.rect(col1, yPosition - 5, 490, 20).fillAndStroke(bgColor, bgColor);
+      
+      doc.fillColor('black')
+         .text(item.name, col1 + 5, yPosition, { width: 220 })
+         .text(item.unit, col2, yPosition, { width: 30 })
+         .text(item.quantity.toFixed(2), col3, yPosition, { width: 40 })
+         .text(item.price.toFixed(2), col4, yPosition, { width: 60 })
+         .text((item.vatRate * 100).toFixed(0), col5, yPosition, { width: 40 })
+         .text(item.total.toFixed(2), col6, yPosition, { width: 50 });
+      
+      yPosition += 20;
+    });
+
+    // Linie separator
+    doc.moveTo(col1, yPosition)
+       .lineTo(540, yPosition)
        .stroke();
 
-    // Rând tabel
-    const rowTop = tableTop + 25;
-    doc.text('Mesaje de chat', 50, rowTop, { width: 200 })
-       .text(invoice.messageCount.toString(), 250, rowTop, { width: 80 })
-       .text(`${invoice.pricePerMessage.toFixed(2)} RON`, 330, rowTop, { width: 80 })
-       .text(`${invoice.subtotal.toFixed(2)} RON`, 410, rowTop, { width: 80 });
-
-    doc.moveDown(3);
-
     // Totale
-    const totalsTop = doc.y + 20;
+    yPosition += 15;
+    doc.fontSize(10)
+       .font('Helvetica')
+       .text('Subtotal (fără TVA):', col4, yPosition)
+       .text(`${invoice.subtotal.toFixed(2)} RON`, col6, yPosition);
     
-    doc.text('Subtotal:', 330, totalsTop)
-       .text(`${invoice.subtotal.toFixed(2)} RON`, 410, totalsTop);
+    yPosition += 20;
+    doc.text('TVA:', col4, yPosition)
+       .text(`${invoice.tvaAmount.toFixed(2)} RON`, col6, yPosition);
     
-    doc.text(`TVA (${(invoice.tvaRate * 100).toFixed(0)}%):`, 330, totalsTop + 20)
-       .text(`${invoice.tvaAmount.toFixed(2)} RON`, 410, totalsTop + 20);
-    
+    yPosition += 25;
     doc.fontSize(12)
-       .text('TOTAL:', 330, totalsTop + 45, { bold: true })
-       .text(`${invoice.total.toFixed(2)} RON`, 410, totalsTop + 45);
+       .font('Helvetica-Bold')
+       .text('TOTAL DE PLATĂ:', col4, yPosition)
+       .text(`${invoice.total.toFixed(2)} RON`, col6, yPosition);
+
+    // Date bancare (dacă există)
+    if (invoice.providerIban || invoice.providerBank) {
+      doc.moveDown(2);
+      doc.fontSize(9)
+         .font('Helvetica')
+         .text('Date bancare:', 50);
+      
+      if (invoice.providerBank) {
+        doc.text(`Banca: ${invoice.providerBank}`, 50);
+      }
+      if (invoice.providerIban) {
+        doc.text(`IBAN: ${invoice.providerIban}`, 50);
+      }
+    }
 
     // Footer
     doc.fontSize(8)
-       .text('Mulțumim pentru colaborare!', 50, 700, { align: 'center' })
-       .text(`Pentru întrebări, contactați-ne la: ${invoice.providerEmail}`, { align: 'center' });
+       .text('Mulțumim pentru colaborare!', 50, 730, { align: 'center' })
+       .text(`Document generat la ${new Date().toLocaleString('ro-RO')}`, 50, 745, { align: 'center' });
 
     doc.end();
     
@@ -237,42 +332,71 @@ async function generateInvoicePDF(invoice) {
 // Obține toate facturile
 async function getInvoices(req, res) {
   try {
+    if (!prisma) {
+      return res.status(503).json({ 
+        success: false, 
+        error: 'Baza de date nu este configurată' 
+      });
+    }
+
     const invoices = await prisma.invoice.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        company: true,
-        conversation: true
+        items: true,
+        company: true
       }
     });
     
-    res.json(invoices);
+    res.json({
+      success: true,
+      invoices
+    });
   } catch (error) {
     console.error('Eroare obținere facturi:', error);
-    res.status(500).json({ error: 'Eroare la obținerea facturilor' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Eroare la obținerea facturilor' 
+    });
   }
 }
 
 // Obține o factură specifică
 async function getInvoice(req, res) {
   try {
+    if (!prisma) {
+      return res.status(503).json({ 
+        success: false, 
+        error: 'Baza de date nu este configurată' 
+      });
+    }
+
     const { id } = req.params;
     
     const invoice = await prisma.invoice.findUnique({
       where: { id },
       include: {
-        company: true,
-        conversation: true
+        items: true,
+        company: true
       }
     });
     
     if (!invoice) {
-      return res.status(404).json({ error: 'Factură negăsită' });
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Factură negăsită' 
+      });
     }
     
-    res.json(invoice);
+    res.json({
+      success: true,
+      invoice
+    });
   } catch (error) {
     console.error('Eroare obținere factură:', error);
-    res.status(500).json({ error: 'Eroare la obținerea facturii' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Eroare la obținerea facturii' 
+    });
   }
 }
 
@@ -303,7 +427,7 @@ async function downloadInvoice(req, res) {
 }
 
 module.exports = {
-  generateInvoice,
+  createInvoice,
   getInvoices,
   getInvoice,
   downloadInvoice

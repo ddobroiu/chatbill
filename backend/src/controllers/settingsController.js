@@ -146,5 +146,6 @@ async function autoCompleteCompanySettings(req, res) {
 module.exports = {
   getCompanySettings,
   updateCompanySettings,
-  autoCompleteCompanySettings
+  autoCompleteCompanySettings,
+  getSettings: () => companySettings  // Pentru a fi folosit de alte controllere
 };

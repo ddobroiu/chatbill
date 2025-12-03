@@ -1,15 +1,14 @@
-// Wrapper pentru Prisma care nu se încarcă dacă DB nu e configurat
+// Wrapper pentru Prisma Client - SQLite edition
 let prisma = null;
 
-if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('postgresql://')) {
-  try {
-    prisma = require('./prisma');
-    console.log('✅ Prisma client încărcat');
-  } catch (err) {
-    console.log('⚠️  Prisma nu a putut fi încărcat:', err.message);
-  }
-} else {
-  console.log('⚠️  Prisma DEZACTIVAT (DATABASE_URL nu este configurat)');
+try {
+  console.log('✅ Încărcare Prisma Client...');
+  const { PrismaClient } = require('@prisma/client');
+  prisma = new PrismaClient();
+  console.log('✅ Prisma Client încărcat cu SQLite');
+} catch (err) {
+  console.error('❌ Eroare încărcare Prisma:', err.message);
+  prisma = null;
 }
 
 module.exports = prisma;

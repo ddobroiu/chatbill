@@ -19,18 +19,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../../frontend')));
 
-// Conectare DB opțională - versiunea actualizată
-if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('postgresql://')) {
-  try {
-    const prisma = require('./db/prisma');
-    console.log('✅ Modul bază de date încărcat');
-  } catch (err) {
-    console.log('⚠️  Continuu fără DB:', err.message);
-  }
-} else {
-  console.log('⚠️  Server pornit FĂRĂ bază de date (doar pentru test iApp API)');
-}
-
 // Import routes
 const chatRoutes = require('./routes/chatRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');

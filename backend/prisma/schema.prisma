@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // Model pentru companii (clienți)
@@ -75,7 +75,7 @@ model Message {
   conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   userId          String?
   user            User?        @relation(fields: [userId], references: [id])
-  text            String       @db.Text
+  text            String
   sender          String       // 'user', 'system', 'ai'
   timestamp       DateTime     @default(now())
   
@@ -133,7 +133,7 @@ model Invoice {
   
   // Metadata
   pdfPath           String?
-  notes             String?       @db.Text
+  notes             String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   
@@ -149,7 +149,7 @@ model InvoiceItem {
   invoice           Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   
   name              String       // Denumire produs/serviciu
-  description       String?      @db.Text
+  description       String?
   unit              String       @default("buc") // unitate de măsură (buc, kg, ora, etc.)
   quantity          Float
   price             Float        // Preț unitar
