@@ -8,18 +8,26 @@
     "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["chat", "invoicing", "facturi"],
+  "keywords": [
+    "chat",
+    "invoicing",
+    "facturi"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
+    "@prisma/client": "^5.7.1",
+    "axios": "^1.6.2",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "socket.io": "^4.7.2",
-    "uuid": "^9.0.1",
+    "express": "^4.18.2",
+    "express-session": "^1.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.11",
     "pdfkit": "^0.13.0",
-    "@prisma/client": "^5.7.1",
-    "axios": "^1.6.2"
+    "socket.io": "^4.7.2",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

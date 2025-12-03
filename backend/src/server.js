@@ -3,6 +3,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const path = require('path');
+const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
@@ -19,6 +20,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../../frontend')));
 
+// Session middleware pentru OAuth
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'chatbill-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS în producție
+    maxAge: 24 * 60 * 60 * 1000 // 24 ore
+  }
+}));
+
 // Logging middleware
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.url}`);
@@ -31,6 +43,7 @@ const invoiceRoutes = require('./routes/invoiceRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const aiChatRoutes = require('./routes/aiChat');
+const anafAuthRoutes = require('./routes/anafAuth');
 
 // Use routes
 app.use('/api/chat', chatRoutes);
@@ -38,6 +51,7 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/ai-chat', aiChatRoutes);
+app.use('/api/anaf', anafAuthRoutes);
 
 // Socket.IO pentru chat în timp real
 const { handleSocketConnection } = require('./controllers/chatController');

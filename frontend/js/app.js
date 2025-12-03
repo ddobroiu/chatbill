@@ -19,7 +19,22 @@ function switchTab(tabName) {
 }
 
 // ========== SETTINGS TAB ==========
-window.addEventListener('DOMContentLoaded', loadSettings);
+window.addEventListener('DOMContentLoaded', () => {
+    loadSettings();
+    checkANAFStatus();
+    
+    // Check for ANAF callback
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('anaf_connected') === 'true') {
+        showMessage('settingsMessage', '✅ Conectat cu succes la ANAF e-Factura!', 'success');
+        checkANAFStatus();
+        // Clean URL
+        window.history.replaceState({}, document.title, '/');
+    } else if (urlParams.get('anaf_error')) {
+        showMessage('settingsMessage', `❌ Eroare conectare ANAF: ${urlParams.get('anaf_error')}`, 'error');
+        window.history.replaceState({}, document.title, '/');
+    }
+});
 
 async function loadSettings() {
     try {
@@ -628,3 +643,91 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ========== ANAF e-FACTURA INTEGRATION ==========
+async function checkANAFStatus() {
+    try {
+        const response = await fetch('http://localhost:3000/api/anaf/status');
+        const data = await response.json();
+        
+        const indicator = document.getElementById('anafStatusIndicator');
+        const statusText = document.getElementById('anafStatusText');
+        const connectionInfo = document.getElementById('anafConnectionInfo');
+        const connectBtn = document.getElementById('anafConnectBtn');
+        
+        if (data.connected && !data.isExpired) {
+            // Conectat
+            indicator.classList.add('connected');
+            statusText.textContent = 'Conectat la ANAF e-Factura';
+            
+            const expiresAt = new Date(data.expiresAt);
+            const timeLeft = Math.floor((expiresAt - new Date()) / (1000 * 60)); // minute
+            
+            connectionInfo.innerHTML = `
+                <strong>CUI:</strong> ${data.cui || 'N/A'} | 
+                <strong>Companie:</strong> ${data.companyName || 'N/A'}<br>
+                Token expiră în: ${timeLeft} minute
+            `;
+            
+            connectBtn.textContent = '🔄 Deconectează';
+            connectBtn.className = 'anaf-btn disconnect';
+            connectBtn.onclick = disconnectFromANAF;
+        } else {
+            // Neconectat
+            indicator.classList.remove('connected');
+            statusText.textContent = 'Neconectat';
+            connectionInfo.textContent = 'Pentru a putea transmite facturi în sistemul e-Factura ANAF, conectează-te cu certificatul digital SPV.';
+            connectBtn.textContent = '🔗 Conectează cu SPV ANAF';
+            connectBtn.className = 'anaf-btn';
+            connectBtn.onclick = connectToANAF;
+        }
+    } catch (error) {
+        console.error('Eroare verificare status ANAF:', error);
+    }
+}
+
+async function connectToANAF() {
+    try {
+        const response = await fetch('http://localhost:3000/api/anaf/connect');
+        const data = await response.json();
+        
+        if (data.success && data.authUrl) {
+            // Redirect către ANAF pentru autentificare SPV
+            showMessage('settingsMessage', '🔄 Redirectare către ANAF pentru autentificare...', 'info');
+            setTimeout(() => {
+                window.location.href = data.authUrl;
+            }, 1000);
+        } else {
+            showMessage('settingsMessage', '❌ Eroare la inițierea conexiunii ANAF', 'error');
+        }
+    } catch (error) {
+        console.error('Eroare conectare ANAF:', error);
+        showMessage('settingsMessage', '❌ Eroare la conectarea cu ANAF', 'error');
+    }
+}
+
+async function disconnectFromANAF() {
+    if (!confirm('Sigur vrei să te deconectezi de la ANAF e-Factura?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/anaf/disconnect', {
+            method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage('settingsMessage', '✅ Deconectat cu succes de la ANAF', 'success');
+            checkANAFStatus();
+        } else {
+            showMessage('settingsMessage', '❌ Eroare la deconectare', 'error');
+        }
+    } catch (error) {
+        console.error('Eroare deconectare ANAF:', error);
+        showMessage('settingsMessage', '❌ Eroare la deconectare', 'error');
+    }
+}
+
+// Refresh ANAF status every 5 minutes
+setInterval(checkANAFStatus, 5 * 60 * 1000);

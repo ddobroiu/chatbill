@@ -355,6 +355,58 @@
             outline: none;
             border-color: #667eea;
         }
+        .anaf-connection-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .anaf-connection-box h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .anaf-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4444;
+        }
+        .status-indicator.connected {
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        .anaf-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .anaf-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,255,255,0.3);
+        }
+        .anaf-btn.disconnect {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+        .anaf-info {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -377,6 +429,23 @@
         <!-- Tab 1: Setări Companie -->
         <div id="settingsTab" class="tab-content active">
             <div id="settingsMessage" class="message"></div>
+            
+            <!-- ANAF e-Factura Connection -->
+            <div class="anaf-connection-box" id="anafConnectionBox">
+                <h3>🔐 Conexiune ANAF e-Factura</h3>
+                <div class="anaf-status">
+                    <div class="status-indicator" id="anafStatusIndicator"></div>
+                    <span id="anafStatusText">Neconectat</span>
+                </div>
+                <p class="anaf-info" id="anafConnectionInfo">
+                    Pentru a putea transmite facturi în sistemul e-Factura ANAF, conectează-te cu certificatul digital SPV.
+                </p>
+                <div style="margin-top: 20px;">
+                    <button type="button" class="anaf-btn" id="anafConnectBtn" onclick="connectToANAF()">
+                        🔗 Conectează cu SPV ANAF
+                    </button>
+                </div>
+            </div>
             
             <div class="autocomplete-box">
                 <h3>🔍 Auto-completare date din ANAF</h3>

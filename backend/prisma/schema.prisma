@@ -35,18 +35,69 @@ model Company {
   @@index([cui])
 }
 
-// Model pentru utilizatori (opțional, pentru viitor)
+// Model pentru utilizatori
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  name          String
-  password      String
-  role          String         @default("user") // user, admin
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id                String         @id @default(uuid())
+  email             String         @unique
+  name              String
+  password          String         // Hash bcrypt
+  role              String         @default("user") // user, admin
   
-  conversations Conversation[]
-  messages      Message[]
+  // Email verification
+  emailVerified     Boolean        @default(false)
+  verificationToken String?        @unique
+  
+  // Password reset
+  resetToken        String?        @unique
+  resetTokenExpiry  DateTime?
+  
+  // Profile
+  phone             String?
+  company           String?
+  cui               String?
+  avatar            String?
+  
+  // Status
+  isActive          Boolean        @default(true)
+  lastLogin         DateTime?
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  conversations     Conversation[]
+  messages          Message[]
+  anafAuth          AnafAuth?
+  
+  @@index([email])
+  @@index([verificationToken])
+  @@index([resetToken])
+}
+
+// Model pentru autentificare ANAF e-Factura
+model AnafAuth {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // OAuth2 Tokens
+  accessToken   String    @db.Text
+  refreshToken  String    @db.Text
+  tokenType     String    @default("Bearer")
+  expiresAt     DateTime
+  
+  // ANAF User Info
+  cui           String?   // CUI-ul companiei asociate contului ANAF
+  companyName   String?
+  
+  // Status
+  isActive      Boolean   @default(true)
+  lastRefresh   DateTime  @default(now())
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([cui])
 }
 
 // Model pentru conversații
@@ -130,6 +181,9 @@ model Invoice {
   
   // Relație cu produse/servicii
   items             InvoiceItem[]
+  
+  // Relație cu e-Factura ANAF
+  eFacturaLogs      EFacturaLog[]
   
   // Metadata
   pdfPath           String?
@@ -228,4 +282,49 @@ model ChatMessage {
   createdAt         DateTime     @default(now())
   
   @@index([sessionId])
+}
+
+// Model pentru configurare aplicație ANAF e-Factura
+model AnafAppConfig {
+  id            String    @id @default(uuid())
+  
+  // Credențiale aplicație înregistrată la ANAF
+  clientId      String    @unique
+  clientSecret  String    @db.Text
+  redirectUri   String
+  
+  // URLs ANAF (prod/test)
+  authUrl       String    @default("https://logincert.anaf.ro/anaf/oauth2/v1/authorize")
+  tokenUrl      String    @default("https://logincert.anaf.ro/anaf/oauth2/v1/token")
+  apiBaseUrl    String    @default("https://api.anaf.ro/prod/FCTEH/public-v1")
+  
+  // Setări
+  environment   String    @default("test") // test, production
+  isActive      Boolean   @default(true)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Model pentru log-uri trimitere facturi ANAF
+model EFacturaLog {
+  id            String    @id @default(uuid())
+  invoiceId     String
+  invoice       Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  // Detalii trimitere
+  status        String    // pending, success, error
+  anafMessageId String?   // ID-ul mesajului din ANAF
+  xmlContent    String?   @db.Text // XML-ul generat
+  
+  // Răspuns ANAF
+  responseCode  String?
+  responseMsg   String?   @db.Text
+  errorDetails  String?   @db.Text
+  
+  sentAt        DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([invoiceId])
+  @@index([status])
 }
