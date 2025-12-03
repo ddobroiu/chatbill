@@ -100,6 +100,39 @@ model AnafAuth {
   @@index([cui])
 }
 
+// Model pentru setări companie emitentă (per utilizator)
+model CompanySettings {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  
+  // Date companie
+  cui       String?
+  name      String?
+  regCom    String?
+  address   String?
+  city      String?
+  county    String?
+  postalCode String?
+  country   String?  @default("România")
+  
+  // Contact
+  phone     String?
+  email     String?
+  
+  // Bancar
+  bank      String?
+  iban      String?
+  capital   String?
+  
+  // Reprezentant legal
+  legalRep  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+}
+
 // Model pentru conversații
 model Conversation {
   id            String         @id @default(uuid())
