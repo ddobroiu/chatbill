@@ -107,13 +107,13 @@ async function generateAIResponseWithGPT(session, userMessage) {
     // Construiește istoricul conversației din baza de date
     const messages = await prisma.chatMessage.findMany({
       where: { sessionId: session.id },
-      orderBy: { timestamp: 'asc' },
-      select: { sender: true, message: true }
+      orderBy: { createdAt: 'asc' },
+      select: { role: true, content: true }
     });
 
     const conversationHistory = messages.map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'assistant',
-      content: msg.message
+      role: msg.role === 'ai' ? 'assistant' : msg.role,
+      content: msg.content
     }));
 
     // Adaugă mesajul curent
