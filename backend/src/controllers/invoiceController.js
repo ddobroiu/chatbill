@@ -342,8 +342,7 @@ async function getInvoices(req, res) {
     const invoices = await prisma.invoice.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        items: true,
-        company: true
+        items: true
       }
     });
     
@@ -375,8 +374,7 @@ async function getInvoice(req, res) {
     const invoice = await prisma.invoice.findUnique({
       where: { id },
       include: {
-        items: true,
-        company: true
+        items: true
       }
     });
     

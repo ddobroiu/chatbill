@@ -11,6 +11,11 @@ function switchTab(tabName) {
     // Show selected tab
     document.getElementById(tabName + 'Tab').classList.add('active');
     event.target.classList.add('active');
+    
+    // Load invoices when switching to invoices tab
+    if (tabName === 'invoices') {
+        loadInvoices();
+    }
 }
 
 // ========== SETTINGS TAB ==========
@@ -318,4 +323,204 @@ function showMessage(elementId, text, type) {
     setTimeout(() => {
         messageDiv.style.display = 'none';
     }, 5000);
+}
+
+// ========== INVOICES LIST TAB ==========
+async function loadInvoices() {
+    const invoicesList = document.getElementById('invoicesList');
+    invoicesList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Se încarcă facturile...</p>';
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/invoices');
+        const data = await response.json();
+        
+        if (data.success && data.invoices && data.invoices.length > 0) {
+            displayInvoicesTable(data.invoices);
+        } else {
+            invoicesList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">📋 Nu există facturi generate încă.</p>';
+        }
+    } catch (error) {
+        console.error('Eroare încărcare facturi:', error);
+        invoicesList.innerHTML = '<p style="text-align: center; color: #dc3545; padding: 40px;">❌ Eroare la încărcarea facturilor</p>';
+    }
+}
+
+function displayInvoicesTable(invoices) {
+    const invoicesList = document.getElementById('invoicesList');
+    
+    let tableHTML = `
+        <table class="invoices-table">
+            <thead>
+                <tr>
+                    <th>Nr. Factură</th>
+                    <th>Data</th>
+                    <th>Client</th>
+                    <th>Produse</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Acțiuni</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    invoices.forEach(invoice => {
+        const itemCount = invoice.items ? invoice.items.length : 0;
+        tableHTML += `
+            <tr>
+                <td><strong>${invoice.invoiceNumber}</strong></td>
+                <td>${formatDate(invoice.invoiceDate)}</td>
+                <td>${getClientName(invoice)}</td>
+                <td>${itemCount} produse</td>
+                <td><strong>${formatCurrency(invoice.total)}</strong></td>
+                <td><span class="status-badge status-${invoice.status}">${getStatusLabel(invoice.status)}</span></td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="action-btn view-btn" onclick="viewInvoice(${invoice.id})">👁️ Vezi</button>
+                        <button class="action-btn download-btn" onclick="downloadInvoice(${invoice.id})">⬇️ PDF</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+    
+    invoicesList.innerHTML = tableHTML;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ro-RO', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('ro-RO', {
+        style: 'currency',
+        currency: 'RON'
+    }).format(amount);
+}
+
+function getClientName(invoice) {
+    if (invoice.clientType === 'company') {
+        return invoice.clientName || 'Client necunoscut';
+    } else {
+        return `${invoice.clientFirstName || ''} ${invoice.clientLastName || ''}`.trim() || 'Client necunoscut';
+    }
+}
+
+function getStatusLabel(status) {
+    const labels = {
+        'DRAFT': 'Draft',
+        'SENT': 'Trimisă',
+        'PAID': 'Plătită',
+        'CANCELLED': 'Anulată'
+    };
+    return labels[status] || status;
+}
+
+async function viewInvoice(invoiceId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/invoices/${invoiceId}`);
+        const data = await response.json();
+        
+        if (data.success && data.invoice) {
+            displayInvoiceDetails(data.invoice);
+        } else {
+            alert('Eroare la încărcarea detaliilor facturii');
+        }
+    } catch (error) {
+        console.error('Eroare vizualizare factură:', error);
+        alert('Eroare la încărcarea facturii');
+    }
+}
+
+function displayInvoiceDetails(invoice) {
+    const itemsTable = invoice.items.map(item => `
+        <tr>
+            <td>${item.name}</td>
+            <td>${item.unit}</td>
+            <td>${item.quantity}</td>
+            <td>${formatCurrency(item.price)}</td>
+            <td>${item.vatRate}%</td>
+            <td>${formatCurrency(item.total)}</td>
+        </tr>
+    `).join('');
+    
+    const detailsHTML = `
+        <div style="background: white; padding: 30px; max-width: 800px; margin: 20px auto; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #667eea;">Factură ${invoice.invoiceNumber}</h2>
+                <button onclick="closeInvoiceDetails()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">✕ Închide</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 10px;">Furnizor</h3>
+                    <p><strong>${invoice.providerName}</strong></p>
+                    <p>CUI: ${invoice.providerCui}</p>
+                    <p>${invoice.providerAddress}</p>
+                    <p>${invoice.providerCity}, ${invoice.providerCounty}</p>
+                </div>
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 10px;">Client</h3>
+                    <p><strong>${getClientName(invoice)}</strong></p>
+                    ${invoice.clientType === 'company' ? `<p>CUI: ${invoice.clientCui}</p>` : `<p>CNP: ${invoice.clientCNP || ''}</p>`}
+                    <p>${invoice.clientAddress || ''}</p>
+                    <p>${invoice.clientCity || ''}, ${invoice.clientCounty || ''}</p>
+                </div>
+            </div>
+            
+            <h3 style="color: #667eea; margin-bottom: 10px;">Produse/Servicii</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background: #f8f9ff;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #667eea;">Denumire</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #667eea;">UM</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">Cant.</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">Preț</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">TVA</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsTable}
+                </tbody>
+            </table>
+            
+            <div style="text-align: right; background: #f8f9ff; padding: 20px; border-radius: 10px;">
+                <p style="margin: 5px 0;"><strong>Subtotal:</strong> ${formatCurrency(invoice.subtotal)}</p>
+                <p style="margin: 5px 0;"><strong>TVA:</strong> ${formatCurrency(invoice.totalVat)}</p>
+                <h3 style="color: #667eea; margin-top: 10px;">Total: ${formatCurrency(invoice.total)}</h3>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="downloadInvoice(${invoice.id})" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 16px;">⬇️ Descarcă PDF</button>
+            </div>
+        </div>
+    `;
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'invoiceDetailsOverlay';
+    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;';
+    overlay.innerHTML = detailsHTML;
+    document.body.appendChild(overlay);
+}
+
+function closeInvoiceDetails() {
+    const overlay = document.getElementById('invoiceDetailsOverlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+function downloadInvoice(invoiceId) {
+    window.open(`http://localhost:3000/api/invoices/${invoiceId}/download`, '_blank');
 }

@@ -231,6 +231,66 @@
             color: #667eea;
             font-size: 24px;
         }
+        .invoices-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .invoices-table th, .invoices-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .invoices-table th {
+            background: #f8f9ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+        .invoices-table tr:hover {
+            background: #f8f9ff;
+            cursor: pointer;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-DRAFT {
+            background: #ffc107;
+            color: #fff;
+        }
+        .status-SENT {
+            background: #17a2b8;
+            color: #fff;
+        }
+        .status-PAID {
+            background: #28a745;
+            color: #fff;
+        }
+        .status-CANCELLED {
+            background: #dc3545;
+            color: #fff;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .view-btn {
+            background: #667eea;
+            color: white;
+        }
+        .download-btn {
+            background: #28a745;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -246,6 +306,7 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('settings')">⚙️ Setări Companie</button>
             <button class="tab" onclick="switchTab('invoice')">📄 Generare Factură</button>
+            <button class="tab" onclick="switchTab('invoices')">📋 Facturi Generate</button>
             <button class="tab" onclick="switchTab('chat')">💬 Chat (În curând)</button>
         </div>
 
@@ -456,7 +517,16 @@
             </form>
         </div>
 
-        <!-- Tab 3: Chat (Placeholder) -->
+        <!-- Tab 3: Invoices List -->
+        <div id="invoicesTab" class="tab-content">
+            <h2 style="color: #667eea; margin-bottom: 20px;">📋 Facturi Generate</h2>
+            
+            <div id="invoicesList">
+                <p style="text-align: center; color: #666; padding: 40px;">Se încarcă facturile...</p>
+            </div>
+        </div>
+
+        <!-- Tab 4: Chat (Placeholder) -->
         <div id="chatTab" class="tab-content">
             <div style="text-align: center; padding: 50px;">
                 <h2 style="color: #667eea;">💬 Chat Integration</h2>
