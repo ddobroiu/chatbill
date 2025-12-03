@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setări Companie - ChatBill</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .settings-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .autocomplete-section {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-secondary:hover {
+            background: #218838;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-header">
+            <h1>⚙️ Setări Companie Emitentă</h1>
+            <a href="index.html" class="btn-secondary">← Înapoi la Chat</a>
+        </div>
+
+        <div id="message" style="display: none;"></div>
+
+        <!-- Secțiune auto-completare -->
+        <div class="autocomplete-section">
+            <h3>🔍 Auto-completare date din ANAF</h3>
+            <p>Introduceți CUI-ul companiei pentru a completa automat datele din Registrul Comerțului:</p>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="text" id="cuiSearch" placeholder="CUI (ex: 12345678)" style="flex: 1;">
+                <button onclick="autoComplete()" class="btn-secondary">Caută și Completează</button>
+            </div>
+        </div>
+
+        <!-- Formular setări -->
+        <form id="settingsForm" onsubmit="saveSettings(event)">
+            <h3>📋 Date Companie</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="cui">CUI *</label>
+                    <input type="text" id="cui" name="cui" required>
+                </div>
+                <div class="form-group">
+                    <label for="regCom">Nr. Reg. Com. *</label>
+                    <input type="text" id="regCom" name="regCom" required>
+                </div>
+                <div class="form-group-full">
+                    <label for="name">Denumire Companie *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group-full">
+                    <label for="address">Adresă Completă *</label>
+                    <input type="text" id="address" name="address" required>
+                </div>
+                <div class="form-group">
+                    <label for="city">Oraș</label>
+                    <input type="text" id="city" name="city">
+                </div>
+                <div class="form-group">
+                    <label for="county">Județ</label>
+                    <input type="text" id="county" name="county">
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">📞 Contact</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="phone">Telefon</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email">
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">🏦 Date Bancare</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="bank">Bancă</label>
+                    <input type="text" id="bank" name="bank">
+                </div>
+                <div class="form-group">
+                    <label for="iban">IBAN</label>
+                    <input type="text" id="iban" name="iban">
+                </div>
+                <div class="form-group">
+                    <label for="capital">Capital Social (RON)</label>
+                    <input type="text" id="capital" name="capital">
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; text-align: right;">
+                <button type="submit" class="btn-primary">💾 Salvează Setările</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Încarcă setările la pornire
+        window.addEventListener('DOMContentLoaded', loadSettings);
+
+        async function loadSettings() {
+            try {
+                const response = await fetch('http://localhost:3000/api/settings');
+                const data = await response.json();
+                
+                if (data.success && data.settings) {
+                    populateForm(data.settings);
+                }
+            } catch (error) {
+                console.error('Eroare încărcare setări:', error);
+            }
+        }
+
+        function populateForm(settings) {
+            Object.keys(settings).forEach(key => {
+                const input = document.getElementById(key);
+                if (input && settings[key]) {
+                    input.value = settings[key];
+                }
+            });
+        }
+
+        async function autoComplete() {
+            const cui = document.getElementById('cuiSearch').value.trim();
+            
+            if (!cui) {
+                showMessage('Introduceți un CUI', 'error');
+                return;
+            }
+
+            showMessage('🔍 Căutare date în ANAF...', 'info');
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/settings/autocomplete/${cui}`);
+                const data = await response.json();
+                
+                if (data.success && data.settings) {
+                    populateForm(data.settings);
+                    showMessage('✅ Date completate automat din ANAF!', 'success');
+                } else {
+                    showMessage('❌ Companie negăsită în ANAF', 'error');
+                }
+            } catch (error) {
+                console.error('Eroare auto-completare:', error);
+                showMessage('❌ Eroare la căutarea datelor', 'error');
+            }
+        }
+
+        async function saveSettings(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const settings = Object.fromEntries(formData);
+
+            showMessage('💾 Salvare setări...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/settings', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('✅ Setări salvate cu succes!', 'success');
+                } else {
+                    showMessage('❌ Eroare la salvarea setărilor', 'error');
+                }
+            } catch (error) {
+                console.error('Eroare salvare setări:', error);
+                showMessage('❌ Eroare la salvarea setărilor', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

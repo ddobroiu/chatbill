@@ -1,0 +1,166 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model pentru companii (clienți)
+model Company {
+  id            String         @id @default(uuid())
+  cui           String         @unique // Cod Unic de Înregistrare
+  name          String
+  address       String?
+  city          String?
+  county        String?
+  postalCode    String?
+  country       String         @default("România")
+  email         String?
+  phone         String?
+  regCom        String?        // Număr Registrul Comerțului
+  iban          String?
+  bank          String?
+  legalRep      String?        // Reprezentant legal
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  conversations Conversation[]
+  invoices      Invoice[]
+  
+  @@index([cui])
+}
+
+// Model pentru utilizatori (opțional, pentru viitor)
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  password      String
+  role          String         @default("user") // user, admin
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  conversations Conversation[]
+  messages      Message[]
+}
+
+// Model pentru conversații
+model Conversation {
+  id            String         @id @default(uuid())
+  title         String
+  companyId     String?
+  company       Company?       @relation(fields: [companyId], references: [id])
+  userId        String?
+  user          User?          @relation(fields: [userId], references: [id])
+  status        String         @default("active") // active, archived
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  messages      Message[]
+  invoices      Invoice[]
+  
+  @@index([companyId])
+  @@index([userId])
+}
+
+// Model pentru mesaje
+model Message {
+  id              String       @id @default(uuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId          String?
+  user            User?        @relation(fields: [userId], references: [id])
+  text            String       @db.Text
+  sender          String       // 'user', 'system', 'ai'
+  timestamp       DateTime     @default(now())
+  
+  @@index([conversationId])
+  @@index([userId])
+}
+
+// Model pentru facturi
+model Invoice {
+  id                String       @id @default(uuid())
+  invoiceNumber     String       @unique
+  conversationId    String?
+  conversation      Conversation? @relation(fields: [conversationId], references: [id])
+  companyId         String?
+  company           Company?      @relation(fields: [companyId], references: [id])
+  
+  // Calcule financiare
+  subtotal          Float
+  tvaAmount         Float
+  total             Float
+  
+  // Informații factură
+  issueDate         DateTime     @default(now())
+  dueDate           DateTime?
+  status            String       @default("generated") // generated, sent, paid, cancelled
+  
+  // Informații furnizor/emitent (snapshot la momentul facturării)
+  providerName      String
+  providerCUI       String
+  providerRegCom    String?
+  providerAddress   String
+  providerCity      String?
+  providerCounty    String?
+  providerEmail     String?
+  providerPhone     String?
+  providerBank      String?
+  providerIban      String?
+  providerCapital   String?
+  
+  // Informații client/beneficiar (snapshot)
+  clientType        String       // 'company' sau 'individual'
+  clientName        String
+  clientCUI         String?
+  clientRegCom      String?
+  clientCNP         String?      // pentru persoane fizice
+  clientFirstName   String?      // pentru persoane fizice
+  clientLastName    String?      // pentru persoane fizice
+  clientAddress     String?
+  clientCity        String?
+  clientCounty      String?
+  clientEmail       String?
+  
+  // Relație cu produse/servicii
+  items             InvoiceItem[]
+  
+  // Metadata
+  pdfPath           String?
+  notes             String?       @db.Text
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  @@index([companyId])
+  @@index([conversationId])
+  @@index([invoiceNumber])
+}
+
+// Model pentru produse/servicii pe factură
+model InvoiceItem {
+  id                String       @id @default(uuid())
+  invoiceId         String
+  invoice           Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  name              String       // Denumire produs/serviciu
+  description       String?      @db.Text
+  unit              String       @default("buc") // unitate de măsură (buc, kg, ora, etc.)
+  quantity          Float
+  price             Float        // Preț unitar
+  vatRate           Float        @default(0.19) // Cota TVA (0.19 = 19%)
+  
+  // Calcule (stocate pentru istoric)
+  subtotal          Float        // quantity * price
+  vatAmount         Float        // subtotal * vatRate
+  total             Float        // subtotal + vatAmount
+  
+  createdAt         DateTime     @default(now())
+  
+  @@index([invoiceId])
+}
