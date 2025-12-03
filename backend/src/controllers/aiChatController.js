@@ -83,6 +83,48 @@ function generateAIResponse(session, userMessage) {
         message: '❌ Nu am putut identifica un CUI valid. Te rog introdu un număr de 6-10 cifre.',
         nextStep: 'client_cui'
       };
+    
+    case 'confirm_company':
+      const confirm = userMessage.toLowerCase().trim();
+      if (confirm.includes('da') || confirm === '1') {
+        return {
+          message: '📦 Acum să adăugăm produsele/serviciile.\n\nScrie numele produsului sau serviciului:',
+          nextStep: 'add_product_name'
+        };
+      } else {
+        return {
+          message: '🔄 Încearcă din nou. Introdu CUI-ul companiei:',
+          nextStep: 'client_cui'
+        };
+      }
+    
+    case 'manual_company_name':
+      return {
+        message: `✅ Denumire: "${userMessage}"\n\n📍 Introdu adresa companiei:`,
+        nextStep: 'manual_company_address',
+        tempCompany: { name: userMessage }
+      };
+    
+    case 'manual_company_address':
+      return {
+        message: `✅ Adresă salvată!\n\n🏙️ Care este orașul?`,
+        nextStep: 'manual_company_city',
+        tempCompany: { address: userMessage }
+      };
+    
+    case 'manual_company_city':
+      return {
+        message: `✅ Perfect!\n\nUltimul detaliu - în ce județ? (ex: București, Cluj, Iași)`,
+        nextStep: 'manual_company_county',
+        tempCompany: { city: userMessage }
+      };
+    
+    case 'manual_company_county':
+      return {
+        message: '✅ Date complete!\n\n📦 Acum să adăugăm produsele/serviciile.\n\nScrie numele produsului sau serviciului:',
+        nextStep: 'add_product_name',
+        finalizeCompany: { county: userMessage }
+      };
       
     case 'client_confirmed':
       return {
@@ -189,7 +231,8 @@ async function sendMessage(req, res) {
     const aiResponse = generateAIResponse(session, message);
     
     // Cazuri speciale care necesită API calls
-    if (session.currentStep === 'verify_cui' && aiResponse.updates?.clientCUI) {
+    if (aiResponse.nextStep === 'verify_cui' && aiResponse.updates?.clientCUI) {
+      console.log('🔍 Verific CUI:', aiResponse.updates.clientCUI);
       const companyData = await searchCompanyByCUI(aiResponse.updates.clientCUI);
       
       if (companyData) {
@@ -200,7 +243,7 @@ async function sendMessage(req, res) {
             clientCUI: companyData.cui,
             clientName: companyData.name,
             clientData: JSON.stringify(companyData),
-            currentStep: 'client_confirmed'
+            currentStep: 'confirm_company'
           }
         });
         
@@ -219,28 +262,31 @@ async function sendMessage(req, res) {
           success: true,
           sessionId: session.id,
           message: assistantMsg.content,
-          step: 'client_confirmed'
+          step: 'confirm_company'
         });
       } else {
-        // CUI nu a fost găsit
+        // CUI nu a fost găsit - permite introducere manuală
         await prisma.chatSession.update({
           where: { id: session.id },
-          data: { currentStep: 'client_cui' }
+          data: { 
+            clientCUI: aiResponse.updates.clientCUI,
+            currentStep: 'manual_company_name' 
+          }
         });
         
-        const errorMsg = await prisma.chatMessage.create({
+        const manualMsg = await prisma.chatMessage.create({
           data: {
             sessionId: session.id,
             role: 'assistant',
-            content: '❌ CUI-ul nu a fost găsit în baza ANAF. Te rog verifică și încearcă din nou:'
+            content: '⚠️ Nu am găsit datele în ANAF (API-ul poate fi offline).\n\nNu-i problemă! Introducem manual.\n\n🏢 Care este denumirea companiei?'
           }
         });
         
         return res.json({
           success: true,
           sessionId: session.id,
-          message: errorMsg.content,
-          step: 'client_cui'
+          message: manualMsg.content,
+          step: 'manual_company_name'
         });
       }
     }
@@ -251,6 +297,9 @@ async function sendMessage(req, res) {
       const productsData = JSON.parse(session.productsData || '[]');
       const clientData = JSON.parse(session.clientData || '{}');
       const settings = settingsController.getSettings();
+      
+      console.log('🔵 Generare factură - Produse din DB:', productsData);
+      console.log('🔵 Client data:', clientData);
       
       // Generează factura folosind controller-ul existent
       const invoiceData = {
@@ -318,11 +367,76 @@ async function sendMessage(req, res) {
     if (aiResponse.nextStep) updates.currentStep = aiResponse.nextStep;
     if (aiResponse.updates) Object.assign(updates, aiResponse.updates);
     
+    // Gestionare date companie manuale
+    if (aiResponse.tempCompany || aiResponse.finalizeCompany) {
+      // Găsește mesajul anterior cu tempCompany
+      const messagesWithTemp = session.chatMessages.filter(m => {
+        if (!m.metadata) return false;
+        try {
+          const meta = JSON.parse(m.metadata);
+          return meta.tempCompany;
+        } catch {
+          return false;
+        }
+      });
+      
+      let tempCompanyData = {};
+      if (messagesWithTemp.length > 0) {
+        // Merge all temp company data from previous messages
+        messagesWithTemp.forEach(msg => {
+          const meta = JSON.parse(msg.metadata);
+          if (meta.tempCompany) {
+            Object.assign(tempCompanyData, meta.tempCompany);
+          }
+        });
+      }
+      
+      if (aiResponse.tempCompany) {
+        Object.assign(tempCompanyData, aiResponse.tempCompany);
+      }
+      
+      if (aiResponse.finalizeCompany) {
+        // Finalizează datele companiei
+        Object.assign(tempCompanyData, aiResponse.finalizeCompany);
+        const fullCompanyData = {
+          cui: session.clientCUI,
+          name: tempCompanyData.name,
+          address: tempCompanyData.address,
+          city: tempCompanyData.city,
+          county: tempCompanyData.county,
+          regCom: ''
+        };
+        updates.clientData = JSON.stringify(fullCompanyData);
+        updates.clientName = fullCompanyData.name;
+      }
+    }
+    
     // Gestionare produse temporare
-    if (aiResponse.tempProduct) {
-      const existingTemp = session.chatMessages.find(m => m.metadata && JSON.parse(m.metadata).tempProduct);
-      const tempData = existingTemp ? JSON.parse(existingTemp.metadata).tempProduct : {};
-      Object.assign(tempData, aiResponse.tempProduct);
+    if (aiResponse.tempProduct || aiResponse.productToAdd) {
+      // Găsește mesajele anterioare cu tempProduct
+      const messagesWithTemp = session.chatMessages.filter(m => {
+        if (!m.metadata) return false;
+        try {
+          const meta = JSON.parse(m.metadata);
+          return meta.tempProduct;
+        } catch {
+          return false;
+        }
+      });
+      
+      let tempData = {};
+      if (messagesWithTemp.length > 0) {
+        messagesWithTemp.forEach(msg => {
+          const meta = JSON.parse(msg.metadata);
+          if (meta.tempProduct) {
+            Object.assign(tempData, meta.tempProduct);
+          }
+        });
+      }
+      
+      if (aiResponse.tempProduct) {
+        Object.assign(tempData, aiResponse.tempProduct);
+      }
       
       if (aiResponse.productToAdd) {
         // Finalizează produsul și adaugă în listă
@@ -330,6 +444,8 @@ async function sendMessage(req, res) {
         const productsData = JSON.parse(session.productsData || '[]');
         productsData.push(tempData);
         updates.productsData = JSON.stringify(productsData);
+        console.log('✅ Produs adăugat în lista:', tempData);
+        console.log('📦 Total produse:', productsData.length);
       }
     }
     
@@ -341,12 +457,16 @@ async function sendMessage(req, res) {
     }
     
     // Salvează răspunsul AI
+    const metadataObj = {};
+    if (aiResponse.tempProduct) metadataObj.tempProduct = aiResponse.tempProduct;
+    if (aiResponse.tempCompany) metadataObj.tempCompany = aiResponse.tempCompany;
+    
     const assistantMsg = await prisma.chatMessage.create({
       data: {
         sessionId: session.id,
         role: 'assistant',
         content: aiResponse.message,
-        metadata: aiResponse.tempProduct ? JSON.stringify({ tempProduct: aiResponse.tempProduct }) : null
+        metadata: Object.keys(metadataObj).length > 0 ? JSON.stringify(metadataObj) : null
       }
     });
     
