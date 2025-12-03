@@ -72,38 +72,50 @@ async function getCompanySettings(req, res) {
 // Actualizează setările companiei emitente
 async function updateCompanySettings(req, res) {
   try {
+    const userId = req.user.id;
     const updates = req.body;
     
-    // Actualizează setările în memorie
-    companySettings = {
-      ...companySettings,
-      ...updates
-    };
-
-    // TODO: Salvează în bază de date când va fi configurată
-    // if (prisma) {
-    //   await prisma.settings.upsert({...});
-    // }
+    console.log('💾 Salvare setări pentru user:', userId);
+    console.log('📝 Date:', updates);
+    
+    // Salvează în bază de date folosind upsert
+    const settings = await prisma.companySettings.upsert({
+      where: { userId },
+      update: updates,
+      create: {
+        userId,
+        ...updates
+      }
+    });
+    
+    console.log('✅ Setări salvate cu succes');
 
     res.json({
       success: true,
       message: 'Setări actualizate cu succes',
-      settings: companySettings
+      settings
     });
   } catch (error) {
-    console.error('Eroare actualizare setări:', error);
-    res.status(500).json({ error: 'Eroare la actualizarea setărilor' });
+    console.error('❌ Eroare actualizare setări:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Eroare la actualizarea setărilor' 
+    });
   }
 }
 
 // Auto-completare setări companie folosind CUI + iApp API
 async function autoCompleteCompanySettings(req, res) {
   try {
+    const userId = req.user.id;
     const { cui } = req.params;
     const cleanCUI = cui.replace(/[^0-9]/g, '');
     
     if (!cleanCUI || cleanCUI.length < 6) {
-      return res.status(400).json({ error: 'CUI invalid' });
+      return res.status(400).json({ 
+        success: false,
+        error: 'CUI invalid' 
+      });
     }
 
     console.log('🔍 Auto-completare setări companie pentru CUI:', cleanCUI);
@@ -121,7 +133,8 @@ async function autoCompleteCompanySettings(req, res) {
         headers: {
           'Authorization': getIAppAuthHeader(),
           'Content-Type': 'application/json'
-        }
+        },
+        timeout: 10000
       }
     );
 
@@ -130,23 +143,34 @@ async function autoCompleteCompanySettings(req, res) {
     if (iappResponse.data && iappResponse.data.status === 'SUCCESS') {
       const companyData = iappResponse.data.data.output;
       
-      // Actualizează setările cu datele de la iApp
-      companySettings = {
-        ...companySettings,
+      // Pregătește datele pentru salvare
+      const settingsData = {
         cui: cleanCUI,
         name: companyData.nume || '',
         address: companyData.adresa?.completa || companyData.adresa?.adresa || '',
         city: companyData.adresa?.oras || '',
         county: companyData.adresa?.judet || '',
+        postalCode: companyData.adresa?.cod_postal || '',
         regCom: companyData.regcom || '',
-        phone: companyData.telefon || companySettings.phone, // Păstrează phone-ul dacă API nu returnează
-        // Email, IBAN, Bancă rămân cele existente (nu vin din API)
+        phone: companyData.telefon || '',
       };
+      
+      // Salvează în DB
+      const settings = await prisma.companySettings.upsert({
+        where: { userId },
+        update: settingsData,
+        create: {
+          userId,
+          ...settingsData
+        }
+      });
+      
+      console.log('✅ Setări salvate automat în DB');
 
       return res.json({
         success: true,
-        message: 'Date completate automat din ANAF',
-        settings: companySettings,
+        message: 'Date completate automat din ANAF și salvate',
+        settings,
         iappData: {
           statusTVA: companyData.tva === 'Y',
           dataInregistrare: companyData.data_inregistrare || '',
@@ -165,6 +189,7 @@ async function autoCompleteCompanySettings(req, res) {
   } catch (error) {
     console.error('❌ Eroare auto-completare setări:', error.response?.data || error.message);
     res.status(500).json({ 
+      success: false,
       error: 'Eroare la interogarea API iApp',
       details: error.response?.data?.message || error.message
     });
@@ -174,6 +199,5 @@ async function autoCompleteCompanySettings(req, res) {
 module.exports = {
   getCompanySettings,
   updateCompanySettings,
-  autoCompleteCompanySettings,
-  getSettings: () => companySettings  // Pentru a fi folosit de alte controllere
+  autoCompleteCompanySettings
 };
