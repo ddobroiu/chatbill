@@ -369,15 +369,15 @@ function displayInvoicesTable(invoices) {
         tableHTML += `
             <tr>
                 <td><strong>${invoice.invoiceNumber}</strong></td>
-                <td>${formatDate(invoice.invoiceDate)}</td>
+                <td>${formatDate(invoice.issueDate)}</td>
                 <td>${getClientName(invoice)}</td>
                 <td>${itemCount} produse</td>
                 <td><strong>${formatCurrency(invoice.total)}</strong></td>
                 <td><span class="status-badge status-${invoice.status}">${getStatusLabel(invoice.status)}</span></td>
                 <td>
                     <div class="action-buttons">
-                        <button class="action-btn view-btn" onclick="viewInvoice(${invoice.id})">👁️ Vezi</button>
-                        <button class="action-btn download-btn" onclick="downloadInvoice(${invoice.id})">⬇️ PDF</button>
+                        <button class="action-btn view-btn" onclick="viewInvoice('${invoice.id}')">👁️ Vezi</button>
+                        <button class="action-btn download-btn" onclick="downloadInvoice('${invoice.id}')">⬇️ PDF</button>
                     </div>
                 </td>
             </tr>
@@ -465,14 +465,14 @@ function displayInvoiceDetails(invoice) {
                 <div>
                     <h3 style="color: #667eea; margin-bottom: 10px;">Furnizor</h3>
                     <p><strong>${invoice.providerName}</strong></p>
-                    <p>CUI: ${invoice.providerCui}</p>
+                    <p>CUI: ${invoice.providerCUI}</p>
                     <p>${invoice.providerAddress}</p>
                     <p>${invoice.providerCity}, ${invoice.providerCounty}</p>
                 </div>
                 <div>
                     <h3 style="color: #667eea; margin-bottom: 10px;">Client</h3>
                     <p><strong>${getClientName(invoice)}</strong></p>
-                    ${invoice.clientType === 'company' ? `<p>CUI: ${invoice.clientCui}</p>` : `<p>CNP: ${invoice.clientCNP || ''}</p>`}
+                    ${invoice.clientType === 'company' ? `<p>CUI: ${invoice.clientCUI}</p>` : `<p>CNP: ${invoice.clientCNP || ''}</p>`}
                     <p>${invoice.clientAddress || ''}</p>
                     <p>${invoice.clientCity || ''}, ${invoice.clientCounty || ''}</p>
                 </div>
@@ -502,7 +502,7 @@ function displayInvoiceDetails(invoice) {
             </div>
             
             <div style="margin-top: 20px; text-align: center;">
-                <button onclick="downloadInvoice(${invoice.id})" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 16px;">⬇️ Descarcă PDF</button>
+                <button onclick="downloadInvoice('${invoice.id}')" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 16px;">⬇️ Descarcă PDF</button>
             </div>
         </div>
     `;
@@ -524,3 +524,107 @@ function closeInvoiceDetails() {
 function downloadInvoice(invoiceId) {
     window.open(`http://localhost:3000/api/invoices/${invoiceId}/download`, '_blank');
 }
+
+// ========== AI CHAT TAB ==========
+let currentChatSessionId = null;
+
+async function startChatSession() {
+    try {
+        const response = await fetch('http://localhost:3000/api/ai-chat/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ source: 'web' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentChatSessionId = data.sessionId;
+            displayChatMessage('assistant', data.message);
+        }
+    } catch (error) {
+        console.error('Eroare start chat:', error);
+    }
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Display user message
+    displayChatMessage('user', message);
+    input.value = '';
+    
+    // Start session if needed
+    if (!currentChatSessionId) {
+        await startChatSession();
+        return;
+    }
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/ai-chat/message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sessionId: currentChatSessionId,
+                message: message,
+                source: 'web'
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayChatMessage('assistant', data.message);
+            
+            // If invoice generated, show download link
+            if (data.invoice) {
+                const downloadMsg = `\n\n<a href="http://localhost:3000/api/invoices/${data.invoice.id}/download" target="_blank" style="color: #667eea; text-decoration: underline;">📥 Click aici pentru download PDF</a>`;
+                displayChatMessage('assistant', downloadMsg);
+            }
+        }
+    } catch (error) {
+        console.error('Eroare trimitere mesaj:', error);
+        displayChatMessage('assistant', '❌ A apărut o eroare. Te rog încearcă din nou.');
+    }
+}
+
+function displayChatMessage(role, message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${role}`;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.innerHTML = message; // Allow HTML for links
+    
+    const time = document.createElement('div');
+    time.className = 'message-time';
+    time.textContent = new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+    
+    messageDiv.appendChild(bubble);
+    messageDiv.appendChild(time);
+    messagesContainer.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Handle Enter key in chat
+document.addEventListener('DOMContentLoaded', () => {
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+    }
+});

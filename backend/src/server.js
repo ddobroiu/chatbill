@@ -30,12 +30,14 @@ const chatRoutes = require('./routes/chatRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const aiChatRoutes = require('./routes/aiChat');
 
 // Use routes
 app.use('/api/chat', chatRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/ai-chat', aiChatRoutes);
 
 // Socket.IO pentru chat în timp real
 const { handleSocketConnection } = require('./controllers/chatController');

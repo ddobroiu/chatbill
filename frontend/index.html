@@ -291,6 +291,70 @@
             background: #28a745;
             color: white;
         }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9ff;
+        }
+        .chat-message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-message.user {
+            align-items: flex-end;
+        }
+        .chat-message.assistant {
+            align-items: flex-start;
+        }
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        .chat-message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .chat-message.assistant .message-bubble {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-top: 2px solid #e0e0e0;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
     </style>
 </head>
 <body>
@@ -528,9 +592,14 @@
 
         <!-- Tab 4: Chat (Placeholder) -->
         <div id="chatTab" class="tab-content">
-            <div style="text-align: center; padding: 50px;">
-                <h2 style="color: #667eea;">💬 Chat Integration</h2>
-                <p style="color: #666; margin-top: 15px;">Funcționalitatea de chat va fi disponibilă în curând!</p>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" placeholder="Scrie mesajul tău aici..." class="chat-input">
+                    <button onclick="sendChatMessage()" class="btn-primary">Trimite</button>
+                </div>
             </div>
         </div>
     </div>

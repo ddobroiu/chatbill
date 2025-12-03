@@ -21,8 +21,10 @@ function generateInvoiceNumber() {
 
 // Generare factură nouă (din interfața web)
 async function createInvoice(req, res) {
+  console.log('🔵 createInvoice apelat cu body:', JSON.stringify(req.body, null, 2));
   try {
     if (!prisma) {
+      console.log('❌ Prisma nu este disponibil');
       return res.status(503).json({ 
         success: false, 
         error: 'Baza de date nu este configurată' 
@@ -30,9 +32,12 @@ async function createInvoice(req, res) {
     }
 
     const { client, products } = req.body;
+    console.log('🔵 Client:', client);
+    console.log('🔵 Products:', products);
 
     // Validare date client
     if (!client || !products || products.length === 0) {
+      console.log('❌ Validare eșuată - lipsesc date');
       return res.status(400).json({ 
         success: false, 
         error: 'Date invalide. Verificați clientul și produsele.' 
@@ -111,15 +116,19 @@ async function createInvoice(req, res) {
     };
 
     // Salvează factura în baza de date
+    console.log('🔵 Se salvează factura în DB...');
     const invoice = await prisma.invoice.create({
       data: invoiceData,
       include: {
         items: true
       }
     });
+    console.log('✅ Factură salvată cu ID:', invoice.id);
 
     // Generează PDF
+    console.log('🔵 Se generează PDF...');
     const pdfPath = await generateInvoicePDF(invoice);
+    console.log('✅ PDF generat:', pdfPath);
     
     // Actualizează cu calea PDF
     const updatedInvoice = await prisma.invoice.update({
@@ -130,6 +139,7 @@ async function createInvoice(req, res) {
       }
     });
 
+    console.log('✅ Factură completă returnată');
     res.status(201).json({
       success: true,
       invoice: updatedInvoice,
@@ -137,7 +147,8 @@ async function createInvoice(req, res) {
     });
 
   } catch (error) {
-    console.error('Eroare creare factură:', error);
+    console.error('❌ Eroare creare factură:', error);
+    console.error('❌ Stack:', error.stack);
     res.status(500).json({ 
       success: false, 
       error: 'Eroare la crearea facturii',
@@ -150,24 +161,27 @@ async function createInvoice(req, res) {
 // Generare PDF pentru factură
 async function generateInvoicePDF(invoice) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 50 });
-    const fileName = `${invoice.invoiceNumber}.pdf`;
-    const filePath = path.join(invoicesDir, fileName);
-    
-    doc.pipe(fs.createWriteStream(filePath));
+    try {
+      console.log('🔵 Începe generarea PDF pentru:', invoice.invoiceNumber);
+      const doc = new PDFDocument({ margin: 50 });
+      const fileName = `${invoice.invoiceNumber}.pdf`;
+      const filePath = path.join(invoicesDir, fileName);
+      
+      const writeStream = fs.createWriteStream(filePath);
+      doc.pipe(writeStream);
 
-    // Header
-    doc.fontSize(20)
-       .font('Helvetica-Bold')
-       .text('FACTURĂ', { align: 'center' })
-       .font('Helvetica')
-       .moveDown();
+      // Header
+      doc.fontSize(20)
+         .font('Helvetica-Bold')
+         .text('FACTURĂ', { align: 'center' })
+         .font('Helvetica')
+         .moveDown();
 
-    // Informații factură
-    doc.fontSize(12)
-       .text(`Serie/Număr: ${invoice.invoiceNumber}`)
-       .text(`Data: ${new Date(invoice.issueDate).toLocaleDateString('ro-RO')}`)
-       .moveDown(1.5);
+      // Informații factură
+      doc.fontSize(12)
+         .text(`Serie/Număr: ${invoice.invoiceNumber}`)
+         .text(`Data: ${new Date(invoice.issueDate).toLocaleDateString('ro-RO')}`)
+         .moveDown(1.5);
 
     // Două coloane: Furnizor și Client
     const leftColumn = 50;
@@ -322,17 +336,37 @@ async function generateInvoicePDF(invoice) {
        .text('Mulțumim pentru colaborare!', 50, 730, { align: 'center' })
        .text(`Document generat la ${new Date().toLocaleString('ro-RO')}`, 50, 745, { align: 'center' });
 
+    console.log('🔵 PDF scris, se închide stream-ul...');
     doc.end();
     
-    doc.on('finish', () => resolve(fileName));
-    doc.on('error', reject);
+    writeStream.on('finish', () => {
+      console.log('✅ PDF finalizat:', fileName);
+      resolve(fileName);
+    });
+    
+    writeStream.on('error', (err) => {
+      console.error('❌ Eroare scriere PDF:', err);
+      reject(err);
+    });
+    
+    doc.on('error', (err) => {
+      console.error('❌ Eroare generare PDF:', err);
+      reject(err);
+    });
+    
+    } catch (error) {
+      console.error('❌ Eroare în generateInvoicePDF:', error);
+      reject(error);
+    }
   });
 }
 
 // Obține toate facturile
 async function getInvoices(req, res) {
+  console.log('🔵 getInvoices apelat');
   try {
     if (!prisma) {
+      console.log('❌ Prisma nu este disponibil');
       return res.status(503).json({ 
         success: false, 
         error: 'Baza de date nu este configurată' 
@@ -346,12 +380,13 @@ async function getInvoices(req, res) {
       }
     });
     
+    console.log(`✅ Găsite ${invoices.length} facturi`);
     res.json({
       success: true,
       invoices
     });
   } catch (error) {
-    console.error('Eroare obținere facturi:', error);
+    console.error('❌ Eroare obținere facturi:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Eroare la obținerea facturilor' 

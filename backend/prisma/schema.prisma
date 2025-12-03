@@ -164,3 +164,68 @@ model InvoiceItem {
   
   @@index([invoiceId])
 }
+
+// Model pentru catalog produse/servicii (pentru recomandări)
+model Product {
+  id                String       @id @default(uuid())
+  name              String       // Denumire produs/serviciu
+  description       String?      @db.Text
+  category          String?      // Categorie (software, consultanță, etc.)
+  unit              String       @default("buc")
+  defaultPrice      Float        // Preț implicit
+  vatRate           Float        @default(0.19)
+  
+  // Statistici utilizare
+  timesUsed         Int          @default(0)
+  lastUsedAt        DateTime?
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  @@index([name])
+  @@index([category])
+}
+
+// Model pentru sesiuni de chat AI (pentru generare facturi conversațional)
+model ChatSession {
+  id                String       @id @default(uuid())
+  source            String       @default("web") // web, whatsapp
+  phoneNumber       String?      // Pentru WhatsApp
+  
+  // Stare conversație
+  status            String       @default("active") // active, completed, cancelled
+  currentStep       String       @default("greeting") // greeting, client_type, client_info, products, confirm, done
+  
+  // Context acumulat
+  clientType        String?      // company, individual
+  clientCUI         String?
+  clientName        String?
+  clientData        String?      @db.Text // JSON cu toate datele clientului
+  productsData      String?      @db.Text // JSON cu produse selectate
+  
+  // Referință factură generată
+  generatedInvoiceId String?     @unique
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  chatMessages      ChatMessage[]
+  
+  @@index([phoneNumber])
+  @@index([status])
+}
+
+// Model pentru mesaje chat AI
+model ChatMessage {
+  id                String       @id @default(uuid())
+  sessionId         String
+  session           ChatSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  role              String       // 'user', 'assistant', 'system'
+  content           String       @db.Text
+  metadata          String?      @db.Text // JSON pentru date suplimentare
+  
+  createdAt         DateTime     @default(now())
+  
+  @@index([sessionId])
+}
