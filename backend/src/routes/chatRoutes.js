@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const chatController = require('../controllers/chatController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Protejez toate rutele
+router.use(authenticateToken);
 
 // Rute pentru conversații
 router.post('/conversations', chatController.createConversation);

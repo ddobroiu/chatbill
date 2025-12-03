@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const aiChatController = require('../controllers/aiChatController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Protejez toate rutele
+router.use(authenticateToken);
 
 // Pornește o nouă sesiune de chat
 router.post('/start', aiChatController.startSession);

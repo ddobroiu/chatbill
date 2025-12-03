@@ -269,19 +269,21 @@ model ChatSession {
   @@index([status])
 }
 
-// Model pentru mesaje chat AI
+// Model pentru mesaje chat AI (AI facturare + GPT conversațional)
 model ChatMessage {
   id                String       @id @default(uuid())
-  sessionId         String
-  session           ChatSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId         String?      // Nullable pentru GPT chat general
+  session           ChatSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId            String?      // Pentru GPT chat general
   
   role              String       // 'user', 'assistant', 'system'
   content           String       @db.Text
-  metadata          String?      @db.Text // JSON pentru date suplimentare
+  metadata          String?      @db.Text // JSON pentru date suplimentare (tokens, model, etc.)
   
   createdAt         DateTime     @default(now())
   
   @@index([sessionId])
+  @@index([userId])
 }
 
 // Model pentru configurare aplicație ANAF e-Factura

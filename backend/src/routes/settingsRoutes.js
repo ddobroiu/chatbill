@@ -5,6 +5,10 @@ const {
   updateCompanySettings,
   autoCompleteCompanySettings
 } = require('../controllers/settingsController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Toate rutele necesită autentificare
+router.use(authenticateToken);
 
 // Obține setările companiei emitente
 router.get('/', getCompanySettings);

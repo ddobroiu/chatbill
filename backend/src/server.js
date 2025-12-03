@@ -45,6 +45,7 @@ const settingsRoutes = require('./routes/settingsRoutes');
 const aiChatRoutes = require('./routes/aiChat');
 const anafAuthRoutes = require('./routes/anafAuth');
 const authRoutes = require('./routes/auth');
+const gptChatRoutes = require('./routes/gptChat');
 
 // Use routes
 app.use('/api/auth', authRoutes); // Rute autentificare
@@ -54,6 +55,7 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/ai-chat', aiChatRoutes);
 app.use('/api/anaf', anafAuthRoutes);
+app.use('/api/gpt-chat', gptChatRoutes); // GPT Chat inteligent
 
 // Socket.IO pentru chat în timp real
 const { handleSocketConnection } = require('./controllers/chatController');

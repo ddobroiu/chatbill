@@ -1,20 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const anafAuthController = require('../controllers/anafAuthController');
+const { authenticateToken } = require('../middleware/auth');
 
-// Inițiază autentificare ANAF
-router.get('/connect', anafAuthController.initiateAuth);
+// Inițiază autentificare ANAF (protejat)
+router.get('/connect', authenticateToken, anafAuthController.initiateAuth);
 
-// Callback după autentificare
+// Callback după autentificare (NU e protejat - vine de la ANAF)
 router.get('/callback', anafAuthController.handleCallback);
 
-// Refresh token
-router.post('/refresh', anafAuthController.refreshToken);
+// Refresh token (protejat)
+router.post('/refresh', authenticateToken, anafAuthController.refreshToken);
 
-// Status conexiune
-router.get('/status', anafAuthController.getStatus);
+// Status conexiune (protejat)
+router.get('/status', authenticateToken, anafAuthController.getStatus);
 
-// Deconectare
-router.post('/disconnect', anafAuthController.disconnect);
+// Deconectare (protejat)
+router.post('/disconnect', authenticateToken, anafAuthController.disconnect);
 
 module.exports = router;

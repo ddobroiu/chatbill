@@ -629,9 +629,7 @@ async function sendChatMessage() {
     try {
         const response = await fetch('http://localhost:3000/api/ai-chat/message', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({
                 sessionId: currentChatSessionId,
                 message: message,

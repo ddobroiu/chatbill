@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const companyController = require('../controllers/companyController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Protejez toate rutele
+router.use(authenticateToken);
 
 // Rute pentru companii
 router.get('/search/:cui', companyController.searchCompanyByCUI);
