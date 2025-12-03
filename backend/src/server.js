@@ -44,8 +44,10 @@ const companyRoutes = require('./routes/companyRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const aiChatRoutes = require('./routes/aiChat');
 const anafAuthRoutes = require('./routes/anafAuth');
+const authRoutes = require('./routes/auth');
 
 // Use routes
+app.use('/api/auth', authRoutes); // Rute autentificare
 app.use('/api/chat', chatRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/companies', companyRoutes);

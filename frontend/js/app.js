@@ -1,3 +1,46 @@
+// ========== AUTHENTICATION ==========
+function checkAuth() {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (!token || !user) {
+        // Redirect to login
+        window.location.href = '/login.html';
+        return false;
+    }
+    
+    // Display user info in header
+    try {
+        const userData = JSON.parse(user);
+        document.getElementById('userName').textContent = userData.name;
+        document.getElementById('userEmail').textContent = userData.email;
+        
+        // Set avatar initials
+        const initials = userData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        document.getElementById('userAvatar').textContent = initials;
+    } catch (error) {
+        console.error('Error parsing user data:', error);
+        logout();
+    }
+    
+    return true;
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login.html';
+}
+
+// Helper to get authorization header
+function getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+}
+
 // ========== TAB SWITCHING ==========
 function switchTab(tabName) {
     // Hide all tabs
@@ -20,6 +63,11 @@ function switchTab(tabName) {
 
 // ========== SETTINGS TAB ==========
 window.addEventListener('DOMContentLoaded', () => {
+    // Check authentication first
+    if (!checkAuth()) {
+        return;
+    }
+    
     loadSettings();
     checkANAFStatus();
     
@@ -38,7 +86,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 async function loadSettings() {
     try {
-        const response = await fetch('http://localhost:3000/api/settings');
+        const response = await fetch('http://localhost:3000/api/settings', {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         
         if (data.success && data.settings) {
@@ -109,9 +159,7 @@ async function saveSettings(event) {
     try {
         const response = await fetch('http://localhost:3000/api/settings', {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(settings)
         });
 
@@ -297,9 +345,7 @@ async function generateInvoice(event) {
     try {
         const response = await fetch('http://localhost:3000/api/invoices/create', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(invoiceData)
         });
 
@@ -346,7 +392,9 @@ async function loadInvoices() {
     invoicesList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Se încarcă facturile...</p>';
     
     try {
-        const response = await fetch('http://localhost:3000/api/invoices');
+        const response = await fetch('http://localhost:3000/api/invoices', {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         
         if (data.success && data.invoices && data.invoices.length > 0) {
@@ -547,9 +595,7 @@ async function startChatSession() {
     try {
         const response = await fetch('http://localhost:3000/api/ai-chat/start', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ source: 'web' })
         });
         
@@ -647,7 +693,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // ========== ANAF e-FACTURA INTEGRATION ==========
 async function checkANAFStatus() {
     try {
-        const response = await fetch('http://localhost:3000/api/anaf/status');
+        const response = await fetch('http://localhost:3000/api/anaf/status', {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         
         const indicator = document.getElementById('anafStatusIndicator');
@@ -688,7 +736,9 @@ async function checkANAFStatus() {
 
 async function connectToANAF() {
     try {
-        const response = await fetch('http://localhost:3000/api/anaf/connect');
+        const response = await fetch('http://localhost:3000/api/anaf/connect', {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         
         if (data.success && data.authUrl) {
