@@ -2,22 +2,33 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
+// Functie helper pentru a inlocui diacritice romanesti cu echivalente ASCII
+function removeDiacritics(text) {
+  if (!text) return '';
+  return text
+    .replace(/ă/g, 'a').replace(/Ă/g, 'A')
+    .replace(/â/g, 'a').replace(/Â/g, 'A')
+    .replace(/î/g, 'i').replace(/Î/g, 'I')
+    .replace(/ș/g, 's').replace(/Ș/g, 'S')
+    .replace(/ț/g, 't').replace(/Ț/g, 'T');
+}
+
 // Funcție helper pentru înregistrarea fonturilor - folosește fonturile standard PDFKit
 function registerFonts(doc) {
-  // Nu mai încercăm să înregistrăm fonturi externe, folosim doar Helvetica standard
-  console.log('✅ Folosim fonturile standard Helvetica');
-  return false; // returnează false pentru a folosi Helvetica
+  // Folosim Helvetica standard
+  console.log('✅ Folosim fonturile standard Helvetica (fara diacritice)');
+  return false;
 }
 
 // Culori pentru template-uri
 const COLORS = {
   modern: {
-    primary: '#667eea',
-    secondary: '#764ba2',
-    accent: '#f093fb',
-    text: '#2d3748',
-    lightGray: '#f7fafc',
-    border: '#e2e8f0'
+    primary: '#0052cc',
+    secondary: '#0747a6',
+    accent: '#00b8d9',
+    text: '#172b4d',
+    lightGray: '#f4f5f7',
+    border: '#dfe1e6'
   },
   classic: {
     primary: '#2c3e50',
@@ -48,9 +59,8 @@ const COLORS = {
 // Template Modern (gradient, colorat)
 function renderModernTemplate(doc, invoice, companySettings) {
   const colors = COLORS.modern;
-  const useRoboto = registerFonts(doc);
-  const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
-  const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
+  const regularFont = 'Helvetica';
+  const boldFont = 'Helvetica-Bold';
   
   // Header cu gradient (simulat cu dreptunghiuri)
   doc.rect(0, 0, 612, 150).fill(colors.primary);
@@ -58,43 +68,43 @@ function renderModernTemplate(doc, invoice, companySettings) {
   
   // Logo/Nume companie
   doc.fillColor('#ffffff')
-     .fontSize(28)
+     .fontSize(24)
      .font(boldFont)
-     .text(companySettings.name || 'COMPANIA MEA', 50, 40);
+     .text(removeDiacritics(companySettings.name || 'COMPANIA MEA'), 50, 40);
   
-  doc.fontSize(10)
+  doc.fontSize(9)
      .font(regularFont)
-     .text(`CUI: ${companySettings.cui || 'N/A'}`, 50, 75)
-     .text(`Reg. Com: ${companySettings.regCom || 'N/A'}`, 50, 90)
-     .text(`${companySettings.address || 'Adresă'}`, 50, 105)
-     .text(`${companySettings.city || 'Oraș'}, ${companySettings.county || 'Județ'}`, 50, 120);
+     .text(`CUI: ${removeDiacritics(companySettings.cui || 'N/A')}`, 50, 75)
+     .text(`Reg. Com: ${removeDiacritics(companySettings.regCom || 'N/A')}`, 50, 88)
+     .text(removeDiacritics(companySettings.address || 'Adresa'), 50, 101)
+     .text(`${removeDiacritics(companySettings.city || 'Oras')}, ${removeDiacritics(companySettings.county || 'Judet')}`, 50, 114);
 
   // Număr factură (dreapta sus)
-  doc.fontSize(14)
+  doc.fontSize(12)
      .font(boldFont)
-     .text(`FACTURĂ`, 400, 50, { width: 150, align: 'right' });
+     .text(`FACTURA`, 400, 50, { width: 150, align: 'right' });
   
-  doc.fontSize(20)
+  doc.fontSize(18)
      .fillColor(colors.accent)
-     .text(`#${invoice.number}`, 400, 70, { width: 150, align: 'right' });
+     .text(`#${invoice.number}`, 400, 68, { width: 150, align: 'right' });
   
-  doc.fontSize(10)
+  doc.fontSize(9)
      .fillColor('#ffffff')
      .font(regularFont)
-     .text(`Data: ${new Date(invoice.date).toLocaleDateString('ro-RO')}`, 400, 100, { width: 150, align: 'right' })
-     .text(`Scadență: ${new Date(invoice.dueDate).toLocaleDateString('ro-RO')}`, 400, 115, { width: 150, align: 'right' });
+     .text(`Data: ${new Date(invoice.date).toLocaleDateString('ro-RO')}`, 400, 95, { width: 150, align: 'right' })
+     .text(`Scadenta: ${new Date(invoice.dueDate).toLocaleDateString('ro-RO')}`, 400, 108, { width: 150, align: 'right' });
 
   // Client info
   let yPos = 180;
   doc.fillColor(colors.text)
-     .fontSize(12)
+     .fontSize(11)
      .font(boldFont)
-     .text('FACTURAT CĂTRE:', 50, yPos);
+     .text('FACTURAT CATRE:', 50, yPos);
   
-  yPos += 20;
-  doc.fontSize(11)
+  yPos += 18;
+  doc.fontSize(10)
      .font(boldFont)
-     .text(invoice.clientName, 50, yPos);
+     .text(removeDiacritics(invoice.clientName), 50, yPos);
   
   yPos += 15;
   doc.fontSize(9)

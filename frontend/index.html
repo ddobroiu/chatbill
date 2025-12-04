@@ -574,7 +574,19 @@
                 <p>Vizualizați și gestionați facturile emise anterior.</p>
             </div>
             <div class="card">
-                <p>Istoricul facturilor va fi afișat aici.</p>
+                <div id="invoices-loading" style="text-align: center; padding: 2rem;">
+                    <div class="animate-spin" style="width: 48px; height: 48px; margin: 0 auto 1rem;">
+                        <i data-lucide="loader" style="width: 48px; height: 48px;"></i>
+                    </div>
+                    <p>Se încarcă facturile...</p>
+                </div>
+                <div id="invoices-list" style="display: none;">
+                    <!-- Facturile vor fi afișate aici -->
+                </div>
+                <div id="invoices-empty" style="display: none; text-align: center; padding: 2rem; color: var(--secondary-foreground);">
+                    <i data-lucide="inbox" style="width: 48px; height: 48px; margin: 0 auto 1rem;"></i>
+                    <p>Nu aveți facturi generate încă.</p>
+                </div>
             </div>
         </div>
 
@@ -704,21 +716,15 @@
                     <p>Selectați stilul vizual implicit pentru facturile generate.</p>
                     <br>
                     <div id="template-selector-settings" class="template-selector">
-                        <div class="template-card" data-template="modern">
+                        <div class="template-card active" data-template="modern">
                             <img src="https://i.imgur.com/6ZIZg8t.png" alt="Modern Template">
                             <span>Modern</span>
+                            <small style="display: block; margin-top: 0.25rem; color: var(--secondary-foreground);">Gradient albastru, profesional</small>
                         </div>
-                        <div class="template-card" data-template="classic">
-                            <img src="https://i.imgur.com/L3gV1S2.png" alt="Classic Template">
-                            <span>Clasic</span>
-                        </div>
-                        <div class="template-card" data-template="minimal">
-                            <img src="https://i.imgur.com/gqM9g2s.png" alt="Minimal Template">
-                            <span>Minimal</span>
-                        </div>
-                        <div class="template-card" data-template="elegant">
-                            <img src="https://i.imgur.com/sQ7h2aC.png" alt="Elegant Template">
-                            <span>Elegant</span>
+                        <div class="template-card" data-template="professional">
+                            <img src="https://i.imgur.com/L3gV1S2.png" alt="Professional Template">
+                            <span>Professional</span>
+                            <small style="display: block; margin-top: 0.25rem; color: var(--secondary-foreground);">Elegant, minimalist</small>
                         </div>
                     </div>
                 </div>
@@ -750,6 +756,11 @@
                 pages.forEach(page => {
                     page.classList.toggle('active', '#' + page.id === hash);
                 });
+                
+                // Încarcă facturile când utilizatorul navighează la pagina de istoric
+                if (hash === '#invoices') {
+                    loadInvoices();
+                }
             }
 
             navLinks.forEach(link => {
@@ -1228,12 +1239,84 @@
             }
         });
 
+        // Load invoices functionality
+        async function loadInvoices() {
+            const loadingEl = document.getElementById('invoices-loading');
+            const listEl = document.getElementById('invoices-list');
+            const emptyEl = document.getElementById('invoices-empty');
+            
+            loadingEl.style.display = 'block';
+            listEl.style.display = 'none';
+            emptyEl.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/invoices');
+                const result = await response.json();
+                
+                if (result.success && result.invoices && result.invoices.length > 0) {
+                    listEl.innerHTML = '';
+                    
+                    result.invoices.forEach(invoice => {
+                        const invoiceCard = document.createElement('div');
+                        invoiceCard.style.cssText = `
+                            padding: 1rem;
+                            border: 1px solid var(--border);
+                            border-radius: var(--radius);
+                            margin-bottom: 1rem;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                        `;
+                        
+                        const infoDiv = document.createElement('div');
+                        infoDiv.innerHTML = `
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Factura #${invoice.invoiceNumber}</div>
+                            <div style="color: var(--secondary-foreground); font-size: 0.875rem;">
+                                ${invoice.clientName || 'Client necunoscut'} • 
+                                ${new Date(invoice.createdAt).toLocaleDateString('ro-RO')} • 
+                                ${invoice.total.toFixed(2)} RON
+                            </div>
+                        `;
+                        
+                        const actionsDiv = document.createElement('div');
+                        actionsDiv.style.display = 'flex';
+                        actionsDiv.style.gap = '0.5rem';
+                        
+                        const downloadBtn = document.createElement('a');
+                        downloadBtn.href = invoice.pdfPath;
+                        downloadBtn.target = '_blank';
+                        downloadBtn.className = 'btn';
+                        downloadBtn.innerHTML = '<i data-lucide="download"></i> Descarcă';
+                        
+                        actionsDiv.appendChild(downloadBtn);
+                        invoiceCard.appendChild(infoDiv);
+                        invoiceCard.appendChild(actionsDiv);
+                        listEl.appendChild(invoiceCard);
+                    });
+                    
+                    lucide.createIcons();
+                    loadingEl.style.display = 'none';
+                    listEl.style.display = 'block';
+                } else {
+                    loadingEl.style.display = 'none';
+                    emptyEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('❌ Eroare încărcare facturi:', error);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+            }
+        }
+
         // Chat GPT functionality
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
         const chatSendBtn = document.getElementById('chat-send-btn');
         
-        function addChatMessage(message, isUser = false) {
+        // Păstrează istoricul conversației
+        let chatHistory = [];
+        
+        function addChatMessage(message, isUser = false, pdfPath = null) {
             const messageDiv = document.createElement('div');
             messageDiv.style.cssText = `
                 margin-bottom: 1rem;
@@ -1246,9 +1329,39 @@
                 margin-right: ${isUser ? '0' : 'auto'};
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             `;
-            messageDiv.textContent = message;
+            
+            // Adaugă textul mesajului
+            const textDiv = document.createElement('div');
+            textDiv.textContent = message;
+            messageDiv.appendChild(textDiv);
+            
+            // Dacă există PDF, adaugă buton de descărcare
+            if (pdfPath && !isUser) {
+                const downloadBtn = document.createElement('a');
+                downloadBtn.href = pdfPath;
+                downloadBtn.target = '_blank';
+                downloadBtn.style.cssText = `
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-top: 0.5rem;
+                    padding: 0.5rem 1rem;
+                    background: var(--primary);
+                    color: white;
+                    border-radius: var(--radius);
+                    text-decoration: none;
+                    font-size: 0.875rem;
+                `;
+                downloadBtn.innerHTML = '<i data-lucide="download" style="width: 16px; height: 16px;"></i> Descarcă PDF';
+                messageDiv.appendChild(downloadBtn);
+                lucide.createIcons();
+            }
+            
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Adaugă în istoric
+            chatHistory.push({ role: isUser ? 'user' : 'assistant', content: message });
         }
         
         async function sendChatMessage() {
@@ -1263,12 +1376,21 @@
                 const response = await fetch('/api/gpt-chat/message', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({ 
+                        message,
+                        conversationHistory: chatHistory 
+                    })
                 });
                 const result = await response.json();
                 
                 if (result.success && result.message) {
-                    addChatMessage(result.message, false);
+                    // Afișează mesajul cu link PDF dacă există
+                    addChatMessage(result.message, false, result.pdfPath);
+                    
+                    // Dacă s-a generat o factură, reîmprospătează istoricul
+                    if (result.invoice && window.location.hash === '#invoices') {
+                        loadInvoices();
+                    }
                 } else {
                     throw new Error(result.error || 'Eroare la trimiterea mesajului');
                 }
