@@ -1003,6 +1003,8 @@
             const cuiInput = document.getElementById('company-cui');
             const cui = cuiInput.value.trim();
             
+            console.log('🔍 Autocomplete CUI company clicked:', cui);
+            
             if (!cui) {
                 showToast('Introduceți un CUI valid', 'error');
                 return;
@@ -1014,20 +1016,31 @@
             lucide.createIcons();
             
             try {
-                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`);
-                const result = await response.json();
+                const url = `/api/settings/autocomplete/${encodeURIComponent(cui)}`;
+                console.log('📡 Fetch URL:', url);
                 
-                if (result.success && result.data) {
-                    const data = result.data;
-                    if (data.denumire) document.getElementById('company-name').value = data.denumire;
-                    if (data.adresa) document.getElementById('company-address').value = data.adresa;
-                    if (data.nrRegCom) document.getElementById('company-regCom').value = data.nrRegCom;
+                const response = await fetch(url);
+                console.log('📥 Response status:', response.status);
+                
+                const result = await response.json();
+                console.log('📦 Response data:', result);
+                
+                if (result.success && result.settings) {
+                    const data = result.settings;
+                    if (data.name) document.getElementById('company-name').value = data.name;
+                    if (data.address) document.getElementById('company-address').value = data.address;
+                    if (data.city) document.getElementById('company-city').value = data.city;
+                    if (data.county) document.getElementById('company-county').value = data.county;
+                    if (data.postalCode) document.getElementById('company-postal').value = data.postalCode;
+                    if (data.regCom) document.getElementById('company-regCom').value = data.regCom;
+                    if (data.phone) document.getElementById('company-phone').value = data.phone;
                     
                     showToast('Date completate automat cu succes!', 'success');
                 } else {
                     throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
                 }
             } catch (error) {
+                console.error('❌ Error autocomplete:', error);
                 showToast(error.message, 'error');
             } finally {
                 btn.disabled = false;
@@ -1041,6 +1054,8 @@
             const cuiInput = document.getElementById('client-cui');
             const cui = cuiInput.value.trim();
             
+            console.log('🔍 Autocomplete CUI client clicked:', cui);
+            
             if (!cui) {
                 showToast('Introduceți un CUI valid pentru client', 'error');
                 return;
@@ -1052,20 +1067,29 @@
             lucide.createIcons();
             
             try {
-                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`);
-                const result = await response.json();
+                const url = `/api/settings/autocomplete/${encodeURIComponent(cui)}`;
+                console.log('📡 Fetch URL:', url);
                 
-                if (result.success && result.data) {
-                    const data = result.data;
-                    if (data.denumire) document.getElementById('client-name').value = data.denumire;
-                    if (data.adresa) document.getElementById('client-address').value = data.adresa;
-                    if (data.nrRegCom) document.getElementById('client-regCom').value = data.nrRegCom;
+                const response = await fetch(url);
+                console.log('📥 Response status:', response.status);
+                
+                const result = await response.json();
+                console.log('📦 Response data:', result);
+                
+                if (result.success && result.settings) {
+                    const data = result.settings;
+                    if (data.name) document.getElementById('client-name').value = data.name;
+                    if (data.address) document.getElementById('client-address').value = data.address;
+                    if (data.city) document.getElementById('client-city').value = data.city;
+                    if (data.county) document.getElementById('client-county').value = data.county;
+                    if (data.regCom) document.getElementById('client-regCom').value = data.regCom;
                     
                     showToast('Date client completate automat!', 'success');
                 } else {
                     throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
                 }
             } catch (error) {
+                console.error('❌ Error autocomplete:', error);
                 showToast(error.message, 'error');
             } finally {
                 btn.disabled = false;

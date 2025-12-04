@@ -106,7 +106,7 @@ async function createInvoice(req, res) {
       status: 'generated',
       template: finalTemplate, // Adaugă template-ul selectat
       
-      // Date emitent (din setări)
+      // Date emitent (din setări) - doar câmpurile care există în schema
       providerName: companySettings.name || '',
       providerCUI: companySettings.cui || '',
       providerRegCom: companySettings.regCom || '',
@@ -116,9 +116,8 @@ async function createInvoice(req, res) {
       providerPhone: companySettings.phone || '',
       providerEmail: companySettings.email || '',
       providerBank: companySettings.bank || '',
-      providerIBAN: companySettings.iban || '',
+      providerIban: companySettings.iban || '',
       providerCapital: companySettings.capital || '',
-      providerLegalRep: companySettings.legalRep || '',
       
       // Date client/beneficiar
       clientType: client.type,

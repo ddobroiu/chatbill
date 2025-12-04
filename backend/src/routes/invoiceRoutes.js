@@ -7,7 +7,8 @@ const { authenticateToken } = require('../middleware/auth');
 router.use(authenticateToken);
 
 // Rute pentru facturi
-router.post('/create', invoiceController.createInvoice);
+router.post('/', invoiceController.createInvoice); // POST /api/invoices
+router.post('/create', invoiceController.createInvoice); // POST /api/invoices/create (backwards compatibility)
 router.get('/', invoiceController.getInvoices);
 router.get('/:id', invoiceController.getInvoice);
 router.get('/:id/download', invoiceController.downloadInvoice);
