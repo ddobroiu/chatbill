@@ -4,16 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Autentificare - ChatBill</title>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
+    :root {
+      --background: #f8f9fa;
+      --foreground: #212529;
+      --card-background: #ffffff;
+      --primary: #0052cc;
+      --primary-foreground: #ffffff;
+      --secondary: #e9ecef;
+      --secondary-foreground: #495057;
+      --border: #dee2e6;
+      --input: #ced4da;
+      --success: #28a745;
+      --danger: #dc3545;
+      --font-sans: 'Inter', sans-serif;
+      --radius: 0.5rem;
+    }
+
+    *, *::before, *::after {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: var(--font-sans);
+      background-color: var(--background);
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -22,181 +40,182 @@
     }
 
     .login-container {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      padding: 50px 40px;
+      background: var(--card-background);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 3rem 2.5rem;
       width: 100%;
-      max-width: 450px;
-      animation: slideIn 0.5s ease-out;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      max-width: 420px;
+      border: 1px solid var(--border);
     }
 
     .logo {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 1rem;
+      background-color: var(--primary);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
     }
 
     .logo h1 {
-      color: #667eea;
-      font-size: 36px;
+      font-size: 1.75rem;
+      color: var(--primary);
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 0.5rem;
     }
 
     .logo p {
-      color: #666;
-      font-size: 14px;
+      color: var(--secondary-foreground);
+      font-size: 0.875rem;
     }
 
     .form-group {
-      margin-bottom: 25px;
+      margin-bottom: 1.5rem;
     }
 
-    label {
+    .form-group label {
       display: block;
-      color: #333;
+      margin-bottom: 0.5rem;
       font-weight: 600;
-      margin-bottom: 8px;
-      font-size: 14px;
+      font-size: 0.875rem;
+      color: var(--foreground);
     }
 
-    input {
+    .form-group input {
       width: 100%;
-      padding: 14px 18px;
-      border: 2px solid #e1e8ed;
-      border-radius: 10px;
-      font-size: 15px;
-      transition: all 0.3s;
-      font-family: inherit;
+      padding: 0.75rem;
+      border: 1px solid var(--input);
+      border-radius: var(--radius);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    input:focus {
+    .form-group input:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
     }
 
     .btn {
       width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      padding: 0.875rem;
       border: none;
-      border-radius: 10px;
-      font-size: 16px;
+      border-radius: var(--radius);
       font-weight: 600;
+      font-size: 1rem;
       cursor: pointer;
-      transition: all 0.3s;
-      margin-top: 10px;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+      transition: background-color 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
 
     .btn:active {
-      transform: translateY(0);
+      transform: translateY(1px);
     }
 
-    .btn:disabled {
-      opacity: 0.6;
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+    }
+
+    .btn-primary:hover {
+      background-color: #0045a6;
+    }
+
+    .btn-primary:disabled {
+      background-color: var(--input);
       cursor: not-allowed;
-      transform: none;
     }
 
-    .alert {
-      padding: 14px 18px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      font-size: 14px;
+    .message {
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
       display: none;
     }
 
-    .alert.success {
+    .message.show {
+      display: block;
+    }
+
+    .message.success {
       background-color: #d4edda;
       color: #155724;
       border: 1px solid #c3e6cb;
-      display: block;
     }
 
-    .alert.error {
+    .message.error {
       background-color: #f8d7da;
       color: #721c24;
       border: 1px solid #f5c6cb;
-      display: block;
     }
 
-    .links {
+    .extra-links {
+      margin-top: 1.5rem;
       text-align: center;
-      margin-top: 25px;
     }
 
-    .links a {
-      color: #667eea;
+    .extra-links a {
+      color: var(--primary);
       text-decoration: none;
-      font-size: 14px;
+      font-size: 0.875rem;
       font-weight: 500;
-      transition: color 0.3s;
     }
 
-    .links a:hover {
-      color: #764ba2;
+    .extra-links a:hover {
       text-decoration: underline;
     }
 
     .divider {
-      margin: 20px 0;
+      margin: 1.5rem 0;
       text-align: center;
-      color: #999;
-      font-size: 14px;
+      position: relative;
     }
 
-    .loading {
-      display: none;
-      text-align: center;
-      margin-top: 10px;
+    .divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: var(--border);
     }
 
-    .loading.show {
-      display: block;
-    }
-
-    .spinner {
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #667eea;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .divider span {
+      background-color: var(--card-background);
+      padding: 0 1rem;
+      position: relative;
+      color: var(--secondary-foreground);
+      font-size: 0.875rem;
     }
   </style>
 </head>
 <body>
+
   <div class="login-container">
     <div class="logo">
-      <h1>💼 ChatBill</h1>
-      <p>Autentifică-te pentru a continua</p>
+      <div class="logo-icon">
+        <i data-lucide="receipt" style="width: 32px; height: 32px;"></i>
+      </div>
+      <h1>ChatBill</h1>
+      <p>Autentificați-vă pentru a continua</p>
     </div>
 
-    <div id="alert" class="alert"></div>
+    <div id="message" class="message"></div>
 
     <form id="loginForm">
       <div class="form-group">
@@ -206,54 +225,50 @@
 
       <div class="form-group">
         <label for="password">Parolă</label>
-        <input type="password" id="password" name="password" placeholder="Introdu parola" required>
+        <input type="password" id="password" name="password" placeholder="Introduceți parola" required>
       </div>
 
-      <button type="submit" class="btn" id="loginBtn">Autentificare</button>
-
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-      </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">
+        <i data-lucide="log-in"></i>
+        Autentificare
+      </button>
     </form>
 
-    <div class="links">
-      <a href="forgot-password.html">Ai uitat parola?</a>
+    <div class="divider">
+      <span>sau</span>
     </div>
 
-    <div class="divider">sau</div>
-
-    <div class="links">
-      <a href="register.html">Creează cont nou →</a>
+    <div class="extra-links">
+      <a href="/register.html">Creează cont nou</a>
+      <span style="margin: 0 0.5rem; color: var(--border);">•</span>
+      <a href="/forgot-password.html">Am uitat parola</a>
     </div>
   </div>
 
   <script>
-    const form = document.getElementById('loginForm');
-    const alert = document.getElementById('alert');
-    const loading = document.getElementById('loading');
+    lucide.createIcons();
+
+    const loginForm = document.getElementById('loginForm');
     const loginBtn = document.getElementById('loginBtn');
+    const messageDiv = document.getElementById('message');
 
-    function showAlert(message, type) {
-      alert.textContent = message;
-      alert.className = `alert ${type}`;
-      alert.style.display = 'block';
+    function showMessage(text, type = 'error') {
+      messageDiv.textContent = text;
+      messageDiv.className = `message ${type} show`;
+      setTimeout(() => {
+        messageDiv.classList.remove('show');
+      }, 5000);
     }
 
-    function hideAlert() {
-      alert.style.display = 'none';
-    }
-
-    form.addEventListener('submit', async (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      hideAlert();
-      
+
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
-      // Loading state
       loginBtn.disabled = true;
-      loginBtn.textContent = 'Se autentifică...';
-      loading.classList.add('show');
+      loginBtn.innerHTML = '<i data-lucide="loader-2"></i> Se autentifică...';
+      lucide.createIcons();
 
       try {
         const response = await fetch('/api/auth/login', {
@@ -266,29 +281,22 @@
 
         const data = await response.json();
 
-        if (response.ok && data.success) {
-          // Salvează token-ul
+        if (data.success) {
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
           
-          showAlert('Autentificare reușită! Redirecționare...', 'success');
-          
-          // Redirecționează după 1 secundă
+          showMessage('Autentificare reușită! Redirecționare...', 'success');
           setTimeout(() => {
             window.location.href = '/';
           }, 1000);
         } else {
-          showAlert(data.error || 'Eroare la autentificare', 'error');
-          loginBtn.disabled = false;
-          loginBtn.textContent = 'Autentificare';
-          loading.classList.remove('show');
+          throw new Error(data.error || 'Autentificare eșuată');
         }
       } catch (error) {
-        console.error('Eroare:', error);
-        showAlert('Eroare de conexiune la server', 'error');
+        showMessage(error.message);
         loginBtn.disabled = false;
-        loginBtn.textContent = 'Autentificare';
-        loading.classList.remove('show');
+        loginBtn.innerHTML = '<i data-lucide="log-in"></i> Autentificare';
+        lucide.createIcons();
       }
     });
 

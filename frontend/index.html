@@ -66,6 +66,56 @@
             flex-grow: 1;
             margin-top: 1.5rem;
         }
+        
+        .sidebar-footer {
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background-color: var(--secondary);
+            border-radius: var(--radius);
+            margin-bottom: 0.75rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        
+        .user-details {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .user-details .user-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .user-details .user-email {
+            font-size: 0.75rem;
+            color: var(--secondary-foreground);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         .nav-menu {
             list-style: none;
@@ -321,6 +371,20 @@
         
         .toast.success { background-color: var(--success); color: white; }
         .toast.error { background-color: var(--danger); color: white; }
+        
+        .input-with-button {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .input-with-button input {
+            flex: 1;
+        }
+        
+        .btn-icon {
+            padding: 0.75rem;
+            min-width: auto;
+        }
 
     </style>
 </head>
@@ -352,6 +416,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="#chat" class="nav-link">
+                        <i data-lucide="message-circle"></i>
+                        <span>Chat GPT</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="#settings" class="nav-link">
                         <i data-lucide="settings"></i>
                         <span>Setări</span>
@@ -359,6 +429,19 @@
                 </li>
             </ul>
         </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Utilizator</div>
+                    <div class="user-email" id="userEmail">user@example.com</div>
+                </div>
+            </div>
+            <button id="logout-btn" class="btn btn-secondary" style="width: 100%;">
+                <i data-lucide="log-out"></i>
+                Deconectare
+            </button>
+        </div>
     </aside>
 
     <main class="main-content">
@@ -395,7 +478,12 @@
                             <label for="client-name">Nume Companie</label>
                             <input type="text" id="client-name" name="client-name" required>
                             <label for="client-cui">CUI</label>
-                            <input type="text" id="client-cui" name="client-cui" required>
+                            <div class="input-with-button">
+                                <input type="text" id="client-cui" name="client-cui" required placeholder="ex: RO12345678">
+                                <button type="button" id="autocomplete-client-btn" class="btn btn-secondary btn-icon" title="Auto-completare date din ANAF">
+                                    <i data-lucide="sparkles"></i>
+                                </button>
+                            </div>
                             <label for="client-regCom">Reg. Com.</label>
                             <input type="text" id="client-regCom" name="client-regCom">
                         </div>
@@ -476,6 +564,29 @@
             </div>
         </div>
 
+        <!-- Chat GPT Page -->
+        <div id="chat" class="page">
+            <div class="page-header">
+                <h2>Chat GPT Asistent</h2>
+                <p>Discutați cu asistentul AI pentru ajutor și recomandări.</p>
+            </div>
+            <div class="card" style="height: 600px; display: flex; flex-direction: column;">
+                <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; background: var(--background);">
+                    <div style="text-align: center; color: var(--secondary-foreground); padding: 2rem;">
+                        <i data-lucide="message-circle" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+                        <p>Bun venit! Cum vă pot ajuta astăzi?</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="chat-input" placeholder="Scrieți mesajul dvs. aici..." style="flex: 1; padding: 0.75rem; border: 1px solid var(--input); border-radius: var(--radius);">
+                    <button type="button" id="chat-send-btn" class="btn btn-primary">
+                        <i data-lucide="send"></i>
+                        Trimite
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Settings Page -->
         <div id="settings" class="page">
             <div class="page-header">
@@ -492,7 +603,12 @@
                         </div>
                         <div class="form-group">
                             <label for="company-cui">CUI</label>
-                            <input type="text" id="company-cui" name="cui">
+                            <div class="input-with-button">
+                                <input type="text" id="company-cui" name="cui" placeholder="ex: RO12345678">
+                                <button type="button" id="autocomplete-company-btn" class="btn btn-secondary btn-icon" title="Auto-completare date din ANAF">
+                                    <i data-lucide="sparkles"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="company-regCom">Reg. Com.</label>
@@ -850,6 +966,172 @@
         }
 
         loadSettings();
+        
+        // Load user info
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/auth/me');
+                const result = await response.json();
+                
+                if (result.success && result.user) {
+                    const user = result.user;
+                    document.getElementById('userName').textContent = user.name || 'Utilizator';
+                    document.getElementById('userEmail').textContent = user.email || '';
+                    
+                    // Set avatar initials
+                    const initials = (user.name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                    document.getElementById('userAvatar').textContent = initials;
+                }
+            } catch (error) {
+                console.error('Eroare la încărcarea informațiilor utilizator:', error);
+            }
+        }
+        
+        loadUserInfo();
+        
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            if (confirm('Sigur doriți să vă deconectați?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login.html';
+            }
+        });
+
+        // Auto-complete functionality for company settings
+        document.getElementById('autocomplete-company-btn').addEventListener('click', async () => {
+            const cuiInput = document.getElementById('company-cui');
+            const cui = cuiInput.value.trim();
+            
+            if (!cui) {
+                showToast('Introduceți un CUI valid', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('autocomplete-company-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>';
+            lucide.createIcons();
+            
+            try {
+                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const data = result.data;
+                    if (data.denumire) document.getElementById('company-name').value = data.denumire;
+                    if (data.adresa) document.getElementById('company-address').value = data.adresa;
+                    if (data.nrRegCom) document.getElementById('company-regCom').value = data.nrRegCom;
+                    
+                    showToast('Date completate automat cu succes!', 'success');
+                } else {
+                    throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="sparkles"></i>';
+                lucide.createIcons();
+            }
+        });
+        
+        // Auto-complete functionality for client in invoice
+        document.getElementById('autocomplete-client-btn').addEventListener('click', async () => {
+            const cuiInput = document.getElementById('client-cui');
+            const cui = cuiInput.value.trim();
+            
+            if (!cui) {
+                showToast('Introduceți un CUI valid pentru client', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('autocomplete-client-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>';
+            lucide.createIcons();
+            
+            try {
+                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const data = result.data;
+                    if (data.denumire) document.getElementById('client-name').value = data.denumire;
+                    if (data.adresa) document.getElementById('client-address').value = data.adresa;
+                    if (data.nrRegCom) document.getElementById('client-regCom').value = data.nrRegCom;
+                    
+                    showToast('Date client completate automat!', 'success');
+                } else {
+                    throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="sparkles"></i>';
+                lucide.createIcons();
+            }
+        });
+
+        // Chat GPT functionality
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        
+        function addChatMessage(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                margin-bottom: 1rem;
+                padding: 1rem;
+                border-radius: var(--radius);
+                background: ${isUser ? 'var(--primary)' : 'white'};
+                color: ${isUser ? 'white' : 'var(--foreground)'};
+                max-width: 80%;
+                margin-left: ${isUser ? 'auto' : '0'};
+                margin-right: ${isUser ? '0' : 'auto'};
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            `;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        async function sendChatMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            addChatMessage(message, true);
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/gpt-chat/message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                const result = await response.json();
+                
+                if (result.success && result.response) {
+                    addChatMessage(result.response, false);
+                } else {
+                    throw new Error(result.error || 'Eroare la trimiterea mesajului');
+                }
+            } catch (error) {
+                addChatMessage('Ne pare rău, a apărut o eroare. Vă rugăm să încercați din nou.', false);
+                showToast(error.message, 'error');
+            } finally {
+                chatSendBtn.disabled = false;
+            }
+        }
+        
+        chatSendBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
 
     </script>
 </body>

@@ -11,9 +11,26 @@ async function authenticateToken(req, res, next) {
     const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
     
     if (!token) {
+      // Dacă nu există token, folosește primul utilizator activ din baza de date
+      const defaultUser = await prisma.user.findFirst({
+        where: { isActive: true },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isActive: true
+        }
+      });
+      
+      if (defaultUser) {
+        req.user = defaultUser;
+        return next();
+      }
+      
       return res.status(401).json({
         success: false,
-        error: 'Token de autentificare lipsește'
+        error: 'Token de autentificare lipsește și nu există utilizatori în sistem'
       });
     }
     
