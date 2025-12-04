@@ -37,10 +37,12 @@ async function createInvoice(req, res) {
       });
     }
 
-    const { client, products, template } = req.body;
+    const { client, products, template: requestTemplate } = req.body;
+    const userId = req.user.id; // Asigură-te că ai middleware de autentificare
+
     console.log('🔵 Client:', client);
     console.log('🔵 Products:', products);
-    console.log('🔵 Template:', template || 'modern (default)');
+    console.log('🔵 Template din request:', requestTemplate);
 
     // Validare date client
     if (!client || !products || products.length === 0) {
@@ -51,9 +53,21 @@ async function createInvoice(req, res) {
       });
     }
 
-    // Obține setările companiei emitente
-    const settingsController = require('./settingsController');
-    const settings = settingsController.getSettings();
+    // Obține setările companiei emitente specifice user-ului
+    const companySettings = await prisma.companySettings.findUnique({
+      where: { userId },
+    });
+
+    if (!companySettings) {
+      return res.status(404).json({
+        success: false,
+        error: 'Setările companiei nu au fost găsite. Vă rugăm să le configurați.',
+      });
+    }
+    
+    // Determină template-ul final
+    const finalTemplate = requestTemplate || companySettings.preferredTemplate || 'modern';
+    console.log('🔵 Template final selectat:', finalTemplate);
 
     // Calculează totaluri pentru fiecare produs
     const itemsData = products.map(product => {
@@ -90,20 +104,21 @@ async function createInvoice(req, res) {
       total: invoiceTotal,
       issueDate: new Date(),
       status: 'generated',
-      template: template || 'modern', // Adaugă template-ul selectat
+      template: finalTemplate, // Adaugă template-ul selectat
       
       // Date emitent (din setări)
-      providerName: settings.name || '',
-      providerCUI: settings.cui || '',
-      providerRegCom: settings.regCom || '',
-      providerAddress: settings.address || '',
-      providerCity: settings.city || '',
-      providerCounty: settings.county || '',
-      providerEmail: settings.email || '',
-      providerPhone: settings.phone || '',
-      providerBank: settings.bank || '',
-      providerIban: settings.iban || '',
-      providerCapital: settings.capital || '',
+      providerName: companySettings.name || '',
+      providerCUI: companySettings.cui || '',
+      providerRegCom: companySettings.regCom || '',
+      providerAddress: companySettings.address || '',
+      providerCity: companySettings.city || '',
+      providerCounty: companySettings.county || '',
+      providerPhone: companySettings.phone || '',
+      providerEmail: companySettings.email || '',
+      providerBank: companySettings.bank || '',
+      providerIBAN: companySettings.iban || '',
+      providerCapital: companySettings.capital || '',
+      providerLegalRep: companySettings.legalRep || '',
       
       // Date client/beneficiar
       clientType: client.type,
