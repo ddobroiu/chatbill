@@ -385,6 +385,20 @@
             padding: 0.75rem;
             min-width: auto;
         }
+        
+        /* Animations */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
 
     </style>
 </head>
@@ -645,6 +659,43 @@
                         <div class="form-group">
                             <label for="company-email">Email</label>
                             <input type="email" id="company-email" name="email">
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Integrare ANAF e-Factura</h3>
+                    <p>Conectați contul ANAF pentru trimiterea automată a facturilor în sistemul e-Factura.</p>
+                    <div id="anaf-status-container" style="margin-top: 1rem;">
+                        <div id="anaf-disconnected" style="display: none;">
+                            <div style="padding: 1rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: var(--radius); margin-bottom: 1rem;">
+                                <p style="margin: 0; color: #856404;"><strong>⚠️ Nu sunteți conectat la ANAF</strong></p>
+                                <p style="margin: 0.5rem 0 0 0; color: #856404; font-size: 0.9rem;">Pentru a trimite facturi în e-Factura, conectați-vă cu contul ANAF.</p>
+                            </div>
+                            <button type="button" id="anaf-connect-btn" class="btn btn-primary">
+                                <i data-lucide="link"></i>
+                                Conectează ANAF e-Factura
+                            </button>
+                        </div>
+                        <div id="anaf-connected" style="display: none;">
+                            <div style="padding: 1rem; background: #d4edda; border: 1px solid #28a745; border-radius: var(--radius); margin-bottom: 1rem;">
+                                <p style="margin: 0; color: #155724;"><strong>✅ Conectat la ANAF e-Factura</strong></p>
+                                <p style="margin: 0.5rem 0 0 0; color: #155724; font-size: 0.9rem;">
+                                    CUI: <strong id="anaf-cui">-</strong> | Companie: <strong id="anaf-company">-</strong>
+                                </p>
+                                <p style="margin: 0.5rem 0 0 0; color: #155724; font-size: 0.85rem;">
+                                    Ultima actualizare: <span id="anaf-last-refresh">-</span>
+                                </p>
+                            </div>
+                            <button type="button" id="anaf-disconnect-btn" class="btn btn-secondary">
+                                <i data-lucide="unlink"></i>
+                                Deconectează ANAF
+                            </button>
+                        </div>
+                        <div id="anaf-loading" style="display: block;">
+                            <p style="color: var(--secondary-foreground);">
+                                <i data-lucide="loader-2" class="animate-spin"></i>
+                                Verificare status conexiune...
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -974,6 +1025,77 @@
         }
 
         loadSettings();
+        
+        // ANAF Status Check
+        async function checkAnafStatus() {
+            try {
+                const response = await fetch('/api/anaf/status');
+                const result = await response.json();
+                
+                document.getElementById('anaf-loading').style.display = 'none';
+                
+                if (result.success && result.connected) {
+                    document.getElementById('anaf-connected').style.display = 'block';
+                    document.getElementById('anaf-disconnected').style.display = 'none';
+                    
+                    document.getElementById('anaf-cui').textContent = result.anafAuth.cui || '-';
+                    document.getElementById('anaf-company').textContent = result.anafAuth.companyName || '-';
+                    document.getElementById('anaf-last-refresh').textContent = 
+                        new Date(result.anafAuth.lastRefresh).toLocaleString('ro-RO');
+                } else {
+                    document.getElementById('anaf-connected').style.display = 'none';
+                    document.getElementById('anaf-disconnected').style.display = 'block';
+                }
+                
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Eroare verificare status ANAF:', error);
+                document.getElementById('anaf-loading').style.display = 'none';
+                document.getElementById('anaf-disconnected').style.display = 'block';
+                lucide.createIcons();
+            }
+        }
+        
+        checkAnafStatus();
+        
+        // ANAF Connect
+        document.getElementById('anaf-connect-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/anaf/connect');
+                const result = await response.json();
+                
+                if (result.success && result.authUrl) {
+                    showToast('Redirectare către ANAF pentru autentificare...');
+                    window.location.href = result.authUrl;
+                } else {
+                    throw new Error(result.error || 'Eroare la conectarea ANAF');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+        
+        // ANAF Disconnect
+        document.getElementById('anaf-disconnect-btn').addEventListener('click', async () => {
+            if (!confirm('Sigur doriți să deconectați contul ANAF?')) return;
+            
+            try {
+                const response = await fetch('/api/anaf/disconnect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Contul ANAF a fost deconectat cu succes!');
+                    checkAnafStatus();
+                } else {
+                    throw new Error(result.error || 'Eroare la deconectarea ANAF');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
         
         // Load user info
         async function loadUserInfo() {
