@@ -2,6 +2,12 @@ const prisma = require('../db/prismaWrapper');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { 
+  sendWelcomeEmail, 
+  sendVerificationEmail, 
+  sendPasswordResetEmail,
+  sendPasswordChangedEmail 
+} = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'chatbill-jwt-secret-change-in-production';
 const JWT_EXPIRES_IN = '7d'; // Token valid 7 zile
@@ -76,12 +82,19 @@ async function register(req, res) {
     
     console.log('✅ Utilizator nou înregistrat:', user.email);
     
-    // TODO: Trimite email de verificare
-    // await sendVerificationEmail(user.email, verificationToken);
+    // Trimite email de bun venit și verificare
+    try {
+      await sendWelcomeEmail(user.email, user.name);
+      await sendVerificationEmail(user.email, user.name, verificationToken);
+      console.log('📧 Emailuri de bun venit și verificare trimise');
+    } catch (emailError) {
+      console.error('⚠️ Eroare trimitere emailuri:', emailError);
+      // Nu oprim înregistrarea dacă emailul dă eroare
+    }
     
     res.status(201).json({
       success: true,
-      message: 'Cont creat cu succes!',
+      message: 'Cont creat cu succes! Verifică-ți emailul pentru activare.',
       token,
       user: {
         id: user.id,
@@ -219,9 +232,13 @@ async function forgotPassword(req, res) {
     
     console.log('🔑 Token resetare generat pentru:', user.email);
     
-    // TODO: Trimite email cu link resetare
-    // const resetLink = `${process.env.BASE_URL}/reset-password?token=${resetToken}`;
-    // await sendPasswordResetEmail(user.email, resetLink);
+    // Trimite email cu link resetare
+    try {
+      await sendPasswordResetEmail(user.email, user.name, resetToken);
+      console.log('📧 Email resetare parolă trimis');
+    } catch (emailError) {
+      console.error('⚠️ Eroare trimitere email resetare:', emailError);
+    }
     
     res.json({
       success: true,
@@ -229,7 +246,7 @@ async function forgotPassword(req, res) {
       // Pentru development
       ...(process.env.NODE_ENV === 'development' && {
         resetToken,
-        resetLink: `http://localhost:3000/reset-password.html?token=${resetToken}`
+        resetLink: `${process.env.BASE_URL}/reset-password?token=${resetToken}`
       })
     });
     
@@ -292,6 +309,14 @@ async function resetPassword(req, res) {
     });
     
     console.log('✅ Parolă resetată pentru:', user.email);
+    
+    // Trimite email de confirmare
+    try {
+      await sendPasswordChangedEmail(user.email, user.name);
+      console.log('📧 Email confirmare parolă trimis');
+    } catch (emailError) {
+      console.error('⚠️ Eroare trimitere email confirmare:', emailError);
+    }
     
     res.json({
       success: true,
@@ -433,6 +458,14 @@ async function changePassword(req, res) {
     
     console.log('✅ Parolă schimbată pentru:', user.email);
     
+    // Trimite email de confirmare
+    try {
+      await sendPasswordChangedEmail(user.email, user.name);
+      console.log('📧 Email confirmare schimbare parolă trimis');
+    } catch (emailError) {
+      console.error('⚠️ Eroare trimitere email confirmare:', emailError);
+    }
+    
     res.json({
       success: true,
       message: 'Parola a fost schimbată cu succes'
@@ -447,6 +480,122 @@ async function changePassword(req, res) {
   }
 }
 
+// GET /api/auth/verify-email - Verifică emailul cu token
+async function verifyEmail(req, res) {
+  try {
+    const { token } = req.query;
+    
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        error: 'Token lipsă'
+      });
+    }
+    
+    // Găsește utilizatorul cu token-ul
+    const user = await prisma.user.findFirst({
+      where: {
+        verificationToken: token,
+        emailVerified: false
+      }
+    });
+    
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: 'Token invalid sau email deja verificat'
+      });
+    }
+    
+    // Marchează emailul ca verificat
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        verificationToken: null
+      }
+    });
+    
+    console.log('✅ Email verificat pentru:', user.email);
+    
+    res.json({
+      success: true,
+      message: 'Email verificat cu succes!'
+    });
+    
+  } catch (error) {
+    console.error('❌ Eroare verificare email:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Eroare la verificarea emailului'
+    });
+  }
+}
+
+// POST /api/auth/resend-verification - Retrimite email de verificare
+async function resendVerification(req, res) {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email-ul este obligatoriu'
+      });
+    }
+    
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
+    });
+    
+    if (!user) {
+      return res.json({
+        success: true,
+        message: 'Dacă emailul există și nu e verificat, vei primi un nou link'
+      });
+    }
+    
+    if (user.emailVerified) {
+      return res.status(400).json({
+        success: false,
+        error: 'Emailul este deja verificat'
+      });
+    }
+    
+    // Generează un token nou
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { verificationToken }
+    });
+    
+    // Trimite email
+    try {
+      await sendVerificationEmail(user.email, user.name, verificationToken);
+      console.log('📧 Email verificare retrimis pentru:', user.email);
+    } catch (emailError) {
+      console.error('⚠️ Eroare trimitere email verificare:', emailError);
+      return res.status(500).json({
+        success: false,
+        error: 'Eroare la trimiterea emailului'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Email de verificare retrimis'
+    });
+    
+  } catch (error) {
+    console.error('❌ Eroare resend verification:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Eroare la trimiterea emailului'
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -454,5 +603,7 @@ module.exports = {
   resetPassword,
   getCurrentUser,
   updateProfile,
-  changePassword
+  changePassword,
+  verifyEmail,
+  resendVerification
 };
