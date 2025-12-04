@@ -915,6 +915,8 @@
                 client: clientData,
                 products: products
             };
+            
+            console.log('📤 Trimit factura:', invoicePayload);
 
             try {
                 const response = await fetch('/api/invoices', {
@@ -922,9 +924,14 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(invoicePayload)
                 });
+                
+                console.log('📥 Response status:', response.status);
                 const result = await response.json();
+                console.log('📦 Response data:', result);
+                
                 if (result.success && result.invoice.pdfPath) {
                     showToast('Factura a fost generată cu succes!');
+                    console.log('🔗 Deschid PDF:', result.invoice.pdfPath);
                     window.open(result.invoice.pdfPath, '_blank');
                     e.target.reset();
                     productsContainer.innerHTML = '';
@@ -934,6 +941,7 @@
                     throw new Error(result.error || 'A apărut o eroare la generarea facturii.');
                 }
             } catch (error) {
+                console.error('❌ Eroare generare:', error);
                 showToast(error.message, 'error');
             }
         });

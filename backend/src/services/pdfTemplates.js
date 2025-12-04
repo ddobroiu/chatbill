@@ -2,22 +2,11 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-// Funcție helper pentru înregistrarea fonturilor Roboto
+// Funcție helper pentru înregistrarea fonturilor - folosește fonturile standard PDFKit
 function registerFonts(doc) {
-  const fontsPath = path.join(__dirname, '../../assets/fonts');
-  
-  try {
-    doc.registerFont('Roboto', path.join(fontsPath, 'Roboto-Regular.ttf'));
-    doc.registerFont('Roboto-Bold', path.join(fontsPath, 'Roboto-Bold.ttf'));
-    doc.registerFont('Roboto-Italic', path.join(fontsPath, 'Roboto-Italic.ttf'));
-    doc.registerFont('Roboto-Medium', path.join(fontsPath, 'Roboto-Medium.ttf'));
-    doc.registerFont('Roboto-Light', path.join(fontsPath, 'Roboto-Light.ttf'));
-    console.log('✅ Fonturile Roboto au fost înregistrate cu succes');
-    return true;
-  } catch (error) {
-    console.warn('⚠️ Nu s-au putut înregistra fonturile Roboto, se folosește Helvetica:', error.message);
-    return false;
-  }
+  // Nu mai încercăm să înregistrăm fonturi externe, folosim doar Helvetica standard
+  console.log('✅ Folosim fonturile standard Helvetica');
+  return false; // returnează false pentru a folosi Helvetica
 }
 
 // Culori pentru template-uri

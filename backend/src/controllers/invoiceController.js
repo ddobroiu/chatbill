@@ -266,7 +266,7 @@ async function generateInvoicePDF(invoice) {
       
       writeStream.on('finish', () => {
         console.log('✅ PDF finalizat:', fileName);
-        resolve(fileName);
+        resolve(`/invoices/${fileName}`); // Returnează calea relativă pentru web
       });
 
       writeStream.on('error', (err) => {

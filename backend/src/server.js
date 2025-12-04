@@ -19,6 +19,7 @@ const io = socketIo(server, {
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../../frontend')));
+app.use('/invoices', express.static(path.join(__dirname, '../../backend/invoices')));
 
 // Session middleware pentru OAuth
 app.use(session({
