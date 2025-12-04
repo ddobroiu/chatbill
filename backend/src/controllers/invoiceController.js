@@ -2,6 +2,12 @@ const prisma = require('../db/prismaWrapper');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const {
+  renderModernTemplate,
+  renderClassicTemplate,
+  renderMinimalTemplate,
+  renderElegantTemplate
+} = require('../services/pdfTemplates');
 
 // Director pentru salvarea facturilor PDF
 const invoicesDir = path.join(__dirname, '../../invoices');
@@ -31,9 +37,10 @@ async function createInvoice(req, res) {
       });
     }
 
-    const { client, products } = req.body;
+    const { client, products, template } = req.body;
     console.log('🔵 Client:', client);
     console.log('🔵 Products:', products);
+    console.log('🔵 Template:', template || 'modern (default)');
 
     // Validare date client
     if (!client || !products || products.length === 0) {
@@ -83,6 +90,7 @@ async function createInvoice(req, res) {
       total: invoiceTotal,
       issueDate: new Date(),
       status: 'generated',
+      template: template || 'modern', // Adaugă template-ul selectat
       
       // Date emitent (din setări)
       providerName: settings.name || '',
@@ -158,190 +166,106 @@ async function createInvoice(req, res) {
 }
 
 
-// Generare PDF pentru factură
+// Generare PDF pentru factură folosind template-uri
 async function generateInvoicePDF(invoice) {
   return new Promise((resolve, reject) => {
     try {
-      console.log('🔵 Începe generarea PDF pentru:', invoice.invoiceNumber);
-      const doc = new PDFDocument({ margin: 50 });
+      console.log('🔵 Începe generarea PDF pentru:', invoice.invoiceNumber, 'Template:', invoice.template || 'modern');
+      
+      const doc = new PDFDocument({ 
+        margin: 0,
+        size: 'A4',
+        bufferPages: true
+      });
+      
       const fileName = `${invoice.invoiceNumber}.pdf`;
       const filePath = path.join(invoicesDir, fileName);
       
       const writeStream = fs.createWriteStream(filePath);
       doc.pipe(writeStream);
 
-      // Header
-      doc.fontSize(20)
-         .font('Helvetica-Bold')
-         .text('FACTURĂ', { align: 'center' })
+      // Pregătește datele pentru template
+      const companySettings = {
+        name: invoice.providerName,
+        cui: invoice.providerCUI,
+        regCom: invoice.providerRegCom,
+        address: invoice.providerAddress,
+        city: invoice.providerCity,
+        county: invoice.providerCounty,
+        phone: invoice.providerPhone,
+        email: invoice.providerEmail,
+        bank: invoice.providerBank,
+        iban: invoice.providerIban,
+        capital: invoice.providerCapital
+      };
+
+      const invoiceData = {
+        number: invoice.invoiceNumber,
+        date: invoice.issueDate,
+        dueDate: invoice.dueDate,
+        clientName: invoice.clientName,
+        clientCUI: invoice.clientCUI,
+        clientRegCom: invoice.clientRegCom,
+        clientCNP: invoice.clientCNP,
+        clientAddress: invoice.clientAddress,
+        clientCity: invoice.clientCity,
+        clientCounty: invoice.clientCounty,
+        products: invoice.items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          unit: item.unit || 'buc'
+        })),
+        subtotal: invoice.subtotal,
+        tvaAmount: invoice.tvaAmount,
+        total: invoice.total
+      };
+
+      // Selectează template-ul
+      const template = invoice.template || 'modern';
+      
+      switch (template) {
+        case 'classic':
+          renderClassicTemplate(doc, invoiceData, companySettings);
+          break;
+        case 'minimal':
+          renderMinimalTemplate(doc, invoiceData, companySettings);
+          break;
+        case 'elegant':
+          renderElegantTemplate(doc, invoiceData, companySettings);
+          break;
+        case 'modern':
+        default:
+          renderModernTemplate(doc, invoiceData, companySettings);
+          break;
+      }
+
+      // Footer common pentru toate template-urile
+      doc.fontSize(8)
+         .fillColor('#666666')
          .font('Helvetica')
-         .moveDown();
+         .text('Document generat cu ChatBill', 50, 780, { align: 'center', width: 512 })
+         .text(`Data generării: ${new Date().toLocaleString('ro-RO')}`, 50, 795, { align: 'center', width: 512 });
 
-      // Informații factură
-      doc.fontSize(12)
-         .text(`Serie/Număr: ${invoice.invoiceNumber}`)
-         .text(`Data: ${new Date(invoice.issueDate).toLocaleDateString('ro-RO')}`)
-         .moveDown(1.5);
-
-    // Două coloane: Furnizor și Client
-    const leftColumn = 50;
-    const rightColumn = 300;
-    let yPos = doc.y;
-
-    // Informații furnizor (stânga)
-    doc.fontSize(11)
-       .font('Helvetica-Bold')
-       .text('FURNIZOR/PRESTATOR:', leftColumn, yPos)
-       .font('Helvetica')
-       .fontSize(10)
-       .text(invoice.providerName, leftColumn, yPos + 15)
-       .text(`CUI: ${invoice.providerCUI}`, leftColumn, yPos + 30);
-    
-    if (invoice.providerRegCom) {
-      doc.text(`Reg.Com.: ${invoice.providerRegCom}`, leftColumn, yPos + 45);
-      yPos += 15;
-    }
-    
-    doc.text(`Adresa: ${invoice.providerAddress}`, leftColumn, yPos + 45, { width: 230 });
-    yPos += 30;
-    
-    if (invoice.providerCity) {
-      doc.text(`${invoice.providerCity}${invoice.providerCounty ? ', ' + invoice.providerCounty : ''}`, leftColumn, yPos + 45);
-      yPos += 15;
-    }
-    
-    if (invoice.providerPhone) {
-      doc.text(`Tel: ${invoice.providerPhone}`, leftColumn, yPos + 45);
-      yPos += 15;
-    }
-    
-    if (invoice.providerEmail) {
-      doc.text(`Email: ${invoice.providerEmail}`, leftColumn, yPos + 45);
-    }
-
-    // Resetează yPos pentru coloana client
-    yPos = doc.y - 120;
-
-    // Informații client (dreapta)
-    doc.fontSize(11)
-       .font('Helvetica-Bold')
-       .text('CLIENT/BENEFICIAR:', rightColumn, yPos)
-       .font('Helvetica')
-       .fontSize(10)
-       .text(invoice.clientName, rightColumn, yPos + 15);
-    
-    if (invoice.clientType === 'company' && invoice.clientCUI) {
-      doc.text(`CUI: ${invoice.clientCUI}`, rightColumn, yPos + 30);
-      if (invoice.clientRegCom) {
-        doc.text(`Reg.Com.: ${invoice.clientRegCom}`, rightColumn, yPos + 45);
-        yPos += 15;
-      }
-    } else if (invoice.clientType === 'individual' && invoice.clientCNP) {
-      doc.text(`CNP: ${invoice.clientCNP}`, rightColumn, yPos + 30);
-    }
-    
-    if (invoice.clientAddress) {
-      doc.text(`Adresa: ${invoice.clientAddress}`, rightColumn, yPos + 45, { width: 230 });
-      yPos += 30;
-    }
-    
-    if (invoice.clientCity) {
-      doc.text(`${invoice.clientCity}${invoice.clientCounty ? ', ' + invoice.clientCounty : ''}`, rightColumn, yPos + 45);
-    }
-
-    // Spațiu înainte de tabel
-    doc.moveDown(8);
-
-    // Tabel cu produse/servicii
-    const tableTop = doc.y;
-    const col1 = 50;   // Denumire
-    const col2 = 280;  // UM
-    const col3 = 320;  // Cantitate
-    const col4 = 370;  // Preț
-    const col5 = 440;  // TVA
-    const col6 = 490;  // Total
-    
-    doc.fontSize(9)
-       .font('Helvetica-Bold');
-    
-    // Header tabel
-    doc.rect(col1, tableTop - 5, 490, 20).fillAndStroke('#667eea', '#667eea');
-    doc.fillColor('white')
-       .text('Denumire produs/serviciu', col1 + 5, tableTop, { width: 220 })
-       .text('UM', col2, tableTop, { width: 30 })
-       .text('Cant.', col3, tableTop, { width: 40 })
-       .text('Preț', col4, tableTop, { width: 60 })
-       .text('TVA%', col5, tableTop, { width: 40 })
-       .text('Total', col6, tableTop, { width: 50 });
-    
-    doc.fillColor('black').font('Helvetica');
-
-    // Rânduri tabel
-    let yPosition = tableTop + 25;
-    
-    invoice.items.forEach((item, index) => {
-      const bgColor = index % 2 === 0 ? '#f8f9ff' : 'white';
-      doc.rect(col1, yPosition - 5, 490, 20).fillAndStroke(bgColor, bgColor);
+      console.log('🔵 PDF scris, se închide stream-ul...');
+      doc.end();
       
-      doc.fillColor('black')
-         .text(item.name, col1 + 5, yPosition, { width: 220 })
-         .text(item.unit, col2, yPosition, { width: 30 })
-         .text(item.quantity.toFixed(2), col3, yPosition, { width: 40 })
-         .text(item.price.toFixed(2), col4, yPosition, { width: 60 })
-         .text((item.vatRate * 100).toFixed(0), col5, yPosition, { width: 40 })
-         .text(item.total.toFixed(2), col6, yPosition, { width: 50 });
+      writeStream.on('finish', () => {
+        console.log('✅ PDF finalizat:', fileName);
+        resolve(fileName);
+      });
+
+      writeStream.on('error', (err) => {
+        console.error('❌ Eroare scriere PDF:', err);
+        reject(err);
+      });
       
-      yPosition += 20;
-    });
-
-    // Linie separator
-    doc.moveTo(col1, yPosition)
-       .lineTo(540, yPosition)
-       .stroke();
-
-    // Totale
-    yPosition += 15;
-    doc.fontSize(10)
-       .font('Helvetica')
-       .text('Subtotal (fără TVA):', col4, yPosition)
-       .text(`${invoice.subtotal.toFixed(2)} RON`, col6, yPosition);
-    
-    yPosition += 20;
-    doc.text('TVA:', col4, yPosition)
-       .text(`${invoice.tvaAmount.toFixed(2)} RON`, col6, yPosition);
-    
-    yPosition += 25;
-    doc.fontSize(12)
-       .font('Helvetica-Bold')
-       .text('TOTAL DE PLATĂ:', col4, yPosition)
-       .text(`${invoice.total.toFixed(2)} RON`, col6, yPosition);
-
-    // Date bancare (dacă există)
-    if (invoice.providerIban || invoice.providerBank) {
-      doc.moveDown(2);
-      doc.fontSize(9)
-         .font('Helvetica')
-         .text('Date bancare:', 50);
-      
-      if (invoice.providerBank) {
-        doc.text(`Banca: ${invoice.providerBank}`, 50);
-      }
-      if (invoice.providerIban) {
-        doc.text(`IBAN: ${invoice.providerIban}`, 50);
-      }
+    } catch (error) {
+      console.error('❌ Eroare generare PDF:', error);
+      reject(error);
     }
-
-    // Footer
-    doc.fontSize(8)
-       .text('Mulțumim pentru colaborare!', 50, 730, { align: 'center' })
-       .text(`Document generat la ${new Date().toLocaleString('ro-RO')}`, 50, 745, { align: 'center' });
-
-    console.log('🔵 PDF scris, se închide stream-ul...');
-    doc.end();
-    
-    writeStream.on('finish', () => {
-      console.log('✅ PDF finalizat:', fileName);
-      resolve(fileName);
+  });
+}
     });
     
     writeStream.on('error', (err) => {

@@ -220,6 +220,7 @@ model Invoice {
   
   // Metadata
   pdfPath           String?
+  template          String        @default("modern") // modern, classic, minimal, elegant
   notes             String?       @db.Text
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
