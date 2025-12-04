@@ -1145,14 +1145,14 @@
                 });
                 const result = await response.json();
                 
-                if (result.success && result.response) {
-                    addChatMessage(result.response, false);
+                if (result.success && result.message) {
+                    addChatMessage(result.message, false);
                 } else {
                     throw new Error(result.error || 'Eroare la trimiterea mesajului');
                 }
             } catch (error) {
                 addChatMessage('Ne pare rău, a apărut o eroare. Vă rugăm să încercați din nou.', false);
-                showToast(error.message, 'error');
+                console.error('❌ Chat error:', error);
             } finally {
                 chatSendBtn.disabled = false;
             }

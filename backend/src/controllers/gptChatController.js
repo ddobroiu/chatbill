@@ -114,10 +114,10 @@ async function sendMessage(req, res) {
           userId: userId,
           role: 'user',
           content: message,
-          metadata: {
+          metadata: JSON.stringify({
             model: 'gpt-4o-mini',
             tokens: completion.usage.total_tokens
-          }
+          })
         }
       });
 
@@ -126,10 +126,10 @@ async function sendMessage(req, res) {
           userId: userId,
           role: 'assistant',
           content: assistantMessage,
-          metadata: {
+          metadata: JSON.stringify({
             model: 'gpt-4o-mini',
             tokens: completion.usage.total_tokens
-          }
+          })
         }
       });
     } catch (dbError) {
