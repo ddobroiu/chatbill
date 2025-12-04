@@ -271,6 +271,45 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+        
+        .btn-sm {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-draft {
+            background-color: #e0e0e0;
+            color: #424242;
+        }
+        
+        .status-sent {
+            background-color: #bbdefb;
+            color: #0d47a1;
+        }
+        
+        .status-accepted {
+            background-color: #c8e6c9;
+            color: #1b5e20;
+        }
+        
+        .status-rejected {
+            background-color: #ffcdd2;
+            color: #b71c1c;
+        }
+        
+        .status-converted {
+            background-color: #d1c4e9;
+            color: #4a148c;
+        }
 
         #products-container .product-item {
             display: grid;
@@ -579,6 +618,111 @@
             </form>
         </div>
 
+        <!-- Proforma Generator Page -->
+        <div id="proforma-generator" class="page">
+            <div class="page-header">
+                <h2>Generează o Nouă Proformă</h2>
+                <p>Completați detaliile de mai jos pentru a emite o nouă factură proformă.</p>
+            </div>
+            <form id="proforma-form">
+                <div class="card">
+                    <h3>Detalii Client</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="proforma-client-type">Tip Client</label>
+                            <select id="proforma-client-type" name="client-type">
+                                <option value="company">Persoană Juridică</option>
+                                <option value="individual">Persoană Fizică</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="proforma-company-fields">
+                            <label for="proforma-client-name">Nume Companie</label>
+                            <input type="text" id="proforma-client-name" name="client-name" required>
+                            <label for="proforma-client-cui">CUI</label>
+                            <div class="input-with-button">
+                                <input type="text" id="proforma-client-cui" name="client-cui" required placeholder="ex: RO12345678">
+                                <button type="button" id="autocomplete-proforma-client-btn" class="btn btn-secondary btn-icon" title="Auto-completare date din ANAF">
+                                    <i data-lucide="sparkles"></i>
+                                </button>
+                            </div>
+                            <label for="proforma-client-regCom">Reg. Com.</label>
+                            <input type="text" id="proforma-client-regCom" name="client-regCom">
+                        </div>
+                         <div class="form-group" id="proforma-individual-fields" style="display: none;">
+                            <label for="proforma-client-firstName">Prenume</label>
+                            <input type="text" id="proforma-client-firstName" name="client-firstName">
+                            <label for="proforma-client-lastName">Nume</label>
+                            <input type="text" id="proforma-client-lastName" name="client-lastName">
+                             <label for="proforma-client-cnp">CNP</label>
+                            <input type="text" id="proforma-client-cnp" name="client-cnp">
+                        </div>
+                        <div class="form-group">
+                            <label for="proforma-client-address">Adresă</label>
+                            <input type="text" id="proforma-client-address" name="client-address">
+                        </div>
+                        <div class="form-group">
+                            <label for="proforma-client-city">Oraș</label>
+                            <input type="text" id="proforma-client-city" name="client-city">
+                        </div>
+                        <div class="form-group">
+                            <label for="proforma-client-county">Județ</label>
+                            <input type="text" id="proforma-client-county" name="client-county">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Validitate Ofertă</h3>
+                    <div class="form-group">
+                        <label for="proforma-valid-days">Valabilă (zile)</label>
+                        <input type="number" id="proforma-valid-days" name="valid-days" value="30" min="1" max="365">
+                        <small style="color: var(--secondary-foreground);">Numărul de zile pentru care oferta este valabilă</small>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Produse / Servicii</h3>
+                    <div id="proforma-products-container">
+                        <!-- Produsele vor fi adăugate aici de JS -->
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+                        <button type="button" id="add-proforma-product" class="btn btn-secondary">
+                            <i data-lucide="plus"></i>
+                            Adaugă Produs
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="totals-summary">
+                        <table class="totals-table">
+                            <tbody>
+                                <tr>
+                                    <td>Subtotal:</td>
+                                    <td id="proforma-summary-subtotal">0.00 RON</td>
+                                </tr>
+                                <tr>
+                                    <td>TVA:</td>
+                                    <td id="proforma-summary-vat">0.00 RON</td>
+                                </tr>
+                                <tr class="grand-total">
+                                    <td>Total General:</td>
+                                    <td id="proforma-summary-total">0.00 RON</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="text-align: right;">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="file-text"></i>
+                        Generează și Salvează Proforma
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <!-- Invoices History Page -->
         <div id="invoices" class="page">
             <div class="page-header">
@@ -598,6 +742,29 @@
                 <div id="invoices-empty" style="display: none; text-align: center; padding: 2rem; color: var(--secondary-foreground);">
                     <i data-lucide="inbox" style="width: 48px; height: 48px; margin: 0 auto 1rem;"></i>
                     <p>Nu aveți facturi generate încă.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proformas History Page -->
+        <div id="proformas" class="page">
+            <div class="page-header">
+                <h2>Istoric Proforme</h2>
+                <p>Vizualizați și gestionați toate proformele emise.</p>
+            </div>
+            <div class="card">
+                <div id="proformas-loading" style="text-align: center; padding: 3rem; color: var(--secondary-foreground);">
+                    <div class="animate-spin" style="width: 48px; height: 48px; margin: 0 auto 1rem;">
+                        <i data-lucide="loader" style="width: 48px; height: 48px;"></i>
+                    </div>
+                    <p>Se încarcă proformele...</p>
+                </div>
+                <div id="proformas-list" style="display: none;">
+                    <!-- Proformele vor fi afișate aici -->
+                </div>
+                <div id="proformas-empty" style="display: none; text-align: center; padding: 2rem; color: var(--secondary-foreground);">
+                    <i data-lucide="inbox" style="width: 48px; height: 48px; margin: 0 auto 1rem;"></i>
+                    <p>Nu aveți proforme generate încă.</p>
                 </div>
             </div>
         </div>
@@ -772,6 +939,11 @@
                 // Încarcă facturile când utilizatorul navighează la pagina de istoric
                 if (hash === '#invoices') {
                     loadInvoices();
+                }
+                
+                // Încarcă proformele când utilizatorul navighează la pagina de istoric proforme
+                if (hash === '#proformas') {
+                    loadProformas();
                 }
             }
 
@@ -1420,6 +1592,308 @@
                 sendChatMessage();
             }
         });
+
+        // ===== PROFORMA MANAGEMENT =====
+        
+        // Proforma Products Management
+        let proformaProductCount = 0;
+        const proformaProductsContainer = document.getElementById('proforma-products-container');
+        
+        function addProformaProduct() {
+            proformaProductCount++;
+            const productItem = document.createElement('div');
+            productItem.classList.add('product-item');
+            productItem.innerHTML = `
+                <div class="form-group">
+                    <label>Descriere Produs/Serviciu</label>
+                    <input type="text" name="proforma-product-name-${proformaProductCount}" placeholder="ex: Servicii consultanță" required>
+                </div>
+                <div class="form-group">
+                    <label>Cant.</label>
+                    <input type="number" name="proforma-product-quantity-${proformaProductCount}" value="1" min="0" step="any" class="recalculate-proforma">
+                </div>
+                <div class="form-group">
+                    <label>U.M.</label>
+                    <input type="text" name="proforma-product-unit-${proformaProductCount}" value="buc">
+                </div>
+                <div class="form-group">
+                    <label>Preț Unitar</label>
+                    <input type="number" name="proforma-product-price-${proformaProductCount}" value="0" min="0" step="any" class="recalculate-proforma">
+                </div>
+                <div class="form-group">
+                    <label>TVA (%)</label>
+                    <input type="number" name="proforma-product-vat-${proformaProductCount}" value="19" min="0" max="100" class="recalculate-proforma">
+                </div>
+                <button type="button" class="remove-product-btn" onclick="this.parentElement.remove(); calculateProformaTotals();">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            `;
+            proformaProductsContainer.appendChild(productItem);
+            lucide.createIcons();
+            calculateProformaTotals();
+        }
+        
+        function calculateProformaTotals() {
+            let subtotal = 0;
+            let vatTotal = 0;
+            
+            proformaProductsContainer.querySelectorAll('.product-item').forEach((item, index) => {
+                const i = index + 1;
+                const quantity = parseFloat(item.querySelector(`input[name="proforma-product-quantity-${i}"]`)?.value || 0);
+                const price = parseFloat(item.querySelector(`input[name="proforma-product-price-${i}"]`)?.value || 0);
+                const vatRate = parseFloat(item.querySelector(`input[name="proforma-product-vat-${i}"]`)?.value || 0);
+                
+                const itemSubtotal = quantity * price;
+                const itemVat = itemSubtotal * (vatRate / 100);
+                
+                subtotal += itemSubtotal;
+                vatTotal += itemVat;
+            });
+            
+            const total = subtotal + vatTotal;
+            
+            document.getElementById('proforma-summary-subtotal').textContent = subtotal.toFixed(2) + ' RON';
+            document.getElementById('proforma-summary-vat').textContent = vatTotal.toFixed(2) + ' RON';
+            document.getElementById('proforma-summary-total').textContent = total.toFixed(2) + ' RON';
+        }
+        
+        document.getElementById('add-proforma-product').addEventListener('click', addProformaProduct);
+        
+        document.addEventListener('input', (e) => {
+            if (e.target.classList.contains('recalculate-proforma')) {
+                calculateProformaTotals();
+            }
+        });
+        
+        // Proforma Client Type Toggle
+        document.getElementById('proforma-client-type').addEventListener('change', (e) => {
+            const companyFields = document.getElementById('proforma-company-fields');
+            const individualFields = document.getElementById('proforma-individual-fields');
+            
+            if (e.target.value === 'company') {
+                companyFields.style.display = 'block';
+                individualFields.style.display = 'none';
+            } else {
+                companyFields.style.display = 'none';
+                individualFields.style.display = 'block';
+            }
+        });
+        
+        // Autocomplete Proforma Client
+        document.getElementById('autocomplete-proforma-client-btn').addEventListener('click', async () => {
+            const cuiInput = document.getElementById('proforma-client-cui');
+            let cui = cuiInput.value.trim();
+            
+            if (!cui) {
+                showToast('Introduceți CUI-ul clientului.', 'error');
+                return;
+            }
+            
+            cui = cui.replace(/^RO/i, '');
+            
+            try {
+                const response = await fetch(`/api/settings/autocomplete/${cui}`);
+                const result = await response.json();
+                
+                if (result.success && result.company) {
+                    const company = result.company;
+                    document.getElementById('proforma-client-name').value = company.nume || '';
+                    document.getElementById('proforma-client-cui').value = company.cif || cui;
+                    document.getElementById('proforma-client-regCom').value = company.regcom || '';
+                    document.getElementById('proforma-client-address').value = company.adresa?.completa || '';
+                    document.getElementById('proforma-client-city').value = company.adresa?.oras || '';
+                    document.getElementById('proforma-client-county').value = company.adresa?.judet || '';
+                    showToast('Date client completate automat!');
+                } else {
+                    showToast(result.error || 'Nu s-au găsit date pentru acest CUI.', 'error');
+                }
+            } catch (error) {
+                showToast('Eroare la autocomplete.', 'error');
+            }
+        });
+        
+        // Proforma Form Submission
+        document.getElementById('proforma-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const clientType = document.getElementById('proforma-client-type').value;
+            let clientData = {};
+            if (clientType === 'company') {
+                clientData = {
+                    type: 'company',
+                    name: document.getElementById('proforma-client-name').value,
+                    cui: document.getElementById('proforma-client-cui').value,
+                    regCom: document.getElementById('proforma-client-regCom').value,
+                    address: document.getElementById('proforma-client-address').value,
+                    city: document.getElementById('proforma-client-city').value,
+                    county: document.getElementById('proforma-client-county').value,
+                };
+            } else {
+                 clientData = {
+                    type: 'individual',
+                    firstName: document.getElementById('proforma-client-firstName').value,
+                    lastName: document.getElementById('proforma-client-lastName').value,
+                    cnp: document.getElementById('proforma-client-cnp').value,
+                    address: document.getElementById('proforma-client-address').value,
+                    city: document.getElementById('proforma-client-city').value,
+                    county: document.getElementById('proforma-client-county').value,
+                };
+            }
+            
+            const products = [];
+            proformaProductsContainer.querySelectorAll('.product-item').forEach((item, index) => {
+                const i = index + 1;
+                products.push({
+                    name: item.querySelector(`input[name="proforma-product-name-${i}"]`).value,
+                    quantity: parseFloat(item.querySelector(`input[name="proforma-product-quantity-${i}"]`).value),
+                    unit: item.querySelector(`input[name="proforma-product-unit-${i}"]`).value,
+                    price: parseFloat(item.querySelector(`input[name="proforma-product-price-${i}"]`).value),
+                    vat: parseInt(item.querySelector(`input[name="proforma-product-vat-${i}"]`).value)
+                });
+            });
+            
+            const validDays = parseInt(document.getElementById('proforma-valid-days').value);
+
+            const proformaPayload = {
+                client: clientData,
+                products: products,
+                validDays: validDays
+            };
+            
+            console.log('📤 Trimit proforma:', proformaPayload);
+
+            try {
+                const response = await fetch('/api/proformas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(proformaPayload)
+                });
+                
+                console.log('📥 Response status:', response.status);
+                const result = await response.json();
+                console.log('📦 Response data:', result);
+                
+                if (result.success && result.proforma.pdfPath) {
+                    showToast('Proforma a fost generată cu succes!');
+                    console.log('🔗 Deschid PDF:', result.proforma.pdfPath);
+                    window.open(result.proforma.pdfPath, '_blank');
+                    e.target.reset();
+                    proformaProductsContainer.innerHTML = '';
+                    addProformaProduct();
+                    calculateProformaTotals();
+                } else {
+                    throw new Error(result.error || 'A apărut o eroare la generarea proformei.');
+                }
+            } catch (error) {
+                console.error('❌ Eroare generare:', error);
+                showToast(error.message, 'error');
+            }
+        });
+        
+        // Load Proformas
+        async function loadProformas() {
+            const loading = document.getElementById('proformas-loading');
+            const list = document.getElementById('proformas-list');
+            const empty = document.getElementById('proformas-empty');
+            
+            loading.style.display = 'block';
+            list.style.display = 'none';
+            empty.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/proformas');
+                const result = await response.json();
+                
+                if (result.success && result.proformas.length > 0) {
+                    list.innerHTML = result.proformas.map(proforma => `
+                        <div class="invoice-item" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border);">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">Proformă ${proforma.proformaNumber}</div>
+                                <div style="font-size: 0.875rem; color: var(--secondary-foreground);">
+                                    Client: ${proforma.clientName} • 
+                                    Total: ${proforma.total.toFixed(2)} RON •
+                                    Data: ${new Date(proforma.issueDate).toLocaleDateString('ro-RO')} •
+                                    Status: <span class="status-badge status-${proforma.status}">${getProformaStatusLabel(proforma.status)}</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                ${proforma.pdfPath ? `<a href="${proforma.pdfPath}" target="_blank" class="btn btn-secondary btn-sm"><i data-lucide="download"></i> PDF</a>` : ''}
+                                ${proforma.status !== 'converted' ? `<button class="btn btn-primary btn-sm" onclick="convertProformaToInvoice('${proforma.id}')"><i data-lucide="file-check"></i> Convertește în Factură</button>` : ''}
+                                <button class="btn btn-danger btn-sm" onclick="deleteProforma('${proforma.id}')"><i data-lucide="trash-2"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    loading.style.display = 'none';
+                    list.style.display = 'block';
+                    lucide.createIcons();
+                } else {
+                    loading.style.display = 'none';
+                    empty.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('❌ Error loading proformas:', error);
+                loading.style.display = 'none';
+                empty.style.display = 'block';
+            }
+        }
+        
+        function getProformaStatusLabel(status) {
+            const labels = {
+                'draft': 'Draft',
+                'sent': 'Trimisă',
+                'accepted': 'Acceptată',
+                'rejected': 'Respinsă',
+                'converted': 'Convertită în Factură'
+            };
+            return labels[status] || status;
+        }
+        
+        async function convertProformaToInvoice(proformaId) {
+            if (!confirm('Sigur doriți să convertiți această proformă în factură?')) return;
+            
+            try {
+                const response = await fetch(`/api/proformas/${proformaId}/convert`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Proforma a fost convertită în factură cu succes!');
+                    if (result.invoice.pdfPath) {
+                        window.open(result.invoice.pdfPath, '_blank');
+                    }
+                    loadProformas();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+        
+        async function deleteProforma(proformaId) {
+            if (!confirm('Sigur doriți să ștergeți această proformă?')) return;
+            
+            try {
+                const response = await fetch(`/api/proformas/${proformaId}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Proforma a fost ștearsă cu succes!');
+                    loadProformas();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+        
+        // Inițializare proforma la încărcarea paginii
+        addProformaProduct();
 
     </script>
 </body>
