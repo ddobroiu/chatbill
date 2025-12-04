@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificare Email - ChatBill</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .success-icon {
+            color: #28a745;
+        }
+
+        .error-icon {
+            color: #dc3545;
+        }
+
+        .loading-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .success {
+            display: none;
+        }
+
+        .error {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="loading">
+            <div class="icon loading-icon">⏳</div>
+            <h1>Verificare în curs...</h1>
+            <p>Te rugăm să aștepți.</p>
+        </div>
+
+        <div class="success">
+            <div class="icon success-icon">✅</div>
+            <h1>Email verificat cu succes!</h1>
+            <p>Contul tău ChatBill a fost activat. Acum te poți autentifica și folosi toate funcționalitățile aplicației.</p>
+            <a href="/" class="btn">Mergi la ChatBill</a>
+        </div>
+
+        <div class="error">
+            <div class="icon error-icon">❌</div>
+            <h1>Verificare eșuată</h1>
+            <p id="errorMessage">Link-ul de verificare este invalid sau a expirat.</p>
+            <a href="/" class="btn">Înapoi la ChatBill</a>
+        </div>
+    </div>
+
+    <script>
+        // Extrage token-ul din URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        if (!token) {
+            showError('Lipsește token-ul de verificare.');
+        } else {
+            verifyEmail(token);
+        }
+
+        async function verifyEmail(token) {
+            document.querySelector('.loading').style.display = 'block';
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/auth/verify-email?token=${token}`);
+                const data = await response.json();
+
+                document.querySelector('.loading').style.display = 'none';
+
+                if (data.success) {
+                    document.querySelector('.success').style.display = 'block';
+                } else {
+                    showError(data.error || 'Eroare la verificarea emailului');
+                }
+            } catch (error) {
+                document.querySelector('.loading').style.display = 'none';
+                showError('Eroare de conexiune. Te rugăm să încerci mai târziu.');
+            }
+        }
+
+        function showError(message) {
+            document.querySelector('.loading').style.display = 'none';
+            document.querySelector('.error').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+    </script>
+</body>
+</html>
