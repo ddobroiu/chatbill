@@ -424,9 +424,21 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="#proforma-generator" class="nav-link">
+                        <i data-lucide="file-text"></i>
+                        <span>Generează Proformă</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="#invoices" class="nav-link">
                         <i data-lucide="history"></i>
                         <span>Istoric Facturi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#proformas" class="nav-link">
+                        <i data-lucide="file-stack"></i>
+                        <span>Istoric Proforme</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -806,8 +818,8 @@
             
             cards.forEach(card => {
                 card.addEventListener('click', () => {
-                    cards.forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
+                    cards.forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
                 });
             });
         }
@@ -911,14 +923,14 @@
             const formData = new FormData(e.target);
             const settingsData = Object.fromEntries(formData.entries());
             
-            const selectedTemplate = document.querySelector('#template-selector-settings .template-card.selected');
+            const selectedTemplate = document.querySelector('#template-selector-settings .template-card.active');
             if (selectedTemplate) {
                 settingsData.preferredTemplate = selectedTemplate.dataset.template;
             }
 
             try {
                 const response = await fetch('/api/settings', {
-                    method: 'POST',
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(settingsData)
                 });

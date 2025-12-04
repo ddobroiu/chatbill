@@ -20,6 +20,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../../frontend')));
 app.use('/invoices', express.static(path.join(__dirname, '../../backend/invoices')));
+app.use('/proformas', express.static(path.join(__dirname, '../../backend/proformas')));
 
 // Session middleware pentru OAuth
 app.use(session({
@@ -41,6 +42,7 @@ app.use((req, res, next) => {
 // Import routes
 const chatRoutes = require('./routes/chatRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
+const proformaRoutes = require('./routes/proformaRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const aiChatRoutes = require('./routes/aiChat');
@@ -52,6 +54,7 @@ const gptChatRoutes = require('./routes/gptChat');
 app.use('/api/auth', authRoutes); // Rute autentificare
 app.use('/api/chat', chatRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/proformas', proformaRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/ai-chat', aiChatRoutes);
