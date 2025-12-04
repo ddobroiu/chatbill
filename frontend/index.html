@@ -3,885 +3,854 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatBill ⚡ Facturare Inteligentă</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>ChatBill - Facturare Inteligentă</title>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --secondary: #ec4899;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #1e293b;
-            --gray: #64748b;
-            --light-gray: #f1f5f9;
-            --border: #e2e8f0;
-            --radius: 16px;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            --background: #f8f9fa;
+            --foreground: #212529;
+            --card-background: #ffffff;
+            --primary: #0052cc;
+            --primary-foreground: #ffffff;
+            --secondary: #e9ecef;
+            --secondary-foreground: #495057;
+            --border: #dee2e6;
+            --input: #ced4da;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --font-sans: 'Inter', sans-serif;
+            --radius: 0.5rem;
         }
-        
-        * {
+
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: var(--font-sans);
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            display: flex;
             min-height: 100vh;
-            color: var(--dark);
-            -webkit-font-smoothing: antialiased;
         }
-        
-        /* Modern Header */
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--card-background);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 0.5rem 1.5rem;
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: var(--shadow);
         }
-        
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .user-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
             font-weight: 700;
-            font-size: 18px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .user-avatar:hover {
-            transform: scale(1.05);
-        }
-        
-        .btn-logout {
-            padding: 10px 20px;
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        .btn-logout:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-        
-        /* Modern Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 32px 24px;
-        }
-        
-        /* Modern Tabs */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 32px;
-            background: white;
-            padding: 8px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 16px 24px;
-            border: none;
-            background: transparent;
-            color: var(--gray);
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            border-radius: 12px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .tab:hover {
-            background: var(--light-gray);
             color: var(--primary);
         }
-        
-        .tab.active {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: var(--shadow);
+
+        .sidebar-nav {
+            flex-grow: 1;
+            margin-top: 1.5rem;
         }
-        
-        /* Modern Card */
-        .card {
-            background: white;
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
             border-radius: var(--radius);
-            padding: 32px;
-            box-shadow: var(--shadow);
-            margin-bottom: 24px;
+            color: var(--secondary-foreground);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
         }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 2px solid var(--light-gray);
+
+        .nav-link:hover {
+            background-color: var(--secondary);
         }
-        
-        .card-header h2 {
-            font-size: 24px;
+
+        .nav-link.active {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .nav-link i {
+            width: 20px;
+            height: 20px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h2 {
+            font-size: 2rem;
             font-weight: 700;
-            color: var(--dark);
+            margin-bottom: 0.25rem;
         }
-        
-        .card-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
+
+        .page-header p {
+            color: var(--secondary-foreground);
+            font-size: 1rem;
         }
-        
-        /* Modern Forms */
+
+        .card {
+            background-color: var(--card-background);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
         }
-        
+
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
         }
-        
+
         .form-group label {
             font-weight: 600;
-            font-size: 14px;
-            color: var(--dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
         }
-        
+
         .form-group input,
         .form-group select,
         .form-group textarea {
-            padding: 14px 16px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: inherit;
-            transition: all 0.3s;
-            background: white;
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--input);
+            border-radius: var(--radius);
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        
+
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
         }
-        
-        /* Modern Buttons */
+
         .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
             justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
         }
-        
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: var(--shadow);
+            background-color: var(--primary);
+            color: var(--primary-foreground);
         }
-        
+
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            background-color: #0045a6;
         }
         
         .btn-secondary {
-            background: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+            border: 1px solid var(--border);
         }
-        
+
         .btn-secondary:hover {
-            background: var(--primary);
-            color: white;
+            background-color: #d3d9df;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: var(--primary-foreground);
         }
         
-        /* Template Selector - ULTRA MODERN */
-        .template-grid {
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        #products-container .product-item {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin: 24px 0;
+            grid-template-columns: 3fr 1fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
         }
         
-        .template-option {
-            position: relative;
-            background: white;
-            border: 3px solid var(--border);
+        #products-container .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .totals-summary {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .totals-table {
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .totals-table tr td {
+            padding: 0.75rem;
+        }
+
+        .totals-table tr td:last-child {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .totals-table tr.grand-total td {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            border-top: 2px solid var(--border);
+        }
+
+        .template-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .template-card {
+            border: 2px solid var(--border);
             border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        
-        .template-option:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
+
+        .template-card:hover {
             border-color: var(--primary);
         }
-        
-        .template-option.selected {
+
+        .template-card.selected {
             border-color: var(--primary);
-            border-width: 4px;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.3);
         }
-        
-        .template-option.selected::after {
-            content: '✓';
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-            z-index: 10;
-            animation: checkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+        .template-card img {
+            width: 100%;
+            height: auto;
+            border-radius: calc(var(--radius) - 4px);
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
         }
-        
-        @keyframes checkPop {
-            0% { transform: scale(0) rotate(0); }
-            50% { transform: scale(1.2) rotate(180deg); }
-            100% { transform: scale(1) rotate(360deg); }
-        }
-        
-        .template-preview {
-            height: 180px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            position: relative;
-        }
-        
-        .template-preview.modern {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-        
-        .template-preview.classic {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-        }
-        
-        .template-preview.minimal {
-            background: #f8f9fa;
-            border-bottom: 4px solid #000;
-        }
-        
-        .template-preview.elegant {
-            background: linear-gradient(135deg, #8b4513, #a0522d);
-            border: 3px solid #daa520;
-        }
-        
-        .preview-line {
-            height: 16px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 8px;
-            animation: shimmer 2s infinite;
-        }
-        
-        .minimal .preview-line {
-            background: rgba(0,0,0,0.05);
-        }
-        
-        @keyframes shimmer {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-        
-        .template-info {
-            padding: 24px;
-        }
-        
-        .template-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-        }
-        
-        .badge-popular {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-        
-        .badge-pro {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-        }
-        
-        .badge-clean {
-            background: linear-gradient(135deg, #333, #666);
-            color: white;
-        }
-        
-        .badge-premium {
-            background: linear-gradient(135deg, #8b4513, #daa520);
-            color: white;
-        }
-        
-        .template-name {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 8px;
-        }
-        
-        .template-desc {
-            font-size: 14px;
-            color: var(--gray);
-            line-height: 1.5;
-        }
-        
-        .template-colors {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
-        }
-        
-        .color-dot {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        
-        /* Alert Box */
-        .alert {
-            padding: 16px 20px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 500;
-            animation: slideIn 0.4s;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 2px solid #10b981;
-        }
-        
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 2px solid #ef4444;
-        }
-        
-        .alert-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 2px solid #3b82f6;
-        }
-        
-        /* Tab Content */
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.4s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 24px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            transition: transform 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .stat-value {
-            font-size: 32px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            color: var(--gray);
-            margin-top: 8px;
+
+        .template-card span {
             font-weight: 600;
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 16px;
-            }
-            
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .template-grid {
-                grid-template-columns: 1fr;
-            }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--foreground);
+            color: var(--background);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
         }
         
-        /* Loading Spinner */
-        .spinner {
-            border: 3px solid var(--light-gray);
-            border-top: 3px solid var(--primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .toast.success { background-color: var(--success); color: white; }
+        .toast.error { background-color: var(--danger); color: white; }
+
     </style>
 </head>
 <body>
-    <!-- Modern Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                ⚡ ChatBill
-            </div>
-            <div class="user-menu">
-                <div class="user-avatar" id="userAvatar">AB</div>
-                <button class="btn-logout" onclick="logout()">🚪 Ieșire</button>
-            </div>
-        </div>
-    </header>
 
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Modern Tabs -->
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('dashboard', this)">
-                📊 Dashboard
-            </button>
-            <button class="tab" onclick="switchTab('invoice', this)">
-                📄 Factură Nouă
-            </button>
-            <button class="tab" onclick="switchTab('invoices', this)">
-                📋 Facturi
-            </button>
-            <button class="tab" onclick="switchTab('settings', this)">
-                ⚙️ Setări
-            </button>
-            <button class="tab" onclick="switchTab('chat', this)">
-                💬 Chat GPT
-            </button>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i data-lucide="receipt"></i>
+            <h1>ChatBill</h1>
         </div>
+        <nav class="sidebar-nav">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#dashboard" class="nav-link active">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#invoice-generator" class="nav-link">
+                        <i data-lucide="file-plus-2"></i>
+                        <span>Generează Factură</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#invoices" class="nav-link">
+                        <i data-lucide="history"></i>
+                        <span>Istoric Facturi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#settings" class="nav-link">
+                        <i data-lucide="settings"></i>
+                        <span>Setări</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
 
-        <!-- Dashboard Tab -->
-        <div id="dashboardTab" class="tab-content active">
+    <main class="main-content">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <div class="page-header">
+                <h2>Dashboard</h2>
+                <p>Bun venit! Aici aveți o privire de ansamblu asupra activității dvs.</p>
+            </div>
             <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📊</div>
-                    <h2>Bine ai venit în ChatBill!</h2>
+                <h3>În curând...</h3>
+                <p>Această secțiune va conține statistici și informații utile.</p>
+            </div>
+        </div>
+
+        <!-- Invoice Generator Page -->
+        <div id="invoice-generator" class="page">
+            <div class="page-header">
+                <h2>Generează o Nouă Factură</h2>
+                <p>Completați detaliile de mai jos pentru a emite o nouă factură.</p>
+            </div>
+            <form id="invoice-form">
+                <div class="card">
+                    <h3>Detalii Client</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="client-type">Tip Client</label>
+                            <select id="client-type" name="client-type">
+                                <option value="company">Persoană Juridică</option>
+                                <option value="individual">Persoană Fizică</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="company-fields">
+                            <label for="client-name">Nume Companie</label>
+                            <input type="text" id="client-name" name="client-name" required>
+                            <label for="client-cui">CUI</label>
+                            <input type="text" id="client-cui" name="client-cui" required>
+                            <label for="client-regCom">Reg. Com.</label>
+                            <input type="text" id="client-regCom" name="client-regCom">
+                        </div>
+                         <div class="form-group" id="individual-fields" style="display: none;">
+                            <label for="client-firstName">Prenume</label>
+                            <input type="text" id="client-firstName" name="client-firstName">
+                            <label for="client-lastName">Nume</label>
+                            <input type="text" id="client-lastName" name="client-lastName">
+                             <label for="client-cnp">CNP</label>
+                            <input type="text" id="client-cnp" name="client-cnp">
+                        </div>
+                        <div class="form-group">
+                            <label for="client-address">Adresă</label>
+                            <input type="text" id="client-address" name="client-address">
+                        </div>
+                        <div class="form-group">
+                            <label for="client-city">Oraș</label>
+                            <input type="text" id="client-city" name="client-city">
+                        </div>
+                        <div class="form-group">
+                            <label for="client-county">Județ</label>
+                            <input type="text" id="client-county" name="client-county">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Produse / Servicii</h3>
+                    <div id="products-container">
+                        <!-- Produsele vor fi adăugate aici de JS -->
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+                        <button type="button" id="add-product" class="btn btn-secondary">
+                            <i data-lucide="plus"></i>
+                            Adaugă Produs
+                        </button>
+                    </div>
                 </div>
                 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalInvoices">0</div>
-                        <div class="stat-label">📄 Facturi Generate</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalAmount">0 RON</div>
-                        <div class="stat-label">💰 Valoare Totală</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="thisMonth">0</div>
-                        <div class="stat-label">📅 Luna Aceasta</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Settings Tab -->
-        <div id="settingsTab" class="tab-content">
-            <div id="settingsMessage"></div>
-            
-            <form id="settingsForm" onsubmit="saveSettings(event)">
-                <!-- Company Info -->
                 <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">🏢</div>
-                        <h2>Informații Companie</h2>
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Denumire Companie</label>
-                            <input type="text" id="settingsName" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>CUI</label>
-                            <input type="text" id="settingsCui" name="cui" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Reg. Com.</label>
-                            <input type="text" id="settingsRegCom" name="regCom">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Template Selection in Settings -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">🎨</div>
-                        <h2>Template Factură Preferat</h2>
-                    </div>
-                    <p style="color: var(--gray); margin-bottom: 24px;">Selectează designul implicit pentru toate facturile tale. Poți schimba oricând!</p>
-                    
-                    <div class="template-grid">
-                        <div class="template-option" data-template="modern" onclick="selectTemplate('modern', this)">
-                            <div class="template-preview modern">
-                                <div class="preview-line" style="width: 60%;"></div>
-                                <div class="preview-line" style="width: 80%;"></div>
-                                <div class="preview-line" style="width: 70%;"></div>
-                            </div>
-                            <div class="template-info">
-                                <span class="template-badge badge-popular">✨ Popular</span>
-                                <div class="template-name">🎨 Modern</div>
-                                <div class="template-desc">Gradient vibrant pentru startup-uri tech și agenții creative</div>
-                                <div class="template-colors">
-                                    <div class="color-dot" style="background: #667eea;"></div>
-                                    <div class="color-dot" style="background: #764ba2;"></div>
-                                    <div class="color-dot" style="background: #f093fb;"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="template-option" data-template="classic" onclick="selectTemplate('classic', this)">
-                            <div class="template-preview classic">
-                                <div class="preview-line" style="width: 60%;"></div>
-                                <div class="preview-line" style="width: 80%;"></div>
-                                <div class="preview-line" style="width: 70%;"></div>
-                            </div>
-                            <div class="template-info">
-                                <span class="template-badge badge-pro">💼 Profesional</span>
-                                <div class="template-name">📋 Classic</div>
-                                <div class="template-desc">Design corporatist pentru firme tradiționale și servicii profesionale</div>
-                                <div class="template-colors">
-                                    <div class="color-dot" style="background: #2c3e50;"></div>
-                                    <div class="color-dot" style="background: #34495e;"></div>
-                                    <div class="color-dot" style="background: #3498db;"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="template-option" data-template="minimal" onclick="selectTemplate('minimal', this)">
-                            <div class="template-preview minimal">
-                                <div class="preview-line" style="width: 60%;"></div>
-                                <div class="preview-line" style="width: 80%;"></div>
-                                <div class="preview-line" style="width: 70%;"></div>
-                            </div>
-                            <div class="template-info">
-                                <span class="template-badge badge-clean">✨ Clean</span>
-                                <div class="template-name">⚪ Minimal</div>
-                                <div class="template-desc">Simplitate elegantă pentru arhitecți, designeri și consultanți</div>
-                                <div class="template-colors">
-                                    <div class="color-dot" style="background: #000;"></div>
-                                    <div class="color-dot" style="background: #333;"></div>
-                                    <div class="color-dot" style="background: #666;"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="template-option" data-template="elegant" onclick="selectTemplate('elegant', this)">
-                            <div class="template-preview elegant">
-                                <div class="preview-line" style="width: 60%;"></div>
-                                <div class="preview-line" style="width: 80%;"></div>
-                                <div class="preview-line" style="width: 70%;"></div>
-                            </div>
-                            <div class="template-info">
-                                <span class="template-badge badge-premium">👑 Premium</span>
-                                <div class="template-name">✨ Elegant</div>
-                                <div class="template-desc">Rafinament premium pentru boutique-uri de lux și brand-uri exclusive</div>
-                                <div class="template-colors">
-                                    <div class="color-dot" style="background: #8b4513;"></div>
-                                    <div class="color-dot" style="background: #a0522d;"></div>
-                                    <div class="color-dot" style="background: #daa520;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <input type="hidden" id="preferredTemplate" name="preferredTemplate" value="modern">
-                </div>
-
-                <!-- More Settings... -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">📍</div>
-                        <h2>Adresă</h2>
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Adresă</label>
-                            <input type="text" id="settingsAddress" name="address">
-                        </div>
-                        <div class="form-group">
-                            <label>Oraș</label>
-                            <input type="text" id="settingsCity" name="city">
-                        </div>
-                        <div class="form-group">
-                            <label>Județ</label>
-                            <input type="text" id="settingsCounty" name="county">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">📞</div>
-                        <h2>Contact</h2>
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Telefon</label>
-                            <input type="tel" id="settingsPhone" name="phone">
-                        </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="settingsEmail" name="email">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">🏦</div>
-                        <h2>Date Bancare</h2>
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Bancă</label>
-                            <input type="text" id="settingsBank" name="bank">
-                        </div>
-                        <div class="form-group">
-                            <label>IBAN</label>
-                            <input type="text" id="settingsIban" name="iban">
-                        </div>
-                        <div class="form-group">
-                            <label>Capital Social (RON)</label>
-                            <input type="text" id="settingsCapital" name="capital">
-                        </div>
+                    <div class="totals-summary">
+                        <table class="totals-table">
+                            <tbody>
+                                <tr>
+                                    <td>Subtotal:</td>
+                                    <td id="summary-subtotal">0.00 RON</td>
+                                </tr>
+                                <tr>
+                                    <td>TVA:</td>
+                                    <td id="summary-vat">0.00 RON</td>
+                                </tr>
+                                <tr class="grand-total">
+                                    <td>Total General:</td>
+                                    <td id="summary-total">0.00 RON</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 <div style="text-align: right;">
-                    <button type="submit" class="btn btn-primary">💾 Salvează Setările</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save"></i>
+                        Generează și Salvează Factura
+                    </button>
                 </div>
             </form>
         </div>
 
-        <!-- Invoice Tab - Simplified (no template selector here) -->
-        <div id="invoiceTab" class="tab-content">
-            <div id="invoiceMessage"></div>
+        <!-- Invoices History Page -->
+        <div id="invoices" class="page">
+            <div class="page-header">
+                <h2>Istoric Facturi</h2>
+                <p>Vizualizați și gestionați facturile emise anterior.</p>
+            </div>
             <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📄</div>
-                    <h2>Generare Factură Nouă</h2>
-                </div>
-                <p style="color: var(--gray); margin-bottom: 24px;">Template-ul setat în Setări va fi folosit automat</p>
-                <!-- Add invoice form here -->
+                <p>Istoricul facturilor va fi afișat aici.</p>
             </div>
         </div>
 
-        <!-- Invoices List Tab -->
-        <div id="invoicesTab" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📋</div>
-                    <h2>Lista Facturi</h2>
-                </div>
-                <div id="invoicesList">
-                    <div class="spinner"></div>
-                </div>
+        <!-- Settings Page -->
+        <div id="settings" class="page">
+            <div class="page-header">
+                <h2>Setări Companie și Preferințe</h2>
+                <p>Configurați datele companiei dvs. și alte preferințe.</p>
             </div>
-        </div>
-
-        <!-- Chat Tab -->
-        <div id="chatTab" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">💬</div>
-                    <h2>ChatBill Assistant - Powered by GPT</h2>
+            <form id="settings-form">
+                <div class="card">
+                    <h3>Date Companie Emitentă</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="company-name">Nume Companie</label>
+                            <input type="text" id="company-name" name="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-cui">CUI</label>
+                            <input type="text" id="company-cui" name="cui">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-regCom">Reg. Com.</label>
+                            <input type="text" id="company-regCom" name="regCom">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-address">Adresă Sediu Social</label>
+                            <input type="text" id="company-address" name="address">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-city">Oraș</label>
+                            <input type="text" id="company-city" name="city">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-county">Județ</label>
+                            <input type="text" id="company-county" name="county">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-iban">IBAN</label>
+                            <input type="text" id="company-iban" name="iban">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-bank">Bancă</label>
+                            <input type="text" id="company-bank" name="bank">
+                        </div>
+                         <div class="form-group">
+                            <label for="company-capital">Capital Social</label>
+                            <input type="text" id="company-capital" name="capital">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-phone">Telefon</label>
+                            <input type="text" id="company-phone" name="phone">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-email">Email</label>
+                            <input type="email" id="company-email" name="email">
+                        </div>
+                    </div>
                 </div>
-                <!-- Add chat interface here -->
-            </div>
+                <div class="card">
+                    <h3>Template Preferat Factură</h3>
+                    <p>Selectați stilul vizual implicit pentru facturile generate.</p>
+                    <br>
+                    <div id="template-selector-settings" class="template-selector">
+                        <div class="template-card" data-template="modern">
+                            <img src="https://i.imgur.com/6ZIZg8t.png" alt="Modern Template">
+                            <span>Modern</span>
+                        </div>
+                        <div class="template-card" data-template="classic">
+                            <img src="https://i.imgur.com/L3gV1S2.png" alt="Classic Template">
+                            <span>Clasic</span>
+                        </div>
+                        <div class="template-card" data-template="minimal">
+                            <img src="https://i.imgur.com/gqM9g2s.png" alt="Minimal Template">
+                            <span>Minimal</span>
+                        </div>
+                        <div class="template-card" data-template="elegant">
+                            <img src="https://i.imgur.com/sQ7h2aC.png" alt="Elegant Template">
+                            <span>Elegant</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save"></i>
+                        Salvează Setările
+                    </button>
+                </div>
+            </form>
         </div>
-    </div>
+    </main>
+    
+    <div id="toast-container"></div>
 
-    <script src="js/app.js"></script>
+    <script src="/js/app.js"></script>
     <script>
-        // Template Selection
-        function selectTemplate(template, element) {
-            document.querySelectorAll('.template-option').forEach(el => {
-                el.classList.remove('selected');
-            });
-            element.classList.add('selected');
-            document.getElementById('preferredTemplate').value = template;
-        }
-        
-        // Tab Switching
-        function switchTab(tabName, button) {
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            button.classList.add('active');
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            
-            if (tabName === 'invoices') {
-                loadInvoices();
+        lucide.createIcons();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page');
+
+            // Navigation
+            function navigateTo(hash) {
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.hash === hash);
+                });
+                pages.forEach(page => {
+                    page.classList.toggle('active', '#' + page.id === hash);
+                });
             }
-        }
-        
-        // Initialize on load
-        window.addEventListener('DOMContentLoaded', () => {
-            if (!checkAuth()) return;
-            loadSettings();
-            loadStats();
-        });
-        
-        function loadStats() {
-            // Load dashboard stats
-            fetch('http://localhost:3000/api/invoices', {
-                headers: getAuthHeaders()
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('totalInvoices').textContent = data.invoices.length;
-                    const total = data.invoices.reduce((sum, inv) => sum + inv.total, 0);
-                    document.getElementById('totalAmount').textContent = total.toFixed(2) + ' RON';
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.hash;
+                    navigateTo(targetId);
+                    window.location.hash = targetId;
+                });
+            });
+
+            // Initial page load
+            const currentHash = window.location.hash || '#dashboard';
+            navigateTo(currentHash);
+
+            // Client type toggle
+            const clientTypeSelect = document.getElementById('client-type');
+            const companyFields = document.getElementById('company-fields');
+            const individualFields = document.getElementById('individual-fields');
+
+            clientTypeSelect.addEventListener('change', () => {
+                if (clientTypeSelect.value === 'company') {
+                    companyFields.style.display = 'block';
+                    individualFields.style.display = 'none';
+                } else {
+                    companyFields.style.display = 'none';
+                    individualFields.style.display = 'block';
                 }
             });
+            
+            // Initialize template selector in settings
+            initTemplateSelector();
+            
+            // Add first product on page load
+            addProduct();
+        });
+        
+        function initTemplateSelector() {
+            const selector = document.getElementById('template-selector-settings');
+            if (!selector) return;
+            
+            const cards = selector.querySelectorAll('.template-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    cards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                });
+            });
         }
+        
+        // Products Management
+        let productCount = 0;
+        const productsContainer = document.getElementById('products-container');
+        
+        function addProduct() {
+            productCount++;
+            const productItem = document.createElement('div');
+            productItem.classList.add('product-item');
+            productItem.innerHTML = `
+                <div class="form-group">
+                    <label>Descriere Produs/Serviciu</label>
+                    <input type="text" name="product-name-${productCount}" placeholder="ex: Servicii consultanță" required>
+                </div>
+                <div class="form-group">
+                    <label>Cant.</label>
+                    <input type="number" name="product-quantity-${productCount}" value="1" min="0" step="any" class="recalculate">
+                </div>
+                <div class="form-group">
+                    <label>U.M.</label>
+                    <input type="text" name="product-unit-${productCount}" value="buc">
+                </div>
+                <div class="form-group">
+                    <label>Preț Unitar</label>
+                    <input type="number" name="product-price-${productCount}" value="0" min="0" step="any" class="recalculate">
+                </div>
+                <div class="form-group">
+                    <label>TVA (%)</label>
+                    <input type="number" name="product-vat-${productCount}" value="19" min="0" class="recalculate">
+                </div>
+                <button type="button" class="btn btn-danger remove-product" style="margin-top: 1.5rem;">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            `;
+            productsContainer.appendChild(productItem);
+            lucide.createIcons(); // Re-render icons
+            
+            productItem.querySelector('.remove-product').addEventListener('click', () => {
+                productItem.remove();
+                calculateTotals();
+            });
+            
+            productItem.querySelectorAll('.recalculate').forEach(input => {
+                input.addEventListener('input', calculateTotals);
+            });
+        }
+
+        document.getElementById('add-product').addEventListener('click', addProduct);
+
+        function calculateTotals() {
+            let subtotal = 0;
+            let vat = 0;
+
+            productsContainer.querySelectorAll('.product-item').forEach(item => {
+                const quantity = parseFloat(item.querySelector('input[name^="product-quantity"]').value) || 0;
+                const price = parseFloat(item.querySelector('input[name^="product-price"]').value) || 0;
+                const vatRate = parseFloat(item.querySelector('input[name^="product-vat"]').value) || 0;
+
+                const itemSubtotal = quantity * price;
+                const itemVat = itemSubtotal * (vatRate / 100);
+
+                subtotal += itemSubtotal;
+                vat += itemVat;
+            });
+
+            const total = subtotal + vat;
+
+            document.getElementById('summary-subtotal').textContent = `${subtotal.toFixed(2)} RON`;
+            document.getElementById('summary-vat').textContent = `${vat.toFixed(2)} RON`;
+            document.getElementById('summary-total').textContent = `${total.toFixed(2)} RON`;
+        }
+        
+        // Toast notifications
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // Form Submissions
+        
+        // Settings Form
+        document.getElementById('settings-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const settingsData = Object.fromEntries(formData.entries());
+            
+            const selectedTemplate = document.querySelector('#template-selector-settings .template-card.selected');
+            if (selectedTemplate) {
+                settingsData.preferredTemplate = selectedTemplate.dataset.template;
+            }
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settingsData)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Setările au fost salvate cu succes!');
+                } else {
+                    throw new Error(result.error || 'A apărut o eroare la salvarea setărilor.');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+        
+        // Invoice Form
+        document.getElementById('invoice-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const clientType = document.getElementById('client-type').value;
+            let clientData = {};
+            if (clientType === 'company') {
+                clientData = {
+                    type: 'company',
+                    name: document.getElementById('client-name').value,
+                    cui: document.getElementById('client-cui').value,
+                    regCom: document.getElementById('client-regCom').value,
+                    address: document.getElementById('client-address').value,
+                    city: document.getElementById('client-city').value,
+                    county: document.getElementById('client-county').value,
+                };
+            } else {
+                 clientData = {
+                    type: 'individual',
+                    firstName: document.getElementById('client-firstName').value,
+                    lastName: document.getElementById('client-lastName').value,
+                    cnp: document.getElementById('client-cnp').value,
+                    address: document.getElementById('client-address').value,
+                    city: document.getElementById('client-city').value,
+                    county: document.getElementById('client-county').value,
+                };
+            }
+            
+            const products = [];
+            productsContainer.querySelectorAll('.product-item').forEach((item, index) => {
+                const i = index + 1;
+                products.push({
+                    name: item.querySelector(`input[name="product-name-${i}"]`).value,
+                    quantity: parseFloat(item.querySelector(`input[name="product-quantity-${i}"]`).value),
+                    unit: item.querySelector(`input[name="product-unit-${i}"]`).value,
+                    price: parseFloat(item.querySelector(`input[name="product-price-${i}"]`).value),
+                    vat: parseInt(item.querySelector(`input[name="product-vat-${i}"]`).value)
+                });
+            });
+
+            const invoicePayload = {
+                client: clientData,
+                products: products
+            };
+
+            try {
+                const response = await fetch('/api/invoices', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(invoicePayload)
+                });
+                const result = await response.json();
+                if (result.success && result.invoice.pdfPath) {
+                    showToast('Factura a fost generată cu succes!');
+                    window.open(result.invoice.pdfPath, '_blank');
+                    e.target.reset();
+                    productsContainer.innerHTML = '';
+                    addProduct();
+                    calculateTotals();
+                } else {
+                    throw new Error(result.error || 'A apărut o eroare la generarea facturii.');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+        
+        // Load settings on page load
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const result = await response.json();
+                if (result.success && result.settings) {
+                    const form = document.getElementById('settings-form');
+                    for (const key in result.settings) {
+                        const input = form.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            input.value = result.settings[key] || '';
+                        }
+                    }
+                    
+                    const preferredTemplate = result.settings.preferredTemplate;
+                    if (preferredTemplate) {
+                        const card = document.querySelector(`#template-selector-settings .template-card[data-template="${preferredTemplate}"]`);
+                        if (card) {
+                            card.click();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Eroare la încărcarea setărilor:', error);
+            }
+        }
+
+        loadSettings();
+
     </script>
 </body>
 </html>

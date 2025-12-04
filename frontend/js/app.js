@@ -1,43 +1,18 @@
 // ========== AUTHENTICATION ==========
 function checkAuth() {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    
-    if (!token || !user) {
-        // Redirect to login
-        window.location.href = '/login.html';
-        return false;
-    }
-    
-    // Display user info in header
-    try {
-        const userData = JSON.parse(user);
-        document.getElementById('userName').textContent = userData.name;
-        document.getElementById('userEmail').textContent = userData.email;
-        
-        // Set avatar initials
-        const initials = userData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-        document.getElementById('userAvatar').textContent = initials;
-    } catch (error) {
-        console.error('Error parsing user data:', error);
-        logout();
-    }
-    
+    // Authentication disabled - direct access allowed
     return true;
 }
 
 function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/login.html';
+    // Logout functionality disabled
+    console.log('Logout called');
 }
 
 // Helper to get authorization header
 function getAuthHeaders() {
-    const token = localStorage.getItem('token');
     return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
     };
 }
 
