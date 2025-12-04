@@ -266,24 +266,6 @@ async function generateInvoicePDF(invoice) {
     }
   });
 }
-    });
-    
-    writeStream.on('error', (err) => {
-      console.error('❌ Eroare scriere PDF:', err);
-      reject(err);
-    });
-    
-    doc.on('error', (err) => {
-      console.error('❌ Eroare generare PDF:', err);
-      reject(err);
-    });
-    
-    } catch (error) {
-      console.error('❌ Eroare în generateInvoicePDF:', error);
-      reject(error);
-    }
-  });
-}
 
 // Obține toate facturile
 async function getInvoices(req, res) {
