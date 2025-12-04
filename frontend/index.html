@@ -599,6 +599,248 @@
             font-size: 13px;
             margin: 0;
         }
+
+        /* Modern Template Selector Styles */
+        .template-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .template-card {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .template-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
+        }
+        
+        .template-card.selected {
+            border-color: #667eea;
+            border-width: 4px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+            transform: scale(1.02);
+        }
+        
+        .template-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #667eea;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            z-index: 10;
+            animation: checkmark 0.3s ease-in-out;
+        }
+        
+        @keyframes checkmark {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+        
+        .template-preview {
+            height: 160px;
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .modern-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .classic-preview {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+        
+        .minimal-preview {
+            background: #f8f8f8;
+            border-bottom: 3px solid #000;
+        }
+        
+        .elegant-preview {
+            background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+            border: 2px solid #daa520;
+        }
+        
+        .preview-header {
+            height: 30px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            animation: pulse 2s infinite;
+        }
+        
+        .minimal-preview .preview-header {
+            background: rgba(0,0,0,0.05);
+        }
+        
+        .preview-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        
+        .preview-lines::before,
+        .preview-lines::after {
+            content: '';
+            height: 12px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 4px;
+        }
+        
+        .minimal-preview .preview-lines::before,
+        .minimal-preview .preview-lines::after {
+            background: rgba(0,0,0,0.04);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .template-info {
+            padding: 20px;
+            position: relative;
+        }
+        
+        .template-badge {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .template-badge.pro {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+        }
+        
+        .template-badge.clean {
+            background: linear-gradient(135deg, #333, #666);
+        }
+        
+        .template-badge.premium {
+            background: linear-gradient(135deg, #8b4513, #daa520);
+        }
+        
+        .template-info h4 {
+            margin: 18px 0 6px 0;
+            font-size: 20px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .template-info p {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        
+        .template-desc {
+            display: block;
+            color: #718096;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .template-colors {
+            display: flex;
+            gap: 8px;
+            padding: 0 20px 16px;
+        }
+        
+        .color-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .selected-template-info {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            color: #2d3748;
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .check-icon {
+            background: #667eea;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .selected-template-info strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 768px) {
+            .template-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .template-card {
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -806,6 +1048,92 @@
                             <label for="clientCounty">Județ</label>
                             <input type="text" id="clientCounty" name="clientCounty">
                         </div>
+                    </div>
+                </div>
+
+                <!-- Template Selection - MODERN UI -->
+                <div class="invoice-section">
+                    <h3>🎨 Alege Template-ul Facturii</h3>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Selectează designul pe care îl preferi pentru factură - cu diacritice românești complete (ă, â, î, ș, ț)</p>
+                    
+                    <div class="template-selector">
+                        <div class="template-card" data-template="modern">
+                            <div class="template-preview modern-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-lines"></div>
+                            </div>
+                            <div class="template-info">
+                                <div class="template-badge">✨ Popular</div>
+                                <h4>🎨 Modern</h4>
+                                <p>Gradient Purple/Pink</p>
+                                <span class="template-desc">Perfect pentru startup-uri tech și agenții creative</span>
+                            </div>
+                            <div class="template-colors">
+                                <span class="color-dot" style="background: #667eea;"></span>
+                                <span class="color-dot" style="background: #764ba2;"></span>
+                                <span class="color-dot" style="background: #f093fb;"></span>
+                            </div>
+                        </div>
+
+                        <div class="template-card" data-template="classic">
+                            <div class="template-preview classic-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-lines"></div>
+                            </div>
+                            <div class="template-info">
+                                <div class="template-badge pro">💼 Profesional</div>
+                                <h4>📋 Classic</h4>
+                                <p>Corporate Blue-Gray</p>
+                                <span class="template-desc">Ideal pentru firme corporative și servicii profesionale</span>
+                            </div>
+                            <div class="template-colors">
+                                <span class="color-dot" style="background: #2c3e50;"></span>
+                                <span class="color-dot" style="background: #34495e;"></span>
+                                <span class="color-dot" style="background: #3498db;"></span>
+                            </div>
+                        </div>
+
+                        <div class="template-card" data-template="minimal">
+                            <div class="template-preview minimal-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-lines"></div>
+                            </div>
+                            <div class="template-info">
+                                <div class="template-badge clean">✨ Clean</div>
+                                <h4>⚪ Minimal</h4>
+                                <p>Black & White</p>
+                                <span class="template-desc">Design minimalist pentru arhitecți și designeri</span>
+                            </div>
+                            <div class="template-colors">
+                                <span class="color-dot" style="background: #000000;"></span>
+                                <span class="color-dot" style="background: #333333;"></span>
+                                <span class="color-dot" style="background: #666666;"></span>
+                            </div>
+                        </div>
+
+                        <div class="template-card" data-template="elegant">
+                            <div class="template-preview elegant-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-lines"></div>
+                            </div>
+                            <div class="template-info">
+                                <div class="template-badge premium">👑 Premium</div>
+                                <h4>✨ Elegant</h4>
+                                <p>Brown & Gold</p>
+                                <span class="template-desc">Lux și rafinament pentru boutique-uri premium</span>
+                            </div>
+                            <div class="template-colors">
+                                <span class="color-dot" style="background: #8b4513;"></span>
+                                <span class="color-dot" style="background: #a0522d;"></span>
+                                <span class="color-dot" style="background: #daa520;"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="selectedTemplate" name="template" value="modern">
+                    <div class="selected-template-info">
+                        <span class="check-icon">✓</span>
+                        <span>Template selectat: <strong id="selectedTemplateName">Modern</strong></span>
                     </div>
                 </div>
 

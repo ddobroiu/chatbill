@@ -41,6 +41,45 @@ function getAuthHeaders() {
     };
 }
 
+// ========== TEMPLATE SELECTOR ==========
+function initTemplateSelector() {
+    const templateCards = document.querySelectorAll('.template-card');
+    const selectedTemplateInput = document.getElementById('selectedTemplate');
+    const selectedTemplateNameSpan = document.getElementById('selectedTemplateName');
+    
+    templateCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selection from all cards
+            templateCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selection to clicked card
+            this.classList.add('selected');
+            
+            // Update hidden input and display
+            const template = this.getAttribute('data-template');
+            selectedTemplateInput.value = template;
+            
+            // Update selected template name with emoji
+            const templateNames = {
+                'modern': '🎨 Modern',
+                'classic': '📋 Classic',
+                'minimal': '⚪ Minimal',
+                'elegant': '✨ Elegant'
+            };
+            selectedTemplateNameSpan.textContent = templateNames[template] || template;
+            
+            // Smooth scroll effect
+            this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    });
+    
+    // Select Modern by default on page load
+    const defaultCard = document.querySelector('[data-template="modern"]');
+    if (defaultCard) {
+        defaultCard.classList.add('selected');
+    }
+}
+
 // ========== TAB SWITCHING ==========
 function switchTab(tabName) {
     // Hide all tabs
@@ -67,6 +106,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) {
         return;
     }
+    
+    // Initialize template selector
+    initTemplateSelector();
     
     loadSettings();
     checkANAFStatus();
@@ -339,7 +381,8 @@ async function generateInvoice(event) {
             city: formData.get('clientCity'),
             county: formData.get('clientCounty')
         },
-        products: products
+        products: products,
+        template: document.getElementById('selectedTemplate').value || 'modern'
     };
 
     try {

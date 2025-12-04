@@ -127,6 +127,9 @@ model CompanySettings {
   // Reprezentant legal
   legalRep  String?
   
+  // Template preferat pentru facturi
+  preferredTemplate String? @default("modern")
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   

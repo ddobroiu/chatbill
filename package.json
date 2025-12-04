@@ -8,11 +8,26 @@
     "build": "cd backend && npm install && npx prisma generate",
     "dev": "cd backend && npm run dev"
   },
-  "keywords": ["chatbill", "invoicing", "ai", "gpt", "anaf"],
+  "keywords": [
+    "chatbill",
+    "invoicing",
+    "ai",
+    "gpt",
+    "anaf"
+  ],
   "author": "ChatBill Team",
   "license": "ISC",
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.555.0",
+    "tailwind-merge": "^3.4.0"
   }
 }
