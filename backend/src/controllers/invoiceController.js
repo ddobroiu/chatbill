@@ -1,7 +1,13 @@
 const prisma = require('../db/prismaWrapper');
+const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
-const { createPDF } = require('../services/pdfGenerator');
+const {
+  renderModernTemplate,
+  renderClassicTemplate,
+  renderMinimalTemplate,
+  renderElegantTemplate
+} = require('../services/pdfTemplates');
 
 // Director pentru salvarea facturilor PDF
 const invoicesDir = path.join(__dirname, '../../invoices');
@@ -100,7 +106,7 @@ async function createInvoice(req, res) {
       status: 'generated',
       template: finalTemplate, // Adaugă template-ul selectat
       
-      // Date emitent (din setări) - doar câmpurile care există în schema
+      // Date emitent (din setări)
       providerName: companySettings.name || '',
       providerCUI: companySettings.cui || '',
       providerRegCom: companySettings.regCom || '',
@@ -110,8 +116,9 @@ async function createInvoice(req, res) {
       providerPhone: companySettings.phone || '',
       providerEmail: companySettings.email || '',
       providerBank: companySettings.bank || '',
-      providerIban: companySettings.iban || '',
+      providerIBAN: companySettings.iban || '',
       providerCapital: companySettings.capital || '',
+      providerLegalRep: companySettings.legalRep || '',
       
       // Date client/beneficiar
       clientType: client.type,
@@ -143,13 +150,13 @@ async function createInvoice(req, res) {
 
     // Generează PDF
     console.log('🔵 Se generează PDF...');
-    const pdfResult = await generateInvoicePDF(invoice);
-    console.log('✅ PDF generat:', pdfResult.pdfPath);
+    const pdfPath = await generateInvoicePDF(invoice);
+    console.log('✅ PDF generat:', pdfPath);
     
     // Actualizează cu calea PDF
     const updatedInvoice = await prisma.invoice.update({
       where: { id: invoice.id },
-      data: { pdfPath: pdfResult.pdfPath },
+      data: { pdfPath },
       include: {
         items: true
       }
@@ -159,7 +166,7 @@ async function createInvoice(req, res) {
     res.status(201).json({
       success: true,
       invoice: updatedInvoice,
-      pdfPath: pdfResult.pdfPath
+      pdfPath: pdfPath
     });
 
   } catch (error) {
@@ -174,14 +181,23 @@ async function createInvoice(req, res) {
 }
 
 
-// Generare PDF pentru factură folosind pdfmake modern
+// Generare PDF pentru factură folosind template-uri
 async function generateInvoicePDF(invoice) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       console.log('🔵 Începe generarea PDF pentru:', invoice.invoiceNumber, 'Template:', invoice.template || 'modern');
       
+      const doc = new PDFDocument({ 
+        margin: 0,
+        size: 'A4',
+        bufferPages: true
+      });
+      
       const fileName = `${invoice.invoiceNumber}.pdf`;
       const filePath = path.join(invoicesDir, fileName);
+      
+      const writeStream = fs.createWriteStream(filePath);
+      doc.pipe(writeStream);
 
       // Pregătește datele pentru template
       const companySettings = {
@@ -209,12 +225,11 @@ async function generateInvoicePDF(invoice) {
         clientAddress: invoice.clientAddress,
         clientCity: invoice.clientCity,
         clientCounty: invoice.clientCounty,
-        items: invoice.items.map(item => ({
+        products: invoice.items.map(item => ({
           name: item.name,
           quantity: item.quantity,
           price: item.price,
-          unit: item.unit || 'buc',
-          vat: item.vat || 19
+          unit: item.unit || 'buc'
         })),
         subtotal: invoice.subtotal,
         tvaAmount: invoice.tvaAmount,
@@ -224,20 +239,40 @@ async function generateInvoicePDF(invoice) {
       // Selectează template-ul
       const template = invoice.template || 'modern';
       
-      console.log('🔵 Generare PDF cu pdfmake...');
+      switch (template) {
+        case 'classic':
+          renderClassicTemplate(doc, invoiceData, companySettings);
+          break;
+        case 'minimal':
+          renderMinimalTemplate(doc, invoiceData, companySettings);
+          break;
+        case 'elegant':
+          renderElegantTemplate(doc, invoiceData, companySettings);
+          break;
+        case 'modern':
+        default:
+          renderModernTemplate(doc, invoiceData, companySettings);
+          break;
+      }
+
+      // Footer common pentru toate template-urile
+      doc.fontSize(8)
+         .fillColor('#666666')
+         .font('Helvetica')
+         .text('Document generat cu ChatBill', 50, 780, { align: 'center', width: 512 })
+         .text(`Data generării: ${new Date().toLocaleString('ro-RO')}`, 50, 795, { align: 'center', width: 512 });
+
+      console.log('🔵 PDF scris, se închide stream-ul...');
+      doc.end();
       
-      // Generează PDF-ul cu pdfmake
-      const pdfBuffer = await createPDF(invoiceData, companySettings, template);
-      
-      // Salvează fișierul
-      fs.writeFileSync(filePath, pdfBuffer);
-      
-      console.log('✅ PDF generat: /invoices/' + fileName);
-      
-      resolve({
-        success: true,
-        pdfPath: `/invoices/${fileName}`,
-        fileName: fileName
+      writeStream.on('finish', () => {
+        console.log('✅ PDF finalizat:', fileName);
+        resolve(fileName);
+      });
+
+      writeStream.on('error', (err) => {
+        console.error('❌ Eroare scriere PDF:', err);
+        reject(err);
       });
       
     } catch (error) {

@@ -8,19 +8,38 @@ require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
+
+// CORS Configuration - Allow only specific origins
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'https://chatbill.ro',
+  'http://localhost:3000', // Pentru development local
+  'http://localhost:5173', // Pentru Vite dev server
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Permite requests fără origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 const io = socketIo(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+  cors: corsOptions
 });
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../../frontend')));
-app.use('/invoices', express.static(path.join(__dirname, '../../backend/invoices')));
-app.use('/proformas', express.static(path.join(__dirname, '../../backend/proformas')));
 
 // Session middleware pentru OAuth
 app.use(session({
@@ -42,7 +61,6 @@ app.use((req, res, next) => {
 // Import routes
 const chatRoutes = require('./routes/chatRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
-const proformaRoutes = require('./routes/proformaRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const aiChatRoutes = require('./routes/aiChat');
@@ -54,7 +72,6 @@ const gptChatRoutes = require('./routes/gptChat');
 app.use('/api/auth', authRoutes); // Rute autentificare
 app.use('/api/chat', chatRoutes);
 app.use('/api/invoices', invoiceRoutes);
-app.use('/api/proformas', proformaRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/ai-chat', aiChatRoutes);
@@ -82,7 +99,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     success: false,
     error: 'Eroare internă server',
-    message: err.message
+    message: process.env.NODE_ENV === 'production' ? 'A apărut o eroare. Te rugăm să încerci din nou.' : err.message
   });
 });
 

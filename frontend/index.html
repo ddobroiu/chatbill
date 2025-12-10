@@ -271,45 +271,6 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
-        
-        .btn-sm {
-            font-size: 0.875rem;
-            padding: 0.5rem 0.75rem;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .status-draft {
-            background-color: #e0e0e0;
-            color: #424242;
-        }
-        
-        .status-sent {
-            background-color: #bbdefb;
-            color: #0d47a1;
-        }
-        
-        .status-accepted {
-            background-color: #c8e6c9;
-            color: #1b5e20;
-        }
-        
-        .status-rejected {
-            background-color: #ffcdd2;
-            color: #b71c1c;
-        }
-        
-        .status-converted {
-            background-color: #d1c4e9;
-            color: #4a148c;
-        }
 
         #products-container .product-item {
             display: grid;
@@ -424,20 +385,6 @@
             padding: 0.75rem;
             min-width: auto;
         }
-        
-        /* Animations */
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
 
     </style>
 </head>
@@ -476,7 +423,7 @@
                 </li>
                 <li class="nav-item">
                     <a href="#proformas" class="nav-link">
-                        <i data-lucide="file-stack"></i>
+                        <i data-lucide="clock"></i>
                         <span>Istoric Proforme</span>
                     </a>
                 </li>
@@ -618,68 +565,39 @@
             </form>
         </div>
 
+
+        <!-- Invoices History Page -->
+        <div id="invoices" class="page">
+            <div class="page-header">
+                <h2>Istoric Facturi</h2>
+                <p>Vizualizați și gestionați facturile emise anterior.</p>
+            </div>
+            <div class="card">
+                <p>Istoricul facturilor va fi afișat aici.</p>
+            </div>
+        </div>
+
         <!-- Proforma Generator Page -->
         <div id="proforma-generator" class="page">
             <div class="page-header">
                 <h2>Generează o Nouă Proformă</h2>
-                <p>Completați detaliile de mai jos pentru a emite o nouă factură proformă.</p>
+                <p>Completați detaliile de mai jos pentru a emite o nouă proformă.</p>
             </div>
             <form id="proforma-form">
                 <div class="card">
                     <h3>Detalii Client</h3>
                     <div class="form-grid">
+                        <!-- Similar cu factura, se pot copia câmpurile -->
                         <div class="form-group">
-                            <label for="proforma-client-type">Tip Client</label>
-                            <select id="proforma-client-type" name="client-type">
-                                <option value="company">Persoană Juridică</option>
-                                <option value="individual">Persoană Fizică</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="proforma-company-fields">
-                            <label for="proforma-client-name">Nume Companie</label>
-                            <input type="text" id="proforma-client-name" name="client-name" required>
-                            <label for="proforma-client-cui">CUI</label>
-                            <div class="input-with-button">
-                                <input type="text" id="proforma-client-cui" name="client-cui" required placeholder="ex: RO12345678">
-                                <button type="button" id="autocomplete-proforma-client-btn" class="btn btn-secondary btn-icon" title="Auto-completare date din ANAF">
-                                    <i data-lucide="sparkles"></i>
-                                </button>
-                            </div>
-                            <label for="proforma-client-regCom">Reg. Com.</label>
-                            <input type="text" id="proforma-client-regCom" name="client-regCom">
-                        </div>
-                         <div class="form-group" id="proforma-individual-fields" style="display: none;">
-                            <label for="proforma-client-firstName">Prenume</label>
-                            <input type="text" id="proforma-client-firstName" name="client-firstName">
-                            <label for="proforma-client-lastName">Nume</label>
-                            <input type="text" id="proforma-client-lastName" name="client-lastName">
-                             <label for="proforma-client-cnp">CNP</label>
-                            <input type="text" id="proforma-client-cnp" name="client-cnp">
+                            <label for="proforma-client-name">Nume Client</label>
+                            <input type="text" id="proforma-client-name" name="proforma-client-name" required>
                         </div>
                         <div class="form-group">
                             <label for="proforma-client-address">Adresă</label>
-                            <input type="text" id="proforma-client-address" name="client-address">
-                        </div>
-                        <div class="form-group">
-                            <label for="proforma-client-city">Oraș</label>
-                            <input type="text" id="proforma-client-city" name="client-city">
-                        </div>
-                        <div class="form-group">
-                            <label for="proforma-client-county">Județ</label>
-                            <input type="text" id="proforma-client-county" name="client-county">
+                            <input type="text" id="proforma-client-address" name="proforma-client-address">
                         </div>
                     </div>
                 </div>
-                
-                <div class="card">
-                    <h3>Validitate Ofertă</h3>
-                    <div class="form-group">
-                        <label for="proforma-valid-days">Valabilă (zile)</label>
-                        <input type="number" id="proforma-valid-days" name="valid-days" value="30" min="1" max="365">
-                        <small style="color: var(--secondary-foreground);">Numărul de zile pentru care oferta este valabilă</small>
-                    </div>
-                </div>
-
                 <div class="card">
                     <h3>Produse / Servicii</h3>
                     <div id="proforma-products-container">
@@ -692,7 +610,6 @@
                         </button>
                     </div>
                 </div>
-                
                 <div class="card">
                     <div class="totals-summary">
                         <table class="totals-table">
@@ -713,59 +630,23 @@
                         </table>
                     </div>
                 </div>
-
                 <div style="text-align: right;">
                     <button type="submit" class="btn btn-primary">
-                        <i data-lucide="file-text"></i>
+                        <i data-lucide="save"></i>
                         Generează și Salvează Proforma
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Invoices History Page -->
-        <div id="invoices" class="page">
-            <div class="page-header">
-                <h2>Istoric Facturi</h2>
-                <p>Vizualizați și gestionați facturile emise anterior.</p>
-            </div>
-            <div class="card">
-                <div id="invoices-loading" style="text-align: center; padding: 2rem;">
-                    <div class="animate-spin" style="width: 48px; height: 48px; margin: 0 auto 1rem;">
-                        <i data-lucide="loader" style="width: 48px; height: 48px;"></i>
-                    </div>
-                    <p>Se încarcă facturile...</p>
-                </div>
-                <div id="invoices-list" style="display: none;">
-                    <!-- Facturile vor fi afișate aici -->
-                </div>
-                <div id="invoices-empty" style="display: none; text-align: center; padding: 2rem; color: var(--secondary-foreground);">
-                    <i data-lucide="inbox" style="width: 48px; height: 48px; margin: 0 auto 1rem;"></i>
-                    <p>Nu aveți facturi generate încă.</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Proformas History Page -->
         <div id="proformas" class="page">
             <div class="page-header">
                 <h2>Istoric Proforme</h2>
-                <p>Vizualizați și gestionați toate proformele emise.</p>
+                <p>Vizualizați și gestionați proformele emise anterior.</p>
             </div>
             <div class="card">
-                <div id="proformas-loading" style="text-align: center; padding: 3rem; color: var(--secondary-foreground);">
-                    <div class="animate-spin" style="width: 48px; height: 48px; margin: 0 auto 1rem;">
-                        <i data-lucide="loader" style="width: 48px; height: 48px;"></i>
-                    </div>
-                    <p>Se încarcă proformele...</p>
-                </div>
-                <div id="proformas-list" style="display: none;">
-                    <!-- Proformele vor fi afișate aici -->
-                </div>
-                <div id="proformas-empty" style="display: none; text-align: center; padding: 2rem; color: var(--secondary-foreground);">
-                    <i data-lucide="inbox" style="width: 48px; height: 48px; margin: 0 auto 1rem;"></i>
-                    <p>Nu aveți proforme generate încă.</p>
-                </div>
+                <p>Istoricul proformelor va fi afișat aici.</p>
             </div>
         </div>
 
@@ -854,56 +735,25 @@
                     </div>
                 </div>
                 <div class="card">
-                    <h3>Integrare ANAF e-Factura</h3>
-                    <p>Conectați contul ANAF pentru trimiterea automată a facturilor în sistemul e-Factura.</p>
-                    <div id="anaf-status-container" style="margin-top: 1rem;">
-                        <div id="anaf-disconnected" style="display: none;">
-                            <div style="padding: 1rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: var(--radius); margin-bottom: 1rem;">
-                                <p style="margin: 0; color: #856404;"><strong>⚠️ Nu sunteți conectat la ANAF</strong></p>
-                                <p style="margin: 0.5rem 0 0 0; color: #856404; font-size: 0.9rem;">Pentru a trimite facturi în e-Factura, conectați-vă cu contul ANAF.</p>
-                            </div>
-                            <button type="button" id="anaf-connect-btn" class="btn btn-primary">
-                                <i data-lucide="link"></i>
-                                Conectează ANAF e-Factura
-                            </button>
-                        </div>
-                        <div id="anaf-connected" style="display: none;">
-                            <div style="padding: 1rem; background: #d4edda; border: 1px solid #28a745; border-radius: var(--radius); margin-bottom: 1rem;">
-                                <p style="margin: 0; color: #155724;"><strong>✅ Conectat la ANAF e-Factura</strong></p>
-                                <p style="margin: 0.5rem 0 0 0; color: #155724; font-size: 0.9rem;">
-                                    CUI: <strong id="anaf-cui">-</strong> | Companie: <strong id="anaf-company">-</strong>
-                                </p>
-                                <p style="margin: 0.5rem 0 0 0; color: #155724; font-size: 0.85rem;">
-                                    Ultima actualizare: <span id="anaf-last-refresh">-</span>
-                                </p>
-                            </div>
-                            <button type="button" id="anaf-disconnect-btn" class="btn btn-secondary">
-                                <i data-lucide="unlink"></i>
-                                Deconectează ANAF
-                            </button>
-                        </div>
-                        <div id="anaf-loading" style="display: block;">
-                            <p style="color: var(--secondary-foreground);">
-                                <i data-lucide="loader-2" class="animate-spin"></i>
-                                Verificare status conexiune...
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
                     <h3>Template Preferat Factură</h3>
                     <p>Selectați stilul vizual implicit pentru facturile generate.</p>
                     <br>
                     <div id="template-selector-settings" class="template-selector">
-                        <div class="template-card active" data-template="modern">
+                        <div class="template-card" data-template="modern">
                             <img src="https://i.imgur.com/6ZIZg8t.png" alt="Modern Template">
                             <span>Modern</span>
-                            <small style="display: block; margin-top: 0.25rem; color: var(--secondary-foreground);">Gradient albastru, profesional</small>
                         </div>
-                        <div class="template-card" data-template="professional">
-                            <img src="https://i.imgur.com/L3gV1S2.png" alt="Professional Template">
-                            <span>Professional</span>
-                            <small style="display: block; margin-top: 0.25rem; color: var(--secondary-foreground);">Elegant, minimalist</small>
+                        <div class="template-card" data-template="classic">
+                            <img src="https://i.imgur.com/L3gV1S2.png" alt="Classic Template">
+                            <span>Clasic</span>
+                        </div>
+                        <div class="template-card" data-template="minimal">
+                            <img src="https://i.imgur.com/gqM9g2s.png" alt="Minimal Template">
+                            <span>Minimal</span>
+                        </div>
+                        <div class="template-card" data-template="elegant">
+                            <img src="https://i.imgur.com/sQ7h2aC.png" alt="Elegant Template">
+                            <span>Elegant</span>
                         </div>
                     </div>
                 </div>
@@ -935,16 +785,6 @@
                 pages.forEach(page => {
                     page.classList.toggle('active', '#' + page.id === hash);
                 });
-                
-                // Încarcă facturile când utilizatorul navighează la pagina de istoric
-                if (hash === '#invoices') {
-                    loadInvoices();
-                }
-                
-                // Încarcă proformele când utilizatorul navighează la pagina de istoric proforme
-                if (hash === '#proformas') {
-                    loadProformas();
-                }
             }
 
             navLinks.forEach(link => {
@@ -990,8 +830,8 @@
             
             cards.forEach(card => {
                 card.addEventListener('click', () => {
-                    cards.forEach(c => c.classList.remove('active'));
-                    card.classList.add('active');
+                    cards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
                 });
             });
         }
@@ -1095,14 +935,14 @@
             const formData = new FormData(e.target);
             const settingsData = Object.fromEntries(formData.entries());
             
-            const selectedTemplate = document.querySelector('#template-selector-settings .template-card.active');
+            const selectedTemplate = document.querySelector('#template-selector-settings .template-card.selected');
             if (selectedTemplate) {
                 settingsData.preferredTemplate = selectedTemplate.dataset.template;
             }
 
             try {
                 const response = await fetch('/api/settings', {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(settingsData)
                 });
@@ -1161,8 +1001,6 @@
                 client: clientData,
                 products: products
             };
-            
-            console.log('📤 Trimit factura:', invoicePayload);
 
             try {
                 const response = await fetch('/api/invoices', {
@@ -1170,14 +1008,9 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(invoicePayload)
                 });
-                
-                console.log('📥 Response status:', response.status);
                 const result = await response.json();
-                console.log('📦 Response data:', result);
-                
                 if (result.success && result.invoice.pdfPath) {
                     showToast('Factura a fost generată cu succes!');
-                    console.log('🔗 Deschid PDF:', result.invoice.pdfPath);
                     window.open(result.invoice.pdfPath, '_blank');
                     e.target.reset();
                     productsContainer.innerHTML = '';
@@ -1187,7 +1020,6 @@
                     throw new Error(result.error || 'A apărut o eroare la generarea facturii.');
                 }
             } catch (error) {
-                console.error('❌ Eroare generare:', error);
                 showToast(error.message, 'error');
             }
         });
@@ -1220,77 +1052,6 @@
         }
 
         loadSettings();
-        
-        // ANAF Status Check
-        async function checkAnafStatus() {
-            try {
-                const response = await fetch('/api/anaf/status');
-                const result = await response.json();
-                
-                document.getElementById('anaf-loading').style.display = 'none';
-                
-                if (result.success && result.connected) {
-                    document.getElementById('anaf-connected').style.display = 'block';
-                    document.getElementById('anaf-disconnected').style.display = 'none';
-                    
-                    document.getElementById('anaf-cui').textContent = result.anafAuth.cui || '-';
-                    document.getElementById('anaf-company').textContent = result.anafAuth.companyName || '-';
-                    document.getElementById('anaf-last-refresh').textContent = 
-                        new Date(result.anafAuth.lastRefresh).toLocaleString('ro-RO');
-                } else {
-                    document.getElementById('anaf-connected').style.display = 'none';
-                    document.getElementById('anaf-disconnected').style.display = 'block';
-                }
-                
-                lucide.createIcons();
-            } catch (error) {
-                console.error('Eroare verificare status ANAF:', error);
-                document.getElementById('anaf-loading').style.display = 'none';
-                document.getElementById('anaf-disconnected').style.display = 'block';
-                lucide.createIcons();
-            }
-        }
-        
-        checkAnafStatus();
-        
-        // ANAF Connect
-        document.getElementById('anaf-connect-btn').addEventListener('click', async () => {
-            try {
-                const response = await fetch('/api/anaf/connect');
-                const result = await response.json();
-                
-                if (result.success && result.authUrl) {
-                    showToast('Redirectare către ANAF pentru autentificare...');
-                    window.location.href = result.authUrl;
-                } else {
-                    throw new Error(result.error || 'Eroare la conectarea ANAF');
-                }
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
-        });
-        
-        // ANAF Disconnect
-        document.getElementById('anaf-disconnect-btn').addEventListener('click', async () => {
-            if (!confirm('Sigur doriți să deconectați contul ANAF?')) return;
-            
-            try {
-                const response = await fetch('/api/anaf/disconnect', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    showToast('Contul ANAF a fost deconectat cu succes!');
-                    checkAnafStatus();
-                } else {
-                    throw new Error(result.error || 'Eroare la deconectarea ANAF');
-                }
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
-        });
         
         // Load user info
         async function loadUserInfo() {
@@ -1328,8 +1089,6 @@
             const cuiInput = document.getElementById('company-cui');
             const cui = cuiInput.value.trim();
             
-            console.log('🔍 Autocomplete CUI company clicked:', cui);
-            
             if (!cui) {
                 showToast('Introduceți un CUI valid', 'error');
                 return;
@@ -1341,31 +1100,20 @@
             lucide.createIcons();
             
             try {
-                const url = `/api/settings/autocomplete/${encodeURIComponent(cui)}`;
-                console.log('📡 Fetch URL:', url);
-                
-                const response = await fetch(url);
-                console.log('📥 Response status:', response.status);
-                
+                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`);
                 const result = await response.json();
-                console.log('📦 Response data:', result);
                 
-                if (result.success && result.settings) {
-                    const data = result.settings;
-                    if (data.name) document.getElementById('company-name').value = data.name;
-                    if (data.address) document.getElementById('company-address').value = data.address;
-                    if (data.city) document.getElementById('company-city').value = data.city;
-                    if (data.county) document.getElementById('company-county').value = data.county;
-                    if (data.postalCode) document.getElementById('company-postal').value = data.postalCode;
-                    if (data.regCom) document.getElementById('company-regCom').value = data.regCom;
-                    if (data.phone) document.getElementById('company-phone').value = data.phone;
+                if (result.success && result.data) {
+                    const data = result.data;
+                    if (data.denumire) document.getElementById('company-name').value = data.denumire;
+                    if (data.adresa) document.getElementById('company-address').value = data.adresa;
+                    if (data.nrRegCom) document.getElementById('company-regCom').value = data.nrRegCom;
                     
                     showToast('Date completate automat cu succes!', 'success');
                 } else {
                     throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
                 }
             } catch (error) {
-                console.error('❌ Error autocomplete:', error);
                 showToast(error.message, 'error');
             } finally {
                 btn.disabled = false;
@@ -1379,8 +1127,6 @@
             const cuiInput = document.getElementById('client-cui');
             const cui = cuiInput.value.trim();
             
-            console.log('🔍 Autocomplete CUI client clicked:', cui);
-            
             if (!cui) {
                 showToast('Introduceți un CUI valid pentru client', 'error');
                 return;
@@ -1392,29 +1138,20 @@
             lucide.createIcons();
             
             try {
-                const url = `/api/settings/autocomplete/${encodeURIComponent(cui)}`;
-                console.log('📡 Fetch URL:', url);
-                
-                const response = await fetch(url);
-                console.log('📥 Response status:', response.status);
-                
+                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`);
                 const result = await response.json();
-                console.log('📦 Response data:', result);
                 
-                if (result.success && result.settings) {
-                    const data = result.settings;
-                    if (data.name) document.getElementById('client-name').value = data.name;
-                    if (data.address) document.getElementById('client-address').value = data.address;
-                    if (data.city) document.getElementById('client-city').value = data.city;
-                    if (data.county) document.getElementById('client-county').value = data.county;
-                    if (data.regCom) document.getElementById('client-regCom').value = data.regCom;
+                if (result.success && result.data) {
+                    const data = result.data;
+                    if (data.denumire) document.getElementById('client-name').value = data.denumire;
+                    if (data.adresa) document.getElementById('client-address').value = data.adresa;
+                    if (data.nrRegCom) document.getElementById('client-regCom').value = data.nrRegCom;
                     
                     showToast('Date client completate automat!', 'success');
                 } else {
                     throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
                 }
             } catch (error) {
-                console.error('❌ Error autocomplete:', error);
                 showToast(error.message, 'error');
             } finally {
                 btn.disabled = false;
@@ -1423,84 +1160,12 @@
             }
         });
 
-        // Load invoices functionality
-        async function loadInvoices() {
-            const loadingEl = document.getElementById('invoices-loading');
-            const listEl = document.getElementById('invoices-list');
-            const emptyEl = document.getElementById('invoices-empty');
-            
-            loadingEl.style.display = 'block';
-            listEl.style.display = 'none';
-            emptyEl.style.display = 'none';
-            
-            try {
-                const response = await fetch('/api/invoices');
-                const result = await response.json();
-                
-                if (result.success && result.invoices && result.invoices.length > 0) {
-                    listEl.innerHTML = '';
-                    
-                    result.invoices.forEach(invoice => {
-                        const invoiceCard = document.createElement('div');
-                        invoiceCard.style.cssText = `
-                            padding: 1rem;
-                            border: 1px solid var(--border);
-                            border-radius: var(--radius);
-                            margin-bottom: 1rem;
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                        `;
-                        
-                        const infoDiv = document.createElement('div');
-                        infoDiv.innerHTML = `
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Factura #${invoice.invoiceNumber}</div>
-                            <div style="color: var(--secondary-foreground); font-size: 0.875rem;">
-                                ${invoice.clientName || 'Client necunoscut'} • 
-                                ${new Date(invoice.createdAt).toLocaleDateString('ro-RO')} • 
-                                ${invoice.total.toFixed(2)} RON
-                            </div>
-                        `;
-                        
-                        const actionsDiv = document.createElement('div');
-                        actionsDiv.style.display = 'flex';
-                        actionsDiv.style.gap = '0.5rem';
-                        
-                        const downloadBtn = document.createElement('a');
-                        downloadBtn.href = invoice.pdfPath;
-                        downloadBtn.target = '_blank';
-                        downloadBtn.className = 'btn';
-                        downloadBtn.innerHTML = '<i data-lucide="download"></i> Descarcă';
-                        
-                        actionsDiv.appendChild(downloadBtn);
-                        invoiceCard.appendChild(infoDiv);
-                        invoiceCard.appendChild(actionsDiv);
-                        listEl.appendChild(invoiceCard);
-                    });
-                    
-                    lucide.createIcons();
-                    loadingEl.style.display = 'none';
-                    listEl.style.display = 'block';
-                } else {
-                    loadingEl.style.display = 'none';
-                    emptyEl.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('❌ Eroare încărcare facturi:', error);
-                loadingEl.style.display = 'none';
-                emptyEl.style.display = 'block';
-            }
-        }
-
         // Chat GPT functionality
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
         const chatSendBtn = document.getElementById('chat-send-btn');
         
-        // Păstrează istoricul conversației
-        let chatHistory = [];
-        
-        function addChatMessage(message, isUser = false, pdfPath = null) {
+        function addChatMessage(message, isUser = false) {
             const messageDiv = document.createElement('div');
             messageDiv.style.cssText = `
                 margin-bottom: 1rem;
@@ -1513,39 +1178,9 @@
                 margin-right: ${isUser ? '0' : 'auto'};
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             `;
-            
-            // Adaugă textul mesajului
-            const textDiv = document.createElement('div');
-            textDiv.textContent = message;
-            messageDiv.appendChild(textDiv);
-            
-            // Dacă există PDF, adaugă buton de descărcare
-            if (pdfPath && !isUser) {
-                const downloadBtn = document.createElement('a');
-                downloadBtn.href = pdfPath;
-                downloadBtn.target = '_blank';
-                downloadBtn.style.cssText = `
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    margin-top: 0.5rem;
-                    padding: 0.5rem 1rem;
-                    background: var(--primary);
-                    color: white;
-                    border-radius: var(--radius);
-                    text-decoration: none;
-                    font-size: 0.875rem;
-                `;
-                downloadBtn.innerHTML = '<i data-lucide="download" style="width: 16px; height: 16px;"></i> Descarcă PDF';
-                messageDiv.appendChild(downloadBtn);
-                lucide.createIcons();
-            }
-            
+            messageDiv.textContent = message;
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // Adaugă în istoric
-            chatHistory.push({ role: isUser ? 'user' : 'assistant', content: message });
         }
         
         async function sendChatMessage() {
@@ -1560,27 +1195,18 @@
                 const response = await fetch('/api/gpt-chat/message', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        message,
-                        conversationHistory: chatHistory 
-                    })
+                    body: JSON.stringify({ message })
                 });
                 const result = await response.json();
                 
-                if (result.success && result.message) {
-                    // Afișează mesajul cu link PDF dacă există
-                    addChatMessage(result.message, false, result.pdfPath);
-                    
-                    // Dacă s-a generat o factură, reîmprospătează istoricul
-                    if (result.invoice && window.location.hash === '#invoices') {
-                        loadInvoices();
-                    }
+                if (result.success && result.response) {
+                    addChatMessage(result.response, false);
                 } else {
                     throw new Error(result.error || 'Eroare la trimiterea mesajului');
                 }
             } catch (error) {
                 addChatMessage('Ne pare rău, a apărut o eroare. Vă rugăm să încercați din nou.', false);
-                console.error('❌ Chat error:', error);
+                showToast(error.message, 'error');
             } finally {
                 chatSendBtn.disabled = false;
             }
@@ -1592,308 +1218,6 @@
                 sendChatMessage();
             }
         });
-
-        // ===== PROFORMA MANAGEMENT =====
-        
-        // Proforma Products Management
-        let proformaProductCount = 0;
-        const proformaProductsContainer = document.getElementById('proforma-products-container');
-        
-        function addProformaProduct() {
-            proformaProductCount++;
-            const productItem = document.createElement('div');
-            productItem.classList.add('product-item');
-            productItem.innerHTML = `
-                <div class="form-group">
-                    <label>Descriere Produs/Serviciu</label>
-                    <input type="text" name="proforma-product-name-${proformaProductCount}" placeholder="ex: Servicii consultanță" required>
-                </div>
-                <div class="form-group">
-                    <label>Cant.</label>
-                    <input type="number" name="proforma-product-quantity-${proformaProductCount}" value="1" min="0" step="any" class="recalculate-proforma">
-                </div>
-                <div class="form-group">
-                    <label>U.M.</label>
-                    <input type="text" name="proforma-product-unit-${proformaProductCount}" value="buc">
-                </div>
-                <div class="form-group">
-                    <label>Preț Unitar</label>
-                    <input type="number" name="proforma-product-price-${proformaProductCount}" value="0" min="0" step="any" class="recalculate-proforma">
-                </div>
-                <div class="form-group">
-                    <label>TVA (%)</label>
-                    <input type="number" name="proforma-product-vat-${proformaProductCount}" value="19" min="0" max="100" class="recalculate-proforma">
-                </div>
-                <button type="button" class="remove-product-btn" onclick="this.parentElement.remove(); calculateProformaTotals();">
-                    <i data-lucide="trash-2"></i>
-                </button>
-            `;
-            proformaProductsContainer.appendChild(productItem);
-            lucide.createIcons();
-            calculateProformaTotals();
-        }
-        
-        function calculateProformaTotals() {
-            let subtotal = 0;
-            let vatTotal = 0;
-            
-            proformaProductsContainer.querySelectorAll('.product-item').forEach((item, index) => {
-                const i = index + 1;
-                const quantity = parseFloat(item.querySelector(`input[name="proforma-product-quantity-${i}"]`)?.value || 0);
-                const price = parseFloat(item.querySelector(`input[name="proforma-product-price-${i}"]`)?.value || 0);
-                const vatRate = parseFloat(item.querySelector(`input[name="proforma-product-vat-${i}"]`)?.value || 0);
-                
-                const itemSubtotal = quantity * price;
-                const itemVat = itemSubtotal * (vatRate / 100);
-                
-                subtotal += itemSubtotal;
-                vatTotal += itemVat;
-            });
-            
-            const total = subtotal + vatTotal;
-            
-            document.getElementById('proforma-summary-subtotal').textContent = subtotal.toFixed(2) + ' RON';
-            document.getElementById('proforma-summary-vat').textContent = vatTotal.toFixed(2) + ' RON';
-            document.getElementById('proforma-summary-total').textContent = total.toFixed(2) + ' RON';
-        }
-        
-        document.getElementById('add-proforma-product').addEventListener('click', addProformaProduct);
-        
-        document.addEventListener('input', (e) => {
-            if (e.target.classList.contains('recalculate-proforma')) {
-                calculateProformaTotals();
-            }
-        });
-        
-        // Proforma Client Type Toggle
-        document.getElementById('proforma-client-type').addEventListener('change', (e) => {
-            const companyFields = document.getElementById('proforma-company-fields');
-            const individualFields = document.getElementById('proforma-individual-fields');
-            
-            if (e.target.value === 'company') {
-                companyFields.style.display = 'block';
-                individualFields.style.display = 'none';
-            } else {
-                companyFields.style.display = 'none';
-                individualFields.style.display = 'block';
-            }
-        });
-        
-        // Autocomplete Proforma Client
-        document.getElementById('autocomplete-proforma-client-btn').addEventListener('click', async () => {
-            const cuiInput = document.getElementById('proforma-client-cui');
-            let cui = cuiInput.value.trim();
-            
-            if (!cui) {
-                showToast('Introduceți CUI-ul clientului.', 'error');
-                return;
-            }
-            
-            cui = cui.replace(/^RO/i, '');
-            
-            try {
-                const response = await fetch(`/api/settings/autocomplete/${cui}`);
-                const result = await response.json();
-                
-                if (result.success && result.company) {
-                    const company = result.company;
-                    document.getElementById('proforma-client-name').value = company.nume || '';
-                    document.getElementById('proforma-client-cui').value = company.cif || cui;
-                    document.getElementById('proforma-client-regCom').value = company.regcom || '';
-                    document.getElementById('proforma-client-address').value = company.adresa?.completa || '';
-                    document.getElementById('proforma-client-city').value = company.adresa?.oras || '';
-                    document.getElementById('proforma-client-county').value = company.adresa?.judet || '';
-                    showToast('Date client completate automat!');
-                } else {
-                    showToast(result.error || 'Nu s-au găsit date pentru acest CUI.', 'error');
-                }
-            } catch (error) {
-                showToast('Eroare la autocomplete.', 'error');
-            }
-        });
-        
-        // Proforma Form Submission
-        document.getElementById('proforma-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const clientType = document.getElementById('proforma-client-type').value;
-            let clientData = {};
-            if (clientType === 'company') {
-                clientData = {
-                    type: 'company',
-                    name: document.getElementById('proforma-client-name').value,
-                    cui: document.getElementById('proforma-client-cui').value,
-                    regCom: document.getElementById('proforma-client-regCom').value,
-                    address: document.getElementById('proforma-client-address').value,
-                    city: document.getElementById('proforma-client-city').value,
-                    county: document.getElementById('proforma-client-county').value,
-                };
-            } else {
-                 clientData = {
-                    type: 'individual',
-                    firstName: document.getElementById('proforma-client-firstName').value,
-                    lastName: document.getElementById('proforma-client-lastName').value,
-                    cnp: document.getElementById('proforma-client-cnp').value,
-                    address: document.getElementById('proforma-client-address').value,
-                    city: document.getElementById('proforma-client-city').value,
-                    county: document.getElementById('proforma-client-county').value,
-                };
-            }
-            
-            const products = [];
-            proformaProductsContainer.querySelectorAll('.product-item').forEach((item, index) => {
-                const i = index + 1;
-                products.push({
-                    name: item.querySelector(`input[name="proforma-product-name-${i}"]`).value,
-                    quantity: parseFloat(item.querySelector(`input[name="proforma-product-quantity-${i}"]`).value),
-                    unit: item.querySelector(`input[name="proforma-product-unit-${i}"]`).value,
-                    price: parseFloat(item.querySelector(`input[name="proforma-product-price-${i}"]`).value),
-                    vat: parseInt(item.querySelector(`input[name="proforma-product-vat-${i}"]`).value)
-                });
-            });
-            
-            const validDays = parseInt(document.getElementById('proforma-valid-days').value);
-
-            const proformaPayload = {
-                client: clientData,
-                products: products,
-                validDays: validDays
-            };
-            
-            console.log('📤 Trimit proforma:', proformaPayload);
-
-            try {
-                const response = await fetch('/api/proformas', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(proformaPayload)
-                });
-                
-                console.log('📥 Response status:', response.status);
-                const result = await response.json();
-                console.log('📦 Response data:', result);
-                
-                if (result.success && result.proforma.pdfPath) {
-                    showToast('Proforma a fost generată cu succes!');
-                    console.log('🔗 Deschid PDF:', result.proforma.pdfPath);
-                    window.open(result.proforma.pdfPath, '_blank');
-                    e.target.reset();
-                    proformaProductsContainer.innerHTML = '';
-                    addProformaProduct();
-                    calculateProformaTotals();
-                } else {
-                    throw new Error(result.error || 'A apărut o eroare la generarea proformei.');
-                }
-            } catch (error) {
-                console.error('❌ Eroare generare:', error);
-                showToast(error.message, 'error');
-            }
-        });
-        
-        // Load Proformas
-        async function loadProformas() {
-            const loading = document.getElementById('proformas-loading');
-            const list = document.getElementById('proformas-list');
-            const empty = document.getElementById('proformas-empty');
-            
-            loading.style.display = 'block';
-            list.style.display = 'none';
-            empty.style.display = 'none';
-            
-            try {
-                const response = await fetch('/api/proformas');
-                const result = await response.json();
-                
-                if (result.success && result.proformas.length > 0) {
-                    list.innerHTML = result.proformas.map(proforma => `
-                        <div class="invoice-item" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border);">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; margin-bottom: 0.25rem;">Proformă ${proforma.proformaNumber}</div>
-                                <div style="font-size: 0.875rem; color: var(--secondary-foreground);">
-                                    Client: ${proforma.clientName} • 
-                                    Total: ${proforma.total.toFixed(2)} RON •
-                                    Data: ${new Date(proforma.issueDate).toLocaleDateString('ro-RO')} •
-                                    Status: <span class="status-badge status-${proforma.status}">${getProformaStatusLabel(proforma.status)}</span>
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                ${proforma.pdfPath ? `<a href="${proforma.pdfPath}" target="_blank" class="btn btn-secondary btn-sm"><i data-lucide="download"></i> PDF</a>` : ''}
-                                ${proforma.status !== 'converted' ? `<button class="btn btn-primary btn-sm" onclick="convertProformaToInvoice('${proforma.id}')"><i data-lucide="file-check"></i> Convertește în Factură</button>` : ''}
-                                <button class="btn btn-danger btn-sm" onclick="deleteProforma('${proforma.id}')"><i data-lucide="trash-2"></i></button>
-                            </div>
-                        </div>
-                    `).join('');
-                    
-                    loading.style.display = 'none';
-                    list.style.display = 'block';
-                    lucide.createIcons();
-                } else {
-                    loading.style.display = 'none';
-                    empty.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('❌ Error loading proformas:', error);
-                loading.style.display = 'none';
-                empty.style.display = 'block';
-            }
-        }
-        
-        function getProformaStatusLabel(status) {
-            const labels = {
-                'draft': 'Draft',
-                'sent': 'Trimisă',
-                'accepted': 'Acceptată',
-                'rejected': 'Respinsă',
-                'converted': 'Convertită în Factură'
-            };
-            return labels[status] || status;
-        }
-        
-        async function convertProformaToInvoice(proformaId) {
-            if (!confirm('Sigur doriți să convertiți această proformă în factură?')) return;
-            
-            try {
-                const response = await fetch(`/api/proformas/${proformaId}/convert`, {
-                    method: 'POST'
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    showToast('Proforma a fost convertită în factură cu succes!');
-                    if (result.invoice.pdfPath) {
-                        window.open(result.invoice.pdfPath, '_blank');
-                    }
-                    loadProformas();
-                } else {
-                    throw new Error(result.error);
-                }
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
-        }
-        
-        async function deleteProforma(proformaId) {
-            if (!confirm('Sigur doriți să ștergeți această proformă?')) return;
-            
-            try {
-                const response = await fetch(`/api/proformas/${proformaId}`, {
-                    method: 'DELETE'
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    showToast('Proforma a fost ștearsă cu succes!');
-                    loadProformas();
-                } else {
-                    throw new Error(result.error);
-                }
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
-        }
-        
-        // Inițializare proforma la încărcarea paginii
-        addProformaProduct();
 
     </script>
 </body>

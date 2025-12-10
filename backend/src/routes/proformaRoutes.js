@@ -1,34 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const {
-  createProforma,
-  getProformas,
-  getProformaById,
-  updateProformaStatus,
-  deleteProforma,
-  convertProformaToInvoice
-} = require('../controllers/proformaController');
+const proformaController = require('../controllers/proformaController');
 const { authenticateToken } = require('../middleware/auth');
 
 // Toate rutele necesită autentificare
 router.use(authenticateToken);
 
-// Obține toate proformele
-router.get('/', getProformas);
-
-// Obține o proformă specifică
-router.get('/:id', getProformaById);
-
-// Creează proformă nouă
-router.post('/', createProforma);
-
-// Actualizează statusul unei proforme
-router.patch('/:id/status', updateProformaStatus);
-
-// Convertește proforma în factură
-router.post('/:id/convert', convertProformaToInvoice);
-
-// Șterge o proformă
-router.delete('/:id', deleteProforma);
+// Subcategorii pentru generare și istoric proforme
+router.post('/genereaza/proforma', proformaController.createProforma);
+router.get('/istoric/proforma', proformaController.getProformas);
+router.get('/istoric/proforma/:id', proformaController.getProforma);
+router.get('/istoric/proforma/:id/download', proformaController.downloadProforma);
 
 module.exports = router;
