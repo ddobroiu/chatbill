@@ -1223,31 +1223,47 @@
         });
 
         // Auto-complete functionality for company settings
+        // Helper function to get auth headers
+        function getAuthHeaders() {
+            const token = localStorage.getItem('token');
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+        }
+
         document.getElementById('autocomplete-company-btn').addEventListener('click', async () => {
             const cuiInput = document.getElementById('company-cui');
             const cui = cuiInput.value.trim();
-            
+
             if (!cui) {
                 showToast('Introduceți un CUI valid', 'error');
                 return;
             }
-            
+
             const btn = document.getElementById('autocomplete-company-btn');
             btn.disabled = true;
             btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>';
             lucide.createIcons();
-            
+
             try {
-                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`);
+                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`, {
+                    headers: getAuthHeaders()
+                });
                 const result = await response.json();
-                
-                if (result.success && result.data) {
-                    const data = result.data;
-                    if (data.denumire) document.getElementById('company-name').value = data.denumire;
-                    if (data.adresa) document.getElementById('company-address').value = data.adresa;
-                    if (data.nrRegCom) document.getElementById('company-regCom').value = data.nrRegCom;
-                    
-                    showToast('Date completate automat cu succes!', 'success');
+
+                if (result.success && result.settings) {
+                    const data = result.settings;
+                    if (data.name) document.getElementById('company-name').value = data.name;
+                    if (data.address) document.getElementById('company-address').value = data.address;
+                    if (data.city) document.getElementById('company-city').value = data.city;
+                    if (data.county) document.getElementById('company-county').value = data.county;
+                    if (data.regCom) document.getElementById('company-regCom').value = data.regCom;
+                    if (data.phone) document.getElementById('company-phone').value = data.phone;
+                    if (data.iban) document.getElementById('company-iban').value = data.iban;
+                    if (data.bank) document.getElementById('company-bank').value = data.bank;
+
+                    showToast('Date completate automat cu succes din ANAF!', 'success');
                 } else {
                     throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
                 }
@@ -1264,28 +1280,32 @@
         document.getElementById('autocomplete-client-btn').addEventListener('click', async () => {
             const cuiInput = document.getElementById('client-cui');
             const cui = cuiInput.value.trim();
-            
+
             if (!cui) {
                 showToast('Introduceți un CUI valid pentru client', 'error');
                 return;
             }
-            
+
             const btn = document.getElementById('autocomplete-client-btn');
             btn.disabled = true;
             btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>';
             lucide.createIcons();
-            
+
             try {
-                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`);
+                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`, {
+                    headers: getAuthHeaders()
+                });
                 const result = await response.json();
-                
-                if (result.success && result.data) {
-                    const data = result.data;
-                    if (data.denumire) document.getElementById('client-name').value = data.denumire;
-                    if (data.adresa) document.getElementById('client-address').value = data.adresa;
-                    if (data.nrRegCom) document.getElementById('client-regCom').value = data.nrRegCom;
-                    
-                    showToast('Date client completate automat!', 'success');
+
+                if (result.success && result.settings) {
+                    const data = result.settings;
+                    if (data.name) document.getElementById('client-name').value = data.name;
+                    if (data.address) document.getElementById('client-address').value = data.address;
+                    if (data.city) document.getElementById('client-city').value = data.city;
+                    if (data.county) document.getElementById('client-county').value = data.county;
+                    if (data.regCom) document.getElementById('client-regCom').value = data.regCom;
+
+                    showToast('Date client completate automat din ANAF!', 'success');
                 } else {
                     throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
                 }
