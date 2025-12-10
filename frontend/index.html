@@ -151,6 +151,68 @@
             height: 20px;
         }
 
+        /* Submenu styles */
+        .nav-item-parent {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-parent-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            color: var(--secondary-foreground);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .nav-parent-link:hover {
+            background-color: var(--secondary);
+        }
+
+        .nav-parent-link.active {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .nav-parent-link i {
+            width: 20px;
+            height: 20px;
+        }
+
+        .nav-parent-link .chevron {
+            margin-left: auto;
+            width: 16px;
+            height: 16px;
+            transition: transform 0.2s;
+        }
+
+        .nav-parent-link.expanded .chevron {
+            transform: rotate(180deg);
+        }
+
+        .nav-submenu {
+            list-style: none;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 0.25rem;
+        }
+
+        .nav-submenu.expanded {
+            max-height: 200px;
+        }
+
+        .nav-submenu .nav-link {
+            padding: 0.5rem 1rem 0.5rem 3rem;
+            font-size: 0.875rem;
+            font-weight: 400;
+        }
+
         .main-content {
             flex-grow: 1;
             padding: 2rem;
@@ -397,42 +459,57 @@
         </div>
         <nav class="sidebar-nav">
             <ul class="nav-menu">
+                <!-- Chat GPT - Prima pagină -->
                 <li class="nav-item">
-                    <a href="#dashboard" class="nav-link active">
-                        <i data-lucide="layout-dashboard"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#invoice-generator" class="nav-link">
-                        <i data-lucide="file-plus-2"></i>
-                        <span>Generează Factură</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#proforma-generator" class="nav-link">
-                        <i data-lucide="file-text"></i>
-                        <span>Generează Proformă</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#invoices" class="nav-link">
-                        <i data-lucide="history"></i>
-                        <span>Istoric Facturi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#proformas" class="nav-link">
-                        <i data-lucide="clock"></i>
-                        <span>Istoric Proforme</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#chat" class="nav-link">
+                    <a href="#chat" class="nav-link active">
                         <i data-lucide="message-circle"></i>
                         <span>Chat GPT</span>
                     </a>
                 </li>
+
+                <!-- Generator - cu submeniu -->
+                <li class="nav-item-parent">
+                    <div class="nav-parent-link" data-submenu="generator">
+                        <i data-lucide="file-plus"></i>
+                        <span>Generator</span>
+                        <i data-lucide="chevron-down" class="chevron"></i>
+                    </div>
+                    <ul class="nav-submenu" id="submenu-generator">
+                        <li class="nav-item">
+                            <a href="#offer-generator" class="nav-link">
+                                <span>Ofertă</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#proforma-generator" class="nav-link">
+                                <span>Proformă</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Istoric - cu submeniu -->
+                <li class="nav-item-parent">
+                    <div class="nav-parent-link" data-submenu="istoric">
+                        <i data-lucide="history"></i>
+                        <span>Istoric</span>
+                        <i data-lucide="chevron-down" class="chevron"></i>
+                    </div>
+                    <ul class="nav-submenu" id="submenu-istoric">
+                        <li class="nav-item">
+                            <a href="#proformas" class="nav-link">
+                                <span>Proformă</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#invoices" class="nav-link">
+                                <span>Facturi</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Setări -->
                 <li class="nav-item">
                     <a href="#settings" class="nav-link">
                         <i data-lucide="settings"></i>
@@ -457,18 +534,6 @@
     </aside>
 
     <main class="main-content">
-        <!-- Dashboard Page -->
-        <div id="dashboard" class="page active">
-            <div class="page-header">
-                <h2>Dashboard</h2>
-                <p>Bun venit! Aici aveți o privire de ansamblu asupra activității dvs.</p>
-            </div>
-            <div class="card">
-                <h3>În curând...</h3>
-                <p>Această secțiune va conține statistici și informații utile.</p>
-            </div>
-        </div>
-
         <!-- Invoice Generator Page -->
         <div id="invoice-generator" class="page">
             <div class="page-header">
@@ -574,6 +639,28 @@
             </div>
             <div class="card">
                 <p>Istoricul facturilor va fi afișat aici.</p>
+            </div>
+        </div>
+
+        <!-- Offer Generator Page -->
+        <div id="offer-generator" class="page">
+            <div class="page-header">
+                <h2>Generează Ofertă</h2>
+                <p>Creați o ofertă de preț pentru clienții dumneavoastră.</p>
+            </div>
+
+            <div class="card">
+                <h3>🚧 În Curs de Dezvoltare</h3>
+                <p style="margin-top: 1rem; color: var(--secondary-foreground);">
+                    Funcționalitatea de generare oferte va fi disponibilă în curând.
+                </p>
+                <p style="margin-top: 0.5rem; color: var(--secondary-foreground);">
+                    În prezent, puteți folosi generatorul de <strong>Proformă</strong> pentru a crea documente similare.
+                </p>
+                <button type="button" onclick="window.location.hash='#proforma-generator'"
+                        style="margin-top: 1.5rem; padding: 0.75rem 1.5rem; background-color: var(--primary); color: white; border: none; border-radius: var(--radius); cursor: pointer; font-weight: 500;">
+                    Mergi la Generator Proformă →
+                </button>
             </div>
         </div>
 
@@ -776,6 +863,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             const navLinks = document.querySelectorAll('.nav-link');
             const pages = document.querySelectorAll('.page');
+            const parentLinks = document.querySelectorAll('.nav-parent-link');
+
+            // Submenu toggle functionality
+            parentLinks.forEach(parent => {
+                parent.addEventListener('click', () => {
+                    const submenuId = 'submenu-' + parent.dataset.submenu;
+                    const submenu = document.getElementById(submenuId);
+
+                    // Toggle expanded class
+                    parent.classList.toggle('expanded');
+                    submenu.classList.toggle('expanded');
+                });
+            });
 
             // Navigation
             function navigateTo(hash) {
@@ -784,6 +884,20 @@
                 });
                 pages.forEach(page => {
                     page.classList.toggle('active', '#' + page.id === hash);
+                });
+
+                // Auto-expand parent menu if navigating to child
+                parentLinks.forEach(parent => {
+                    const submenuId = 'submenu-' + parent.dataset.submenu;
+                    const submenu = document.getElementById(submenuId);
+                    const submenuLinks = submenu.querySelectorAll('.nav-link');
+
+                    submenuLinks.forEach(link => {
+                        if (link.hash === hash) {
+                            parent.classList.add('expanded');
+                            submenu.classList.add('expanded');
+                        }
+                    });
                 });
             }
 
@@ -796,8 +910,8 @@
                 });
             });
 
-            // Initial page load
-            const currentHash = window.location.hash || '#dashboard';
+            // Initial page load - Chat GPT is now the default
+            const currentHash = window.location.hash || '#chat';
             navigateTo(currentHash);
 
             // Client type toggle
