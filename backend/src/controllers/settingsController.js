@@ -107,18 +107,18 @@ async function updateCompanySettings(req, res) {
 // Auto-completare setări companie folosind CUI + iApp API
 async function autoCompleteCompanySettings(req, res) {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id; // Optional - poate fi undefined dacă nu e autentificat
     const { cui } = req.params;
     const cleanCUI = cui.replace(/[^0-9]/g, '');
-    
+
     if (!cleanCUI || cleanCUI.length < 6) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: 'CUI invalid' 
+        error: 'CUI invalid'
       });
     }
 
-    console.log('🔍 Auto-completare setări companie pentru CUI:', cleanCUI);
+    console.log('🔍 Auto-completare setări companie pentru CUI:', cleanCUI, userId ? `(user: ${userId})` : '(public)');
 
     // Interogare iApp API
     const payload = {
@@ -142,8 +142,8 @@ async function autoCompleteCompanySettings(req, res) {
 
     if (iappResponse.data && iappResponse.data.status === 'SUCCESS') {
       const companyData = iappResponse.data.data.output;
-      
-      // Pregătește datele pentru salvare
+
+      // Pregătește datele pentru returnare
       const settingsData = {
         cui: cleanCUI,
         name: companyData.nume || '',
@@ -154,22 +154,29 @@ async function autoCompleteCompanySettings(req, res) {
         regCom: companyData.regcom || '',
         phone: companyData.telefon || '',
       };
-      
-      // Salvează în DB
-      const settings = await prisma.companySettings.upsert({
-        where: { userId },
-        update: settingsData,
-        create: {
-          userId,
-          ...settingsData
-        }
-      });
-      
-      console.log('✅ Setări salvate automat în DB');
+
+      let settings = settingsData;
+
+      // Salvează în DB doar dacă utilizatorul e autentificat
+      if (userId) {
+        settings = await prisma.companySettings.upsert({
+          where: { userId },
+          update: settingsData,
+          create: {
+            userId,
+            ...settingsData
+          }
+        });
+        console.log('✅ Setări salvate automat în DB pentru user:', userId);
+      } else {
+        console.log('ℹ️ Date returnate fără salvare (utilizator neautentificat)');
+      }
 
       return res.json({
         success: true,
-        message: 'Date completate automat din ANAF și salvate',
+        message: userId
+          ? 'Date completate automat din ANAF și salvate'
+          : 'Date completate automat din ANAF',
         settings,
         iappData: {
           statusTVA: companyData.tva === 'Y',

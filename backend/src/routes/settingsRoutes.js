@@ -5,9 +5,12 @@ const {
   updateCompanySettings,
   autoCompleteCompanySettings
 } = require('../controllers/settingsController');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
-// Toate rutele necesită autentificare
+// Auto-completare setări folosind CUI + iApp API (PUBLIC - nu necesită autentificare)
+router.get('/autocomplete/:cui', optionalAuth, autoCompleteCompanySettings);
+
+// Rutele de mai jos necesită autentificare
 router.use(authenticateToken);
 
 // Obține setările companiei emitente
@@ -15,8 +18,5 @@ router.get('/', getCompanySettings);
 
 // Actualizează setările companiei emitente
 router.put('/', updateCompanySettings);
-
-// Auto-completare setări folosind CUI + iApp API
-router.get('/autocomplete/:cui', autoCompleteCompanySettings);
 
 module.exports = router;
