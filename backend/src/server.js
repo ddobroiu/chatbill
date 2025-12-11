@@ -91,6 +91,7 @@ if (process.env.NODE_ENV === 'development') {
 const chatRoutes = require('./routes/chatRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const proformaRoutes = require('./routes/proformaRoutes');
+const offerRoutes = require('./routes/offerRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const aiChatRoutes = require('./routes/aiChat');
@@ -109,6 +110,7 @@ app.use('/api/auth', authRoutes); // Rute autentificare
 app.use('/api/chat', chatRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/proformas', proformaRoutes); // Rute proforma
+app.use('/api/offers', offerRoutes); // Rute oferte
 app.use('/api/companies', companyRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/ai-chat', aiChatRoutes);

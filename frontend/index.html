@@ -342,6 +342,24 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+        
+        .btn-filter {
+            background-color: var(--card-background);
+            color: var(--secondary-foreground);
+            border: 1px solid var(--border);
+            padding: 0.625rem 1.25rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn-filter:hover {
+            background-color: var(--secondary);
+        }
+        
+        .btn-filter.active {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+            border-color: var(--primary);
+        }
 
         #products-container .product-item {
             display: grid;
@@ -368,6 +386,20 @@
         }
         
         #proforma-products-container .product-item:last-child {
+            border-bottom: none;
+        }
+        
+        #offer-products-container .product-item {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        #offer-products-container .product-item:last-child {
             border-bottom: none;
         }
 
@@ -1064,12 +1096,47 @@
         <!-- Invoices History Page -->
         <div id="invoices" class="page">
             <div class="page-header">
-                <h2>Istoric Facturi</h2>
-                <p>Vizualizați și gestionați facturile emise anterior.</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h2>Istoric Facturi</h2>
+                        <p>Vizualizați și gestionați facturile emise anterior.</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <input type="text" id="searchInvoices" placeholder="Caută facturi..." 
+                               style="padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); width: 250px;">
+                        <button onclick="loadInvoices()" class="btn btn-secondary">
+                            <i data-lucide="refresh-cw"></i>
+                            Reîncarcă
+                        </button>
+                    </div>
+                </div>
             </div>
+            
             <div class="card">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button onclick="filterInvoices('all')" class="btn btn-filter active" data-filter="all">
+                        <i data-lucide="file-text"></i>
+                        Toate
+                    </button>
+                    <button onclick="filterInvoices('issued')" class="btn btn-filter" data-filter="issued">
+                        <i data-lucide="check-circle"></i>
+                        Emise
+                    </button>
+                    <button onclick="filterInvoices('sent')" class="btn btn-filter" data-filter="sent">
+                        <i data-lucide="send"></i>
+                        Trimise
+                    </button>
+                    <button onclick="filterInvoices('paid')" class="btn btn-filter" data-filter="paid">
+                        <i data-lucide="dollar-sign"></i>
+                        Plătite
+                    </button>
+                </div>
+                
                 <div id="invoicesList">
-                    <p style="text-align: center; color: #666; padding: 40px;">Se încarcă facturile...</p>
+                    <p style="text-align: center; color: #666; padding: 40px;">
+                        <i data-lucide="loader" class="animate-spin"></i>
+                        Se încarcă facturile...
+                    </p>
                 </div>
             </div>
         </div>
@@ -1077,23 +1144,128 @@
         <!-- Offer Generator Page -->
         <div id="offer-generator" class="page">
             <div class="page-header">
-                <h2>Generează Ofertă</h2>
-                <p>Creați o ofertă de preț pentru clienții dumneavoastră.</p>
+                <h2>Generează Ofertă de Preț</h2>
+                <p>Creați o ofertă personalizată pentru clienții dumneavoastră.</p>
             </div>
+            <form id="offer-form">
+                <div class="card">
+                    <h3>Detalii Client</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="offer-client-type">Tip Client</label>
+                            <select id="offer-client-type" name="offer-client-type">
+                                <option value="company">Persoană Juridică</option>
+                                <option value="individual">Persoană Fizică</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="offer-company-fields">
+                            <label for="offer-client-name">Nume Companie</label>
+                            <input type="text" id="offer-client-name" name="offer-client-name" required>
+                            <label for="offer-client-cui">CUI</label>
+                            <div class="input-with-button">
+                                <input type="text" id="offer-client-cui" name="offer-client-cui" placeholder="ex: RO12345678">
+                                <button type="button" id="autocomplete-offer-client-btn" class="btn btn-secondary btn-icon" title="Auto-completare date din ANAF">
+                                    <i data-lucide="sparkles"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group" id="offer-individual-fields" style="display: none;">
+                            <label for="offer-client-firstName">Prenume</label>
+                            <input type="text" id="offer-client-firstName" name="offer-client-firstName">
+                            <label for="offer-client-lastName">Nume</label>
+                            <input type="text" id="offer-client-lastName" name="offer-client-lastName">
+                        </div>
+                        <div class="form-group">
+                            <label for="offer-client-email">Email (Opțional)</label>
+                            <input type="email" id="offer-client-email" name="offer-client-email" placeholder="client@email.ro">
+                        </div>
+                        <div class="form-group">
+                            <label for="offer-client-phone">Telefon (Opțional)</label>
+                            <input type="tel" id="offer-client-phone" name="offer-client-phone" placeholder="+40 XXX XXX XXX">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Detalii Ofertă</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="offer-title">Titlu Ofertă</label>
+                            <input type="text" id="offer-title" name="offer-title" placeholder="ex: Ofertă Servicii Web Design" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="offer-validity">Valabilitate (zile)</label>
+                            <input type="number" id="offer-validity" name="offer-validity" value="30" min="1" max="365">
+                        </div>
+                        <div class="form-group">
+                            <label for="offer-payment-terms">Termeni de plată</label>
+                            <select id="offer-payment-terms" name="offer-payment-terms">
+                                <option value="immediate">Plată imediată</option>
+                                <option value="15days">15 zile</option>
+                                <option value="30days" selected>30 de zile</option>
+                                <option value="45days">45 de zile</option>
+                                <option value="60days">60 de zile</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="offer-delivery">Termen livrare</label>
+                            <input type="text" id="offer-delivery" name="offer-delivery" placeholder="ex: 2-4 săptămâni">
+                        </div>
+                    </div>
+                </div>
 
-            <div class="card">
-                <h3>🚧 În Curs de Dezvoltare</h3>
-                <p style="margin-top: 1rem; color: var(--secondary-foreground);">
-                    Funcționalitatea de generare oferte va fi disponibilă în curând.
-                </p>
-                <p style="margin-top: 0.5rem; color: var(--secondary-foreground);">
-                    În prezent, puteți folosi generatorul de <strong>Proformă</strong> pentru a crea documente similare.
-                </p>
-                <button type="button" onclick="window.location.hash='#proforma-generator'"
-                        style="margin-top: 1.5rem; padding: 0.75rem 1.5rem; background-color: var(--primary); color: white; border: none; border-radius: var(--radius); cursor: pointer; font-weight: 500;">
-                    Mergi la Generator Proformă →
-                </button>
-            </div>
+                <div class="card">
+                    <h3>Produse / Servicii</h3>
+                    <div id="offer-products-container">
+                        <!-- Produsele vor fi adăugate aici de JS -->
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+                        <button type="button" id="add-offer-product" class="btn btn-secondary">
+                            <i data-lucide="plus"></i>
+                            Adaugă Produs/Serviciu
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Observații (Opțional)</h3>
+                    <textarea id="offer-notes" name="offer-notes" rows="4" 
+                              style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit;"
+                              placeholder="Adăugați detalii suplimentare, condiții speciale, reduceri, etc."></textarea>
+                </div>
+
+                <div class="card">
+                    <div class="totals-summary">
+                        <table class="totals-table">
+                            <tbody>
+                                <tr>
+                                    <td>Subtotal:</td>
+                                    <td id="offer-summary-subtotal">0.00 RON</td>
+                                </tr>
+                                <tr>
+                                    <td>TVA:</td>
+                                    <td id="offer-summary-vat">0.00 RON</td>
+                                </tr>
+                                <tr class="grand-total">
+                                    <td>Total General:</td>
+                                    <td id="offer-summary-total">0.00 RON</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div style="text-align: right; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" onclick="previewOffer()" class="btn" style="background: #f5f5f5; color: #333;">
+                        <i data-lucide="eye"></i>
+                        Preview
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="send"></i>
+                        Generează Oferta
+                    </button>
+                </div>
+            </form>
         </div>
 
         <!-- Proforma Generator Page -->

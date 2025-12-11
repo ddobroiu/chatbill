@@ -937,5 +937,258 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
+    // Initialize offer generator
+    initOfferGenerator();
 });
+
+// ========== INVOICE FILTERS ==========
+function filterInvoices(status) {
+    const buttons = document.querySelectorAll('.btn-filter');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.closest('.btn-filter').classList.add('active');
+    
+    const rows = document.querySelectorAll('.invoices-table tbody tr');
+    rows.forEach(row => {
+        if (status === 'all') {
+            row.style.display = '';
+        } else {
+            const badge = row.querySelector('.status-badge');
+            if (badge && badge.classList.contains(`status-${status}`)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+}
+
+// ========== OFFER GENERATOR ==========
+let offerProducts = [];
+
+function initOfferGenerator() {
+    // Add initial product row for offer
+    addOfferProduct();
+    
+    // Handle offer form submission
+    const offerForm = document.getElementById('offer-form');
+    if (offerForm) {
+        offerForm.addEventListener('submit', handleOfferSubmit);
+    }
+    
+    // Add product button
+    const addBtn = document.getElementById('add-offer-product');
+    if (addBtn) {
+        addBtn.addEventListener('click', addOfferProduct);
+    }
+    
+    // Client type toggle
+    const clientTypeSelect = document.getElementById('offer-client-type');
+    if (clientTypeSelect) {
+        clientTypeSelect.addEventListener('change', toggleOfferClientFields);
+    }
+    
+    // Auto-complete button
+    const autocompleteBtn = document.getElementById('autocomplete-offer-client-btn');
+    if (autocompleteBtn) {
+        autocompleteBtn.addEventListener('click', autocompleteOfferClient);
+    }
+}
+
+function addOfferProduct() {
+    const container = document.getElementById('offer-products-container');
+    const index = offerProducts.length;
+    
+    const productDiv = document.createElement('div');
+    productDiv.className = 'product-item';
+    productDiv.innerHTML = `
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Denumire Produs/Serviciu</label>
+                <input type="text" class="offer-product-name" placeholder="ex: Dezvoltare Website" required>
+            </div>
+            <div class="form-group">
+                <label>Cantitate</label>
+                <input type="number" class="offer-product-quantity" value="1" min="0.01" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Preț Unitar (RON)</label>
+                <input type="number" class="offer-product-price" placeholder="0.00" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>TVA %</label>
+                <select class="offer-product-vat">
+                    <option value="21">21%</option>
+                    <option value="9">9%</option>
+                    <option value="5">5%</option>
+                    <option value="0">0%</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Total</label>
+                <input type="text" class="offer-product-total" readonly placeholder="0.00 RON">
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+                <button type="button" class="btn btn-danger" onclick="removeOfferProduct(this)">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(productDiv);
+    offerProducts.push({});
+    
+    // Add event listeners for calculation
+    const inputs = productDiv.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', calculateOfferTotals);
+        input.addEventListener('change', calculateOfferTotals);
+    });
+    
+    // Initialize Lucide icons
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+function removeOfferProduct(button) {
+    const productItem = button.closest('.product-item');
+    const index = Array.from(productItem.parentElement.children).indexOf(productItem);
+    offerProducts.splice(index, 1);
+    productItem.remove();
+    calculateOfferTotals();
+}
+
+function calculateOfferTotals() {
+    let subtotal = 0;
+    let totalVAT = 0;
+    
+    const productItems = document.querySelectorAll('#offer-products-container .product-item');
+    productItems.forEach((item, index) => {
+        const quantity = parseFloat(item.querySelector('.offer-product-quantity').value) || 0;
+        const price = parseFloat(item.querySelector('.offer-product-price').value) || 0;
+        const vatRate = parseFloat(item.querySelector('.offer-product-vat').value) || 0;
+        
+        const productTotal = quantity * price;
+        const productVAT = productTotal * (vatRate / 100);
+        
+        subtotal += productTotal;
+        totalVAT += productVAT;
+        
+        item.querySelector('.offer-product-total').value = (productTotal + productVAT).toFixed(2) + ' RON';
+    });
+    
+    const grandTotal = subtotal + totalVAT;
+    
+    document.getElementById('offer-summary-subtotal').textContent = subtotal.toFixed(2) + ' RON';
+    document.getElementById('offer-summary-vat').textContent = totalVAT.toFixed(2) + ' RON';
+    document.getElementById('offer-summary-total').textContent = grandTotal.toFixed(2) + ' RON';
+}
+
+function toggleOfferClientFields() {
+    const clientType = document.getElementById('offer-client-type').value;
+    const companyFields = document.getElementById('offer-company-fields');
+    const individualFields = document.getElementById('offer-individual-fields');
+    
+    if (clientType === 'company') {
+        companyFields.style.display = 'block';
+        individualFields.style.display = 'none';
+    } else {
+        companyFields.style.display = 'none';
+        individualFields.style.display = 'block';
+    }
+}
+
+async function autocompleteOfferClient() {
+    const cuiInput = document.getElementById('offer-client-cui');
+    const cui = cuiInput.value.trim().replace(/[^0-9]/g, '');
+    
+    if (!cui) {
+        alert('Vă rugăm să introduceți un CUI');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/settings/autocomplete/${cui}`);
+        const data = await response.json();
+        
+        if (data.success && data.company) {
+            document.getElementById('offer-client-name').value = data.company.name || '';
+            document.getElementById('offer-client-cui').value = data.company.cui || '';
+            alert('✅ Date completate automat din ANAF');
+        } else {
+            alert('❌ Nu s-au găsit informații pentru acest CUI');
+        }
+    } catch (error) {
+        console.error('Eroare autocomplete:', error);
+        alert('❌ Eroare la căutarea datelor');
+    }
+}
+
+async function handleOfferSubmit(event) {
+    event.preventDefault();
+    
+    const products = [];
+    const productItems = document.querySelectorAll('#offer-products-container .product-item');
+    
+    productItems.forEach(item => {
+        const name = item.querySelector('.offer-product-name').value;
+        const quantity = parseFloat(item.querySelector('.offer-product-quantity').value);
+        const price = parseFloat(item.querySelector('.offer-product-price').value);
+        const vatRate = parseFloat(item.querySelector('.offer-product-vat').value);
+        
+        if (name && quantity && price) {
+            products.push({ name, quantity, price, vatRate });
+        }
+    });
+    
+    if (products.length === 0) {
+        alert('Vă rugăm să adăugați cel puțin un produs/serviciu');
+        return;
+    }
+    
+    const formData = new FormData(event.target);
+    const clientType = formData.get('offer-client-type');
+    
+    const offerData = {
+        title: formData.get('offer-title'),
+        validity: parseInt(formData.get('offer-validity')),
+        paymentTerms: formData.get('offer-payment-terms'),
+        delivery: formData.get('offer-delivery'),
+        notes: formData.get('offer-notes'),
+        client: clientType === 'individual' ? {
+            type: 'individual',
+            firstName: formData.get('offer-client-firstName'),
+            lastName: formData.get('offer-client-lastName'),
+            email: formData.get('offer-client-email'),
+            phone: formData.get('offer-client-phone')
+        } : {
+            type: 'company',
+            name: formData.get('offer-client-name'),
+            cui: formData.get('offer-client-cui'),
+            email: formData.get('offer-client-email'),
+            phone: formData.get('offer-client-phone')
+        },
+        products: products
+    };
+    
+    console.log('Offer data:', offerData);
+    
+    // For now, just show success message
+    // In production, you would send this to the backend
+    alert('✅ Oferta a fost generată cu succes!\n\nÎn producție, aceasta va fi salvată în baza de date și va putea fi descărcată ca PDF.');
+    
+    // Reset form
+    event.target.reset();
+    document.getElementById('offer-products-container').innerHTML = '';
+    offerProducts = [];
+    addOfferProduct();
+    calculateOfferTotals();
+}
+
+function previewOffer() {
+    alert('🔍 Funcționalitatea de preview va fi disponibilă în curând!');
+}
+
 

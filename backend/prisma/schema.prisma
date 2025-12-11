@@ -32,6 +32,7 @@ model Company {
   conversations Conversation[]
   invoices      Invoice[]
   proformas     Proforma[]
+  offers        Offer[]
   
   @@index([cui])
 }
@@ -174,6 +175,7 @@ model Conversation {
   messages      Message[]
   invoices      Invoice[]
   proformas     Proforma[]
+  offers        Offer[]
   
   @@index([companyId])
   @@index([userId])
@@ -564,5 +566,96 @@ model ProformaItem {
   createdAt         DateTime     @default(now())
   
   @@index([proformaId])
+}
+
+// Model pentru Oferte de Preț
+model Offer {
+  id                String         @id @default(uuid())
+  offerNumber       String         @unique
+  conversationId    String?
+  conversation      Conversation?  @relation(fields: [conversationId], references: [id])
+  companyId         String?
+  company           Company?       @relation(fields: [companyId], references: [id])
+  
+  // Detalii ofertă
+  title             String         // Titlu ofertă
+  validity          Int            @default(30) // Valabilitate în zile
+  paymentTerms      String         @default("30days") // Termeni de plată
+  delivery          String?        // Termen livrare
+  
+  // Calcule financiare
+  subtotal          Float
+  tvaAmount         Float
+  total             Float
+  
+  // Informații ofertă
+  issueDate         DateTime       @default(now())
+  validUntil        DateTime       // Calculat din issueDate + validity
+  status            String         @default("draft") // draft, sent, accepted, rejected, expired
+  
+  // Informații furnizor/emitent (snapshot)
+  providerName      String
+  providerCUI       String
+  providerRegCom    String?
+  providerAddress   String
+  providerCity      String?
+  providerCounty    String?
+  providerEmail     String?
+  providerPhone     String?
+  providerBank      String?
+  providerIban      String?
+  
+  // Informații client/beneficiar (snapshot)
+  clientType        String         // 'company' sau 'individual'
+  clientName        String
+  clientCUI         String?
+  clientRegCom      String?
+  clientFirstName   String?        // pentru persoane fizice
+  clientLastName    String?        // pentru persoane fizice
+  clientAddress     String?
+  clientCity        String?
+  clientCounty      String?
+  clientEmail       String?
+  clientPhone       String?
+  
+  // Relație cu produse/servicii
+  items             OfferItem[]
+  
+  // Metadata
+  pdfPath           String?
+  template          String         @default("modern") // modern, classic, minimal, elegant
+  notes             String?        @db.Text
+  convertedToInvoiceId String?     @unique
+  convertedToProformaId String?    @unique
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  @@index([companyId])
+  @@index([conversationId])
+  @@index([offerNumber])
+}
+
+// Model pentru produse/servicii pe ofertă
+model OfferItem {
+  id                String       @id @default(uuid())
+  offerId           String
+  offer             Offer        @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  
+  name              String       // Denumire produs/serviciu
+  description       String?      @db.Text
+  unit              String       @default("buc") // unitate de măsură
+  quantity          Float
+  price             Float        // Preț unitar
+  vatRate           Float        @default(0.21) // Cota TVA (0.21 = 21%)
+  
+  // Calcule (stocate pentru istoric)
+  subtotal          Float        // quantity * price
+  vatAmount         Float        // subtotal * vatRate
+  total             Float        // subtotal + vatAmount
+  
+  createdAt         DateTime     @default(now())
+  
+  @@index([offerId])
 }
 
