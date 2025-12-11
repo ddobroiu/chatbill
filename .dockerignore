@@ -1,0 +1,50 @@
+node_modules
+npm-debug.log
+.env
+.env.local
+.git
+.gitignore
+README.md
+DEPLOYMENT_GUIDE.md
+QUICK_DEPLOY.md
+IMPROVEMENTS.md
+MOBILE_OPTIMIZATION.md
+RECOMMENDED_NEXT.md
+TEST_IMPROVEMENTS.md
+*.md
+
+# Logs
+logs
+*.log
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build files
+dist
+build
+coverage
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# Generated files
+backend/invoices/*
+backend/proformas/*
+backend/prisma/migrations/*
+!backend/prisma/migrations/.gitkeep
