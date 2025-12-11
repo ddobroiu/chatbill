@@ -31,6 +31,7 @@ model Company {
   
   conversations Conversation[]
   invoices      Invoice[]
+  proformas     Proforma[]
   
   @@index([cui])
 }
@@ -42,32 +43,40 @@ model User {
   name              String
   password          String         // Hash bcrypt
   role              String         @default("user") // user, admin
-  
+
   // Email verification
   emailVerified     Boolean        @default(false)
   verificationToken String?        @unique
-  
+
   // Password reset
   resetToken        String?        @unique
   resetTokenExpiry  DateTime?
-  
+
   // Profile
   phone             String?
   company           String?
   cui               String?
   avatar            String?
-  
+
   // Status
   isActive          Boolean        @default(true)
   lastLogin         DateTime?
-  
+
+  // Stripe relationship
+  stripeCustomer       StripeCustomer?
+
+  // Subscription cache (denormalized for quick checks)
+  subscriptionStatus   String      @default("inactive") // active, past_due, inactive, canceled
+  subscriptionTier     String      @default("free")     // free, monthly, annual
+  subscriptionExpiresAt DateTime?
+
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
-  
+
   conversations     Conversation[]
   messages          Message[]
   anafAuth          AnafAuth?
-  
+
   @@index([email])
   @@index([verificationToken])
   @@index([resetToken])
@@ -127,8 +136,22 @@ model CompanySettings {
   // Reprezentant legal
   legalRep  String?
   
-  // Template preferat pentru facturi
-  preferredTemplate String? @default("modern")
+  // TVA Settings
+  isVatPayer    Boolean  @default(true)   // Plătitor de TVA
+  vatRate       Float    @default(19)     // Cota TVA (%)
+  
+  // Template-uri preferate pentru documente
+  invoiceTemplate  String? @default("modern")   // Template facturi
+  proformaTemplate String? @default("modern")   // Template proforma
+  quoteTemplate    String? @default("modern")   // Template oferte
+  
+  // Seriile și numerotare documente
+  invoiceSeries     String? @default("FAC")  // Serie facturi
+  invoiceStartNumber Int?   @default(1)      // Număr început facturi
+  proformaSeries    String? @default("PRO")  // Serie proforma
+  proformaStartNumber Int?  @default(1)      // Număr început proforma
+  quoteSeries       String? @default("OFF")  // Serie oferte
+  quoteStartNumber  Int?    @default(1)      // Număr început oferte
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -150,6 +173,7 @@ model Conversation {
   
   messages      Message[]
   invoices      Invoice[]
+  proformas     Proforma[]
   
   @@index([companyId])
   @@index([userId])
@@ -282,28 +306,117 @@ model ChatSession {
   id                String       @id @default(uuid())
   source            String       @default("web") // web, whatsapp
   phoneNumber       String?      // Pentru WhatsApp
-  
+
   // Stare conversație
   status            String       @default("active") // active, completed, cancelled
   currentStep       String       @default("greeting") // greeting, client_type, client_info, products, confirm, done
-  
+
   // Context acumulat
   clientType        String?      // company, individual
   clientCUI         String?
   clientName        String?
   clientData        String?      @db.Text // JSON cu toate datele clientului
   productsData      String?      @db.Text // JSON cu produse selectate
-  
+
   // Referință factură generată
   generatedInvoiceId String?     @unique
-  
+
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
-  
+
   chatMessages      ChatMessage[]
-  
+
   @@index([phoneNumber])
   @@index([status])
+}
+
+// Model pentru clienți Stripe (utilizatori ChatBill cu abonament)
+model StripeCustomer {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  stripeCustomerId  String    @unique  // cus_...
+  email             String
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  subscriptions     Subscription[]
+  paymentInvoices   PaymentInvoice[]
+
+  @@index([stripeCustomerId])
+}
+
+// Model pentru abonamente utilizatori
+model Subscription {
+  id                   String         @id @default(uuid())
+  customerId           String
+  customer             StripeCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  stripeSubscriptionId String         @unique  // sub_...
+  stripePriceId        String         // price_...
+  stripeProductId      String         // prod_...
+
+  planName             String         // 'monthly', 'annual'
+  planPrice            Float          // In cents (499 for €4.99)
+  currency             String         @default("EUR")
+
+  status               String         // active, past_due, canceled, incomplete
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  canceledAt           DateTime?
+  cancelAtPeriodEnd    Boolean        @default(false)
+
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([customerId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+}
+
+// Model pentru facturi de plată Stripe (diferite de Invoice pentru facturare clienți)
+model PaymentInvoice {
+  id                String         @id @default(uuid())
+  customerId        String
+  customer          StripeCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  stripeInvoiceId   String         @unique  // in_...
+  amount            Float          // In cents
+  currency          String         @default("EUR")
+  status            String         // paid, open, void, uncollectible
+  paidAt            DateTime?
+
+  periodStart       DateTime
+  periodEnd         DateTime
+
+  invoiceUrl        String?
+  pdfUrl            String?
+
+  createdAt         DateTime       @default(now())
+
+  @@index([customerId])
+  @@index([stripeInvoiceId])
+}
+
+// Model pentru evenimente webhook Stripe (idempotency + debugging)
+model WebhookEvent {
+  id                String    @id @default(uuid())
+
+  stripeEventId     String    @unique  // evt_...
+  eventType         String    // customer.subscription.created, etc
+  eventData         String    @db.Text // Full JSON payload
+
+  processed         Boolean   @default(false)
+  processedAt       DateTime?
+  error             String?   @db.Text
+
+  createdAt         DateTime  @default(now())
+
+  @@index([stripeEventId])
+  @@index([eventType])
+  @@index([processed])
 }
 
 // Model pentru mesaje chat AI (AI facturare + GPT conversațional)
@@ -367,3 +480,89 @@ model EFacturaLog {
   @@index([invoiceId])
   @@index([status])
 }
+
+// Model pentru proforme
+model Proforma {
+  id                String         @id @default(uuid())
+  proformaNumber    String         @unique
+  conversationId    String?
+  conversation      Conversation?  @relation(fields: [conversationId], references: [id])
+  companyId         String?
+  company           Company?       @relation(fields: [companyId], references: [id])
+  
+  // Calcule financiare
+  subtotal          Float
+  tvaAmount         Float
+  total             Float
+  
+  // Informații proformă
+  issueDate         DateTime       @default(now())
+  validUntil        DateTime?
+  status            String         @default("draft") // draft, sent, accepted, rejected, converted
+  
+  // Informații furnizor/emitent (snapshot la momentul generării)
+  providerName      String
+  providerCUI       String
+  providerRegCom    String?
+  providerAddress   String
+  providerCity      String?
+  providerCounty    String?
+  providerEmail     String?
+  providerPhone     String?
+  providerBank      String?
+  providerIban      String?
+  providerCapital   String?
+  
+  // Informații client/beneficiar (snapshot)
+  clientType        String         // 'company' sau 'individual'
+  clientName        String
+  clientCUI         String?
+  clientRegCom      String?
+  clientCNP         String?        // pentru persoane fizice
+  clientFirstName   String?        // pentru persoane fizice
+  clientLastName    String?        // pentru persoane fizice
+  clientAddress     String?
+  clientCity        String?
+  clientCounty      String?
+  clientEmail       String?
+  
+  // Relație cu produse/servicii
+  items             ProformaItem[]
+  
+  // Metadata
+  pdfPath           String?
+  template          String         @default("modern") // modern, classic, minimal, elegant
+  notes             String?        @db.Text
+  convertedToInvoiceId String?     @unique
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  @@index([companyId])
+  @@index([conversationId])
+  @@index([proformaNumber])
+}
+
+// Model pentru produse/servicii pe proformă
+model ProformaItem {
+  id                String       @id @default(uuid())
+  proformaId        String
+  proforma          Proforma     @relation(fields: [proformaId], references: [id], onDelete: Cascade)
+  
+  name              String       // Denumire produs/serviciu
+  description       String?      @db.Text
+  unit              String       @default("buc") // unitate de măsură (buc, kg, ora, etc.)
+  quantity          Float
+  price             Float        // Preț unitar
+  vatRate           Float        @default(0.19) // Cota TVA (0.19 = 19%)
+  
+  // Calcule (stocate pentru istoric)
+  subtotal          Float        // quantity * price
+  vatAmount         Float        // subtotal * vatRate
+  total             Float        // subtotal + vatAmount
+  
+  createdAt         DateTime     @default(now())
+  
+  @@index([proformaId])
+}
+

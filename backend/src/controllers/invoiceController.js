@@ -4,9 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const {
   renderModernTemplate,
-  renderClassicTemplate,
-  renderMinimalTemplate,
-  renderElegantTemplate
+  renderClassicTemplate
 } = require('../services/pdfTemplates');
 
 // Director pentru salvarea facturilor PDF
@@ -65,15 +63,23 @@ async function createInvoice(req, res) {
       });
     }
     
-    // Determină template-ul final
-    const finalTemplate = requestTemplate || companySettings.preferredTemplate || 'modern';
-    console.log('🔵 Template final selectat:', finalTemplate);
+    // Determină template-ul final (folosește invoiceTemplate în loc de preferredTemplate)
+    const finalTemplate = requestTemplate || companySettings.invoiceTemplate || 'modern';
+    console.log('🔵 Template final selectat pentru factură:', finalTemplate);
+
+    // Verifică dacă compania este plătitoare de TVA
+    const isVatPayer = companySettings.isVatPayer !== false; // default true
+    const vatRateFromSettings = companySettings.vatRate || 19;
+    
+    console.log('🔵 Setări TVA - Plătitor:', isVatPayer, 'Cotă:', vatRateFromSettings + '%');
 
     // Calculează totaluri pentru fiecare produs
     const itemsData = products.map(product => {
       const quantity = parseFloat(product.quantity);
       const price = parseFloat(product.price);
-      const vatRate = parseFloat(product.vat) / 100; // convertește din % în decimal
+      
+      // Dacă nu e plătitor de TVA, TVA = 0
+      const vatRate = isVatPayer ? (parseFloat(product.vat) / 100) : 0;
       
       const subtotal = quantity * price;
       const vatAmount = subtotal * vatRate;
@@ -93,12 +99,36 @@ async function createInvoice(req, res) {
 
     // Calculează totaluri generale
     const invoiceSubtotal = itemsData.reduce((sum, item) => sum + item.subtotal, 0);
-    const invoiceVatAmount = itemsData.reduce((sum, item) => sum + item.vatAmount, 0);
+    const invoiceVatAmount = isVatPayer ? itemsData.reduce((sum, item) => sum + item.vatAmount, 0) : 0;
     const invoiceTotal = invoiceSubtotal + invoiceVatAmount;
+
+    // Generare număr factură bazat pe setări
+    const invoiceSeries = companySettings.invoiceSeries || 'FAC';
+    const startNumber = companySettings.invoiceStartNumber || 1;
+    
+    // Găsește ultima factură pentru acest user
+    const lastInvoice = await prisma.invoice.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    let invoiceNumber;
+    if (lastInvoice && lastInvoice.number) {
+      // Extrage numărul din ultima factură (presupunem format SERIE-NUMAR)
+      const match = lastInvoice.number.match(/(\d+)$/);
+      if (match) {
+        const lastNum = parseInt(match[1]);
+        invoiceNumber = `${invoiceSeries}-${(lastNum + 1).toString().padStart(4, '0')}`;
+      } else {
+        invoiceNumber = `${invoiceSeries}-${startNumber.toString().padStart(4, '0')}`;
+      }
+    } else {
+      invoiceNumber = `${invoiceSeries}-${startNumber.toString().padStart(4, '0')}`;
+    }
 
     // Pregătește datele pentru factură
     const invoiceData = {
-      invoiceNumber: generateInvoiceNumber(),
+      invoiceNumber: invoiceNumber,
       subtotal: invoiceSubtotal,
       tvaAmount: invoiceVatAmount,
       total: invoiceTotal,
@@ -243,12 +273,6 @@ async function generateInvoicePDF(invoice) {
         case 'classic':
           renderClassicTemplate(doc, invoiceData, companySettings);
           break;
-        case 'minimal':
-          renderMinimalTemplate(doc, invoiceData, companySettings);
-          break;
-        case 'elegant':
-          renderElegantTemplate(doc, invoiceData, companySettings);
-          break;
         case 'modern':
         default:
           renderModernTemplate(doc, invoiceData, companySettings);
@@ -282,35 +306,50 @@ async function generateInvoicePDF(invoice) {
   });
 }
 
-// Obține toate facturile
+// Obține toate facturile (cu paginare)
 async function getInvoices(req, res) {
   console.log('🔵 getInvoices apelat');
   try {
     if (!prisma) {
       console.log('❌ Prisma nu este disponibil');
-      return res.status(503).json({ 
-        success: false, 
-        error: 'Baza de date nu este configurată' 
+      return res.status(503).json({
+        success: false,
+        error: 'Baza de date nu este configurată'
       });
     }
 
+    const { getPaginationParams, getSortParams, formatPaginatedResponse } = require('../utils/pagination');
+
+    // Get pagination params from query (validated by Zod middleware)
+    const { page, limit, sortBy, sortOrder } = req.query;
+    const { skip, take, page: currentPage, limit: currentLimit } = getPaginationParams(page, limit);
+    const orderBy = getSortParams(sortBy, sortOrder, 'createdAt');
+
+    // Get userId from authenticated user
+    const userId = req.user?.id;
+    const whereClause = userId ? { userId } : {};
+
+    // Get total count
+    const total = await prisma.invoice.count({ where: whereClause });
+
+    // Get paginated invoices
     const invoices = await prisma.invoice.findMany({
-      orderBy: { createdAt: 'desc' },
+      where: whereClause,
+      skip,
+      take,
+      orderBy,
       include: {
         items: true
       }
     });
-    
-    console.log(`✅ Găsite ${invoices.length} facturi`);
-    res.json({
-      success: true,
-      invoices
-    });
+
+    console.log(`✅ Găsite ${invoices.length} facturi din ${total} (pagina ${currentPage})`);
+    res.json(formatPaginatedResponse(invoices, total, currentPage, currentLimit));
   } catch (error) {
     console.error('❌ Eroare obținere facturi:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Eroare la obținerea facturilor' 
+    res.status(500).json({
+      success: false,
+      error: 'Eroare la obținerea facturilor'
     });
   }
 }

@@ -251,6 +251,15 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
+        .pricing-card {
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -345,6 +354,20 @@
         }
         
         #products-container .product-item:last-child {
+            border-bottom: none;
+        }
+
+        #proforma-products-container .product-item {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        #proforma-products-container .product-item:last-child {
             border-bottom: none;
         }
 
@@ -448,11 +471,302 @@
             min-width: auto;
         }
 
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+                overflow-y: auto;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+            }
+
+            .mobile-menu-overlay.active {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                width: 100%;
+                padding: 1rem;
+                padding-top: 4rem;
+            }
+
+            .page-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .page-header p {
+                font-size: 0.9rem;
+            }
+
+            /* Adjust cards on mobile */
+            .card {
+                padding: 1rem;
+            }
+
+            .card h3 {
+                font-size: 1.1rem;
+            }
+
+            /* Form groups stack on mobile */
+            .form-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Buttons full width on mobile */
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* Product items on mobile */
+            .product-item {
+                padding: 1rem;
+            }
+
+            /* Tables scroll horizontally */
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            /* Stats grid 1 column on mobile */
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Template cards stack */
+            .template-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Toast notifications */
+            .toast {
+                left: 1rem;
+                right: 1rem;
+                max-width: calc(100% - 2rem);
+            }
+
+            /* Modal full screen on mobile */
+            .modal-content {
+                width: 95%;
+                max-height: 90vh;
+                margin: 5vh auto;
+            }
+
+            /* Sidebar header on mobile */
+            .sidebar-header h1 {
+                font-size: 1.25rem;
+            }
+
+            /* User info more compact */
+            .user-info {
+                padding: 0.5rem;
+            }
+
+            .user-avatar {
+                width: 36px;
+                height: 36px;
+            }
+
+            /* Navigation items */
+            .nav-link {
+                padding: 0.75rem;
+                font-size: 0.95rem;
+            }
+
+            /* Chat messages */
+            #chat-messages {
+                padding: 0.75rem;
+            }
+
+            .message {
+                padding: 0.75rem;
+                max-width: 85%;
+            }
+
+            /* Input areas */
+            input[type="text"],
+            input[type="email"],
+            input[type="number"],
+            input[type="tel"],
+            textarea,
+            select {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .mobile-menu-toggle {
+                top: 0.75rem;
+                left: 0.75rem;
+                padding: 0.6rem;
+            }
+
+            .main-content {
+                padding: 0.75rem;
+                padding-top: 3.5rem;
+            }
+
+            .page-header {
+                padding: 1.25rem;
+                margin-bottom: 1rem;
+            }
+
+            .page-header h2 {
+                font-size: 1.25rem;
+            }
+
+            .card {
+                padding: 0.875rem;
+            }
+
+            .btn {
+                padding: 0.7rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            /* Smaller margins on very small screens */
+            .form-group {
+                margin-bottom: 0.875rem;
+            }
+
+            /* Template cards more compact */
+            .template-card {
+                padding: 0.875rem;
+            }
+
+            /* Stats cards */
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-card h3 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Landscape phone optimization */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .sidebar {
+                padding: 1rem 0.75rem;
+            }
+
+            .nav-link {
+                padding: 0.5rem;
+            }
+
+            .user-info {
+                padding: 0.5rem;
+            }
+
+            .main-content {
+                padding-top: 3rem;
+            }
+        }
+
+        /* Tablet styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .main-content {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger tap targets on touch devices */
+            .nav-link,
+            .btn,
+            button {
+                min-height: 44px; /* Apple's recommended touch target size */
+            }
+
+            .nav-link {
+                padding: 0.875rem;
+            }
+
+            /* Remove hover effects on touch */
+            .card:hover,
+            .template-card:hover,
+            .numbering-card:hover {
+                transform: none;
+            }
+
+            /* Better spacing for touch */
+            .nav-item {
+                margin-bottom: 0.75rem;
+            }
+        }
+
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
+    <!-- Mobile Menu Toggle Button -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+        <i data-lucide="menu" style="width: 24px; height: 24px;"></i>
+        <span style="font-weight: 600;">Meniu</span>
+    </button>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <i data-lucide="receipt"></i>
             <h1>ChatBill</h1>
@@ -464,6 +778,14 @@
                     <a href="#chat" class="nav-link active">
                         <i data-lucide="message-circle"></i>
                         <span>Chat GPT</span>
+                    </a>
+                </li>
+                
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a href="#dashboard" class="nav-link">
+                        <i data-lucide="bar-chart-2"></i>
+                        <span>Dashboard</span>
                     </a>
                 </li>
 
@@ -521,10 +843,33 @@
 
                 <!-- Setări -->
                 <li class="nav-item">
-                    <a href="#settings" class="nav-link">
+                    <a href="#" class="nav-link" id="settings-toggle">
                         <i data-lucide="settings"></i>
                         <span>Setări</span>
+                        <i data-lucide="chevron-down" class="submenu-icon" style="margin-left: auto; width: 16px; height: 16px;"></i>
                     </a>
+                    <ul class="nav-submenu" id="settings-submenu">
+                        <li class="nav-item">
+                            <a href="#company-settings" class="nav-link">
+                                <span>Date Companie</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#vat-settings" class="nav-link">
+                                <span>Setări TVA</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#numbering-settings" class="nav-link">
+                                <span>Numerotare</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#template-settings" class="nav-link">
+                                <span>Template-uri</span>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </nav>
@@ -536,6 +881,10 @@
                     <div class="user-email" id="userEmail">user@example.com</div>
                 </div>
             </div>
+            <a href="#subscription" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                <i data-lucide="credit-card"></i>
+                Abonament
+            </a>
             <button id="logout-btn" class="btn btn-secondary" style="width: 100%;">
                 <i data-lucide="log-out"></i>
                 Deconectare
@@ -544,6 +893,73 @@
     </aside>
 
     <main class="main-content">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page">
+            <div class="page-header">
+                <h2>Dashboard</h2>
+                <p>Vizualizare generală și statistici despre activitatea dumneavoastră.</p>
+            </div>
+
+            <!-- Summary Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="opacity: 0.9; margin-bottom: 0.5rem;">Total Facturi</p>
+                            <h2 id="stat-total-invoices" style="font-size: 2rem; margin: 0; color: white;">0</h2>
+                        </div>
+                        <i data-lucide="file-text" style="width: 48px; height: 48px; opacity: 0.8;"></i>
+                    </div>
+                </div>
+
+                <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="opacity: 0.9; margin-bottom: 0.5rem;">Total Proforme</p>
+                            <h2 id="stat-total-proformas" style="font-size: 2rem; margin: 0; color: white;">0</h2>
+                        </div>
+                        <i data-lucide="file-plus" style="width: 48px; height: 48px; opacity: 0.8;"></i>
+                    </div>
+                </div>
+
+                <div class="card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="opacity: 0.9; margin-bottom: 0.5rem;">Venit Total</p>
+                            <h2 id="stat-total-revenue" style="font-size: 2rem; margin: 0; color: white;">0 RON</h2>
+                        </div>
+                        <i data-lucide="trending-up" style="width: 48px; height: 48px; opacity: 0.8;"></i>
+                    </div>
+                </div>
+
+                <div class="card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border: none;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="opacity: 0.9; margin-bottom: 0.5rem;">Medie/Factură</p>
+                            <h2 id="stat-avg-invoice" style="font-size: 2rem; margin: 0; color: white;">0 RON</h2>
+                        </div>
+                        <i data-lucide="bar-chart" style="width: 48px; height: 48px; opacity: 0.8;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">Activitate Recentă</h3>
+                <div id="recent-activity">
+                    <p style="text-align: center; color: #666; padding: 40px;">Se încarcă...</p>
+                </div>
+            </div>
+
+            <!-- Top Clients -->
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">Top 5 Clienți</h3>
+                <div id="top-clients">
+                    <p style="text-align: center; color: #666; padding: 40px;">Se încarcă...</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Invoice Generator Page -->
         <div id="invoice-generator" class="page">
             <div class="page-header">
@@ -631,7 +1047,11 @@
                     </div>
                 </div>
 
-                <div style="text-align: right;">
+                <div style="text-align: right; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" onclick="previewInvoice()" class="btn" style="background: #f5f5f5; color: #333;">
+                        <i data-lucide="eye"></i>
+                        Preview PDF
+                    </button>
                     <button type="submit" class="btn btn-primary">
                         <i data-lucide="save"></i>
                         Generează și Salvează Factura
@@ -648,7 +1068,9 @@
                 <p>Vizualizați și gestionați facturile emise anterior.</p>
             </div>
             <div class="card">
-                <p>Istoricul facturilor va fi afișat aici.</p>
+                <div id="invoicesList">
+                    <p style="text-align: center; color: #666; padding: 40px;">Se încarcă facturile...</p>
+                </div>
             </div>
         </div>
 
@@ -684,14 +1106,45 @@
                 <div class="card">
                     <h3>Detalii Client</h3>
                     <div class="form-grid">
-                        <!-- Similar cu factura, se pot copia câmpurile -->
                         <div class="form-group">
-                            <label for="proforma-client-name">Nume Client</label>
+                            <label for="proforma-client-type">Tip Client</label>
+                            <select id="proforma-client-type" name="proforma-client-type">
+                                <option value="company">Persoană Juridică</option>
+                                <option value="individual">Persoană Fizică</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="proforma-company-fields">
+                            <label for="proforma-client-name">Nume Companie</label>
                             <input type="text" id="proforma-client-name" name="proforma-client-name" required>
+                            <label for="proforma-client-cui">CUI</label>
+                            <div class="input-with-button">
+                                <input type="text" id="proforma-client-cui" name="proforma-client-cui" required placeholder="ex: RO12345678">
+                                <button type="button" id="autocomplete-proforma-client-btn" class="btn btn-secondary btn-icon" title="Auto-completare date din ANAF">
+                                    <i data-lucide="sparkles"></i>
+                                </button>
+                            </div>
+                            <label for="proforma-client-regCom">Reg. Com.</label>
+                            <input type="text" id="proforma-client-regCom" name="proforma-client-regCom">
+                        </div>
+                         <div class="form-group" id="proforma-individual-fields" style="display: none;">
+                            <label for="proforma-client-firstName">Prenume</label>
+                            <input type="text" id="proforma-client-firstName" name="proforma-client-firstName">
+                            <label for="proforma-client-lastName">Nume</label>
+                            <input type="text" id="proforma-client-lastName" name="proforma-client-lastName">
+                             <label for="proforma-client-cnp">CNP</label>
+                            <input type="text" id="proforma-client-cnp" name="proforma-client-cnp">
                         </div>
                         <div class="form-group">
                             <label for="proforma-client-address">Adresă</label>
                             <input type="text" id="proforma-client-address" name="proforma-client-address">
+                        </div>
+                        <div class="form-group">
+                            <label for="proforma-client-city">Oraș</label>
+                            <input type="text" id="proforma-client-city" name="proforma-client-city">
+                        </div>
+                        <div class="form-group">
+                            <label for="proforma-client-county">Județ</label>
+                            <input type="text" id="proforma-client-county" name="proforma-client-county">
                         </div>
                     </div>
                 </div>
@@ -727,7 +1180,11 @@
                         </table>
                     </div>
                 </div>
-                <div style="text-align: right;">
+                <div style="text-align: right; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" onclick="previewProforma()" class="btn" style="background: #f5f5f5; color: #333;">
+                        <i data-lucide="eye"></i>
+                        Preview PDF
+                    </button>
                     <button type="submit" class="btn btn-primary">
                         <i data-lucide="save"></i>
                         Generează și Salvează Proforma
@@ -743,7 +1200,9 @@
                 <p>Vizualizați și gestionați proformele emise anterior.</p>
             </div>
             <div class="card">
-                <p>Istoricul proformelor va fi afișat aici.</p>
+                <div id="proformasList">
+                    <p style="text-align: center; color: #666; padding: 40px;">Se încarcă proformele...</p>
+                </div>
             </div>
         </div>
 
@@ -784,13 +1243,13 @@
             </div>
         </div>
 
-        <!-- Settings Page -->
-        <div id="settings" class="page">
+        <!-- Company Settings Page -->
+        <div id="company-settings" class="page">
             <div class="page-header">
-                <h2>Setări Companie și Preferințe</h2>
-                <p>Configurați datele companiei dvs. și alte preferințe.</p>
+                <h2>Date Companie</h2>
+                <p>Configurați informațiile companiei dumneavoastră.</p>
             </div>
-            <form id="settings-form">
+            <form id="company-settings-form" class="settings-form">
                 <div class="card">
                     <h3>Date Companie Emitentă</h3>
                     <div class="form-grid">
@@ -845,30 +1304,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card">
-                    <h3>Template Preferat Factură</h3>
-                    <p>Selectați stilul vizual implicit pentru facturile generate.</p>
-                    <br>
-                    <div id="template-selector-settings" class="template-selector">
-                        <div class="template-card" data-template="modern">
-                            <img src="https://i.imgur.com/6ZIZg8t.png" alt="Modern Template">
-                            <span>Modern</span>
-                        </div>
-                        <div class="template-card" data-template="classic">
-                            <img src="https://i.imgur.com/L3gV1S2.png" alt="Classic Template">
-                            <span>Clasic</span>
-                        </div>
-                        <div class="template-card" data-template="minimal">
-                            <img src="https://i.imgur.com/gqM9g2s.png" alt="Minimal Template">
-                            <span>Minimal</span>
-                        </div>
-                        <div class="template-card" data-template="elegant">
-                            <img src="https://i.imgur.com/sQ7h2aC.png" alt="Elegant Template">
-                            <span>Elegant</span>
-                        </div>
-                    </div>
-                </div>
-                <div style="text-align: right;">
+                <div style="text-align: right; padding: 20px 0;">
                     <button type="submit" class="btn btn-primary">
                         <i data-lucide="save"></i>
                         Salvează Setările
@@ -876,7 +1312,466 @@
                 </div>
             </form>
         </div>
+        
+        <!-- VAT Settings Page -->
+        <div id="vat-settings" class="page">
+            <div class="page-header">
+                <h2>Setări TVA</h2>
+                <p>Configurați plătitorul de TVA și cota aplicată.</p>
+            </div>
+            <form id="vat-settings-form" class="settings-form">
+                <div class="card">
+                    <h3>Setări TVA</h3>
+                    <p>Configurați dacă compania este plătitoare de TVA și cota aplicată.</p>
+                    <br>
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="is-vat-payer-2" name="isVatPayer" style="width: auto; margin: 0;">
+                                <span>Compania este plătitoare de TVA</span>
+                            </label>
+                            <p style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">Dacă compania NU este plătitoare de TVA, nu se va aplica și afișa TVA pe facturi și proforme.</p>
+                        </div>
+                        <div class="form-group" id="vat-rate-group-2">
+                            <label for="vat-rate-2">Cotă TVA (%)</label>
+                            <input type="number" id="vat-rate-2" name="vatRate" value="19" min="0" max="100" step="0.01">
+                            <p style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">Cota standard în România: 19%</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: right; padding: 20px 0;">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save"></i>
+                        Salvează Setările
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Numbering Settings Page -->
+        <div id="numbering-settings" class="page">
+            <div class="page-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                    <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 12px; backdrop-filter: blur(10px);">
+                        <i data-lucide="hash" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.75rem;">Numerotare Documente</h2>
+                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Configurați serii și numerotare personalizate pentru fiecare tip de document</p>
+                    </div>
+                </div>
+            </div>
+
+            <form id="numbering-settings-form" class="settings-form">
+                <!-- Info Box -->
+                <div style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); border-left: 4px solid #0284c7; padding: 1.25rem; border-radius: 8px; margin-bottom: 2rem; display: flex; align-items: start; gap: 1rem;">
+                    <i data-lucide="info" style="color: #0284c7; flex-shrink: 0; margin-top: 2px;"></i>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #0c4a6e; font-size: 1rem;">Cum funcționează numerotarea?</h4>
+                        <p style="margin: 0; color: #075985; font-size: 0.9rem; line-height: 1.6;">
+                            Fiecare document va avea un număr format din <strong>seria + număr secvențial</strong>.
+                            Exemplu: <code style="background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px;">FAC000001</code>,
+                            <code style="background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px;">PRO000001</code>
+                        </p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+                    <!-- Facturi -->
+                    <div class="numbering-card" style="background: linear-gradient(135deg, #fff 0%, #f0f9ff 100%); border: 2px solid #3b82f6; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15); transition: all 0.3s ease; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(59, 130, 246, 0.05); border-radius: 50%;"></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; position: relative; z-index: 1;">
+                            <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 0.75rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                                <i data-lucide="file-text" style="width: 24px; height: 24px; color: white;"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; color: #1e40af; font-size: 1.1rem;">Facturi</h4>
+                                <p style="margin: 0; color: #64748b; font-size: 0.85rem;">Facturi fiscale emise</p>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="invoiceSeries" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                <i data-lucide="tag" style="width: 16px; height: 16px;"></i>
+                                Serie facturi
+                            </label>
+                            <input type="text" id="invoiceSeries" name="invoiceSeries" placeholder="FAC" maxlength="10"
+                                   style="border: 2px solid #bfdbfe; border-radius: 8px; padding: 0.75rem; font-size: 1rem; font-weight: 500; text-transform: uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceStartNumber" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                <i data-lucide="hash" style="width: 16px; height: 16px;"></i>
+                                Număr început
+                            </label>
+                            <input type="number" id="invoiceStartNumber" name="invoiceStartNumber" placeholder="1" min="1"
+                                   style="border: 2px solid #bfdbfe; border-radius: 8px; padding: 0.75rem; font-size: 1rem; font-weight: 500;">
+                        </div>
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.08); border-radius: 8px; border-left: 3px solid #3b82f6;">
+                            <p style="margin: 0; font-size: 0.85rem; color: #475569;">
+                                <strong>Preview:</strong> <span id="invoice-preview" style="font-family: monospace; color: #3b82f6; font-weight: 600;">FAC000001</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Proforma -->
+                    <div class="numbering-card" style="background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%); border: 2px solid #10b981; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15); transition: all 0.3s ease; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(16, 185, 129, 0.05); border-radius: 50%;"></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; position: relative; z-index: 1;">
+                            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 0.75rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                                <i data-lucide="file-check" style="width: 24px; height: 24px; color: white;"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; color: #047857; font-size: 1.1rem;">Proforma</h4>
+                                <p style="margin: 0; color: #64748b; font-size: 0.85rem;">Facturi proformă</p>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="proformaSeries" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                <i data-lucide="tag" style="width: 16px; height: 16px;"></i>
+                                Serie proforma
+                            </label>
+                            <input type="text" id="proformaSeries" name="proformaSeries" placeholder="PRO" maxlength="10"
+                                   style="border: 2px solid #a7f3d0; border-radius: 8px; padding: 0.75rem; font-size: 1rem; font-weight: 500; text-transform: uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label for="proformaStartNumber" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                <i data-lucide="hash" style="width: 16px; height: 16px;"></i>
+                                Număr început
+                            </label>
+                            <input type="number" id="proformaStartNumber" name="proformaStartNumber" placeholder="1" min="1"
+                                   style="border: 2px solid #a7f3d0; border-radius: 8px; padding: 0.75rem; font-size: 1rem; font-weight: 500;">
+                        </div>
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(16, 185, 129, 0.08); border-radius: 8px; border-left: 3px solid #10b981;">
+                            <p style="margin: 0; font-size: 0.85rem; color: #475569;">
+                                <strong>Preview:</strong> <span id="proforma-preview" style="font-family: monospace; color: #10b981; font-weight: 600;">PRO000001</span>
+                            </p>
+                        </div>
+                    </div>
+                        
+                    <!-- Oferte -->
+                    <div class="numbering-card" style="background: linear-gradient(135deg, #fff 0%, #fff7ed 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.15); transition: all 0.3s ease; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(245, 158, 11, 0.05); border-radius: 50%;"></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; position: relative; z-index: 1;">
+                            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 0.75rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+                                <i data-lucide="file-edit" style="width: 24px; height: 24px; color: white;"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; color: #92400e; font-size: 1.1rem;">Oferte</h4>
+                                <p style="margin: 0; color: #64748b; font-size: 0.85rem;">Oferte comerciale</p>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="quoteSeries" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                <i data-lucide="tag" style="width: 16px; height: 16px;"></i>
+                                Serie oferte
+                            </label>
+                            <input type="text" id="quoteSeries" name="quoteSeries" placeholder="OFF" maxlength="10"
+                                   style="border: 2px solid #fed7aa; border-radius: 8px; padding: 0.75rem; font-size: 1rem; font-weight: 500; text-transform: uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label for="quoteStartNumber" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
+                                <i data-lucide="hash" style="width: 16px; height: 16px;"></i>
+                                Număr început
+                            </label>
+                            <input type="number" id="quoteStartNumber" name="quoteStartNumber" placeholder="1" min="1"
+                                   style="border: 2px solid #fed7aa; border-radius: 8px; padding: 0.75rem; font-size: 1rem; font-weight: 500;">
+                        </div>
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(245, 158, 11, 0.08); border-radius: 8px; border-left: 3px solid #f59e0b;">
+                            <p style="margin: 0; font-size: 0.85rem; color: #475569;">
+                                <strong>Preview:</strong> <span id="quote-preview" style="font-family: monospace; color: #f59e0b; font-weight: 600;">OFF000001</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips Section -->
+                <div style="margin-top: 2rem; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; padding: 1.5rem; border: 1px solid #e2e8f0;">
+                    <h3 style="margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem; color: #334155;">
+                        <i data-lucide="lightbulb" style="width: 20px; height: 20px; color: #eab308;"></i>
+                        Sugestii pentru numerotare
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                        <div style="display: flex; gap: 0.75rem;">
+                            <div style="flex-shrink: 0;">
+                                <div style="width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; margin-top: 6px;"></div>
+                            </div>
+                            <div>
+                                <strong style="color: #1e293b;">Seriile</strong> pot conține litere și cifre (ex: FAC, FAC2024)
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <div style="flex-shrink: 0;">
+                                <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-top: 6px;"></div>
+                            </div>
+                            <div>
+                                <strong style="color: #1e293b;">Numerele</strong> vor fi completate automat cu zerouri (000001, 000002...)
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <div style="flex-shrink: 0;">
+                                <div style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; margin-top: 6px;"></div>
+                            </div>
+                            <div>
+                                <strong style="color: #1e293b;">Resetare</strong> numerotare se face manual la începutul anului
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button type="submit" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 2rem; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                        <i data-lucide="save" style="width: 20px; height: 20px;"></i>
+                        Salvează Setări
+                    </button>
+                    <button type="button" onclick="location.reload()" class="btn btn-secondary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.5rem;">
+                        <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i>
+                        Resetează
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <style>
+            .numbering-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+            }
+
+            .numbering-card input:focus {
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                border-color: currentColor;
+            }
+
+            .numbering-card input[type="text"],
+            .numbering-card input[type="number"] {
+                transition: all 0.2s ease;
+            }
+
+            .numbering-card input[type="text"]:focus,
+            .numbering-card input[type="number"]:focus {
+                transform: scale(1.02);
+            }
+        </style>
+        
+        <!-- Template Settings Page -->
+        <div id="template-settings" class="page">
+            <div class="page-header">
+                <h2>Template-uri Documente</h2>
+                <p>Selectați stilurile vizuale pentru documentele generate.</p>
+            </div>
+            <form id="template-settings-form" class="settings-form">
+                <div class="card">
+                    <h3>Template-uri Documente</h3>
+                    <p>Selectați stilurile vizuale pentru documentele generate.</p>
+                    <br>
+                    
+                    <!-- Template Facturi -->
+                    <h4 style="color: #3b82f6; margin-bottom: 10px;">📄 Template Facturi</h4>
+                    <div id="template-selector-invoice" class="template-selector" style="margin-bottom: 30px;">
+                        <div class="template-card selected" data-template="modern">
+                            <img src="https://i.imgur.com/6ZIZg8t.png" alt="Modern Template">
+                            <span>Modern</span>
+                        </div>
+                        <div class="template-card" data-template="classic">
+                            <img src="https://i.imgur.com/L3gV1S2.png" alt="Classic Template">
+                            <span>Clasic</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Template Proforma -->
+                    <h4 style="color: #10b981; margin-bottom: 10px;">📋 Template Proforma</h4>
+                    <div id="template-selector-proforma" class="template-selector" style="margin-bottom: 30px;">
+                        <div class="template-card selected" data-template="modern">
+                            <img src="https://i.imgur.com/6ZIZg8t.png" alt="Modern Template">
+                            <span>Modern</span>
+                        </div>
+                        <div class="template-card" data-template="classic">
+                            <img src="https://i.imgur.com/L3gV1S2.png" alt="Classic Template">
+                            <span>Clasic</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Template Oferte -->
+                    <h4 style="color: #f59e0b; margin-bottom: 10px;">📝 Template Oferte</h4>
+                    <div id="template-selector-quote" class="template-selector">
+                        <div class="template-card selected" data-template="modern">
+                            <img src="https://i.imgur.com/6ZIZg8t.png" alt="Modern Template">
+                            <span>Modern</span>
+                        </div>
+                        <div class="template-card" data-template="classic">
+                            <img src="https://i.imgur.com/L3gV1S2.png" alt="Classic Template">
+                            <span>Clasic</span>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                
+                <div style="text-align: right; padding: 20px 0;">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save"></i>
+                        Salvează Setările
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Subscription Page -->
+        <div id="subscription" class="page">
+            <div class="page-header">
+                <h2>Planuri de Abonament</h2>
+                <p>Alege planul potrivit pentru afacerea ta</p>
+            </div>
+
+            <!-- Current Subscription Status -->
+            <div id="current-subscription-card" class="card" style="margin-bottom: 1.5rem; display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <h3 style="color: white; font-size: 1.25rem;">🎉 Abonamentul Tău Activ</h3>
+                <div id="subscription-details" style="margin: 1rem 0;">
+                    <!-- Populated by JavaScript -->
+                </div>
+                <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <button id="manage-subscription-btn" class="btn" style="background: white; color: var(--primary); border: none; padding: 0.5rem 1rem;">
+                        <i data-lucide="settings"></i>
+                        Gestionează
+                    </button>
+                    <button id="cancel-subscription-btn" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.5rem 1rem;">
+                        <i data-lucide="x-circle"></i>
+                        Anulează
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pricing Plans -->
+            <div class="pricing-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+
+                <!-- Monthly Plan -->
+                <div class="pricing-card card" style="text-align: center; padding: 1.5rem; transition: all 0.3s ease; border: 2px solid transparent;">
+                    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                        <i data-lucide="zap" style="color: white; width: 24px; height: 24px;"></i>
+                    </div>
+                    <h3 style="margin-bottom: 0.25rem; font-size: 1.25rem;">Lunar</h3>
+                    <p style="color: var(--secondary-foreground); font-size: 0.875rem; margin-bottom: 1rem;">Perfect pentru început</p>
+                    <div style="margin: 1rem 0;">
+                        <div style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            €4.99
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--secondary-foreground);">pe lună</div>
+                    </div>
+                    <ul style="list-style: none; padding: 0; margin: 1.5rem 0; text-align: left; font-size: 0.875rem;">
+                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
+                            <span>Facturi nelimitate</span>
+                        </li>
+                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
+                            <span>Chat GPT facturare</span>
+                        </li>
+                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
+                            <span>Toate șabloanele PDF</span>
+                        </li>
+                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
+                            <span>Integrare ANAF</span>
+                        </li>
+                    </ul>
+                    <button class="btn btn-secondary subscribe-btn" data-plan="monthly" style="width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.9rem;">
+                        Alege Lunar
+                    </button>
+                </div>
+
+                <!-- Annual Plan -->
+                <div class="pricing-card card" style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border: 2px solid var(--primary); position: relative; transform: scale(1.02); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);">
+                    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.25rem 1rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
+                        ⭐ ECONOMISEȘTI 20%
+                    </div>
+                    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                        <i data-lucide="crown" style="color: white; width: 24px; height: 24px;"></i>
+                    </div>
+                    <h3 style="margin-bottom: 0.25rem; font-size: 1.25rem;">Anual</h3>
+                    <p style="color: var(--secondary-foreground); font-size: 0.875rem; margin-bottom: 1rem;">Cea mai bună ofertă</p>
+                    <div style="margin: 1rem 0;">
+                        <div style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            €3.99
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--secondary-foreground);">pe lună</div>
+                        <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-top: 0.25rem;">
+                            Facturat anual €47.88
+                        </div>
+                    </div>
+                    <ul style="list-style: none; padding: 0; margin: 1.5rem 0; text-align: left; font-size: 0.875rem;">
+                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
+                            <span><strong>Toate din planul lunar</strong></span>
+                        </li>
+                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
+                            <span><strong>Economisești €11.88/an</strong></span>
+                        </li>
+                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
+                            <span>Suport prioritar 24/7</span>
+                        </li>
+                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
+                            <span>Funcții noi în avans</span>
+                        </li>
+                    </ul>
+                    <button class="btn btn-primary subscribe-btn" data-plan="annual" style="width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.9rem;">
+                        Alege Anual
+                    </button>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="card" style="padding: 1.5rem;">
+                <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">❓ Întrebări Frecvente</h3>
+                <div style="display: grid; gap: 1rem;">
+                    <div style="padding: 1rem; background: var(--background); border-radius: 8px;">
+                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Pot anula abonamentul oricând?</p>
+                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Da, poți anula oricând. Fără costuri ascunse sau penalități.</p>
+                    </div>
+
+                    <div style="padding: 1rem; background: var(--background); border-radius: 8px;">
+                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Ce se întâmplă dacă anulez?</p>
+                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Vei avea acces până la sfârșitul perioadei plătite.</p>
+                    </div>
+
+                    <div style="padding: 1rem; background: var(--background); border-radius: 8px;">
+                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Ce metode de plată acceptați?</p>
+                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Toate cardurile majore (Visa, Mastercard, Amex) prin Stripe.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trust Badges -->
+            <div style="margin-top: 1.5rem; text-align: center; padding: 1rem; background: var(--background); border-radius: 8px;">
+                <p style="font-size: 0.75rem; color: var(--secondary-foreground); margin-bottom: 0.75rem;">Plățile procesate securizat prin</p>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #635bff;">Stripe</div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <div style="padding: 0.25rem 0.75rem; background: white; border-radius: 6px; font-weight: 600; font-size: 0.75rem; color: #1a1f71;">VISA</div>
+                        <div style="padding: 0.25rem 0.75rem; background: white; border-radius: 6px; font-weight: 600; font-size: 0.75rem; color: #eb001b;">Mastercard</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
+    
+    <!-- Preview PDF Modal -->
+    <div id="pdf-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; padding: 20px;">
+        <div style="max-width: 1200px; margin: 0 auto; height: 100%; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: white; margin: 0;">Preview PDF</h2>
+                <button onclick="closePreviewModal()" class="btn" style="background: white; color: #333;">
+                    <i data-lucide="x"></i> Închide
+                </button>
+            </div>
+            <div style="flex: 1; background: white; border-radius: 16px; overflow: hidden;">
+                <iframe id="pdf-preview-frame" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
     
     <div id="toast-container"></div>
 
@@ -884,7 +1779,99 @@
     <script>
         lucide.createIcons();
 
+        // Live preview for document numbering
+        function updatePreview(seriesId, numberId, previewId) {
+            const series = document.getElementById(seriesId)?.value || '';
+            const number = document.getElementById(numberId)?.value || '1';
+            const preview = document.getElementById(previewId);
+
+            if (preview) {
+                const paddedNumber = String(number).padStart(6, '0');
+                preview.textContent = `${series.toUpperCase()}${paddedNumber}`;
+            }
+        }
+
+        // Add live preview listeners
         document.addEventListener('DOMContentLoaded', () => {
+            // Invoice numbering preview
+            const invoiceSeries = document.getElementById('invoiceSeries');
+            const invoiceStartNumber = document.getElementById('invoiceStartNumber');
+            if (invoiceSeries && invoiceStartNumber) {
+                invoiceSeries.addEventListener('input', () => updatePreview('invoiceSeries', 'invoiceStartNumber', 'invoice-preview'));
+                invoiceStartNumber.addEventListener('input', () => updatePreview('invoiceSeries', 'invoiceStartNumber', 'invoice-preview'));
+            }
+
+            // Proforma numbering preview
+            const proformaSeries = document.getElementById('proformaSeries');
+            const proformaStartNumber = document.getElementById('proformaStartNumber');
+            if (proformaSeries && proformaStartNumber) {
+                proformaSeries.addEventListener('input', () => updatePreview('proformaSeries', 'proformaStartNumber', 'proforma-preview'));
+                proformaStartNumber.addEventListener('input', () => updatePreview('proformaSeries', 'proformaStartNumber', 'proforma-preview'));
+            }
+
+            // Quote numbering preview
+            const quoteSeries = document.getElementById('quoteSeries');
+            const quoteStartNumber = document.getElementById('quoteStartNumber');
+            if (quoteSeries && quoteStartNumber) {
+                quoteSeries.addEventListener('input', () => updatePreview('quoteSeries', 'quoteStartNumber', 'quote-preview'));
+                quoteStartNumber.addEventListener('input', () => updatePreview('quoteSeries', 'quoteStartNumber', 'quote-preview'));
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mobile menu functionality
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            const sidebar = document.getElementById('sidebar');
+
+            function toggleMobileMenu() {
+                sidebar.classList.toggle('mobile-open');
+                mobileMenuOverlay.classList.toggle('active');
+                document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+            }
+
+            function closeMobileMenu() {
+                sidebar.classList.remove('mobile-open');
+                mobileMenuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            }
+
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+            }
+
+            // Close mobile menu when clicking a nav link
+            const allNavLinks = document.querySelectorAll('.nav-link');
+            allNavLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        closeMobileMenu();
+                    }
+                });
+            });
+
+            // Close menu on escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar.classList.contains('mobile-open')) {
+                    closeMobileMenu();
+                }
+            });
+
+            // Handle window resize
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (window.innerWidth > 768) {
+                        closeMobileMenu();
+                    }
+                }, 250);
+            });
+
             const navLinks = document.querySelectorAll('.nav-link');
             const pages = document.querySelectorAll('.page');
             const parentLinks = document.querySelectorAll('.nav-parent-link');
@@ -958,7 +1945,110 @@
             
             // Add first product on page load
             addProduct();
+            
+            // Initialize form validation
+            initFormValidation();
         });
+        
+        // Form Validation
+        function initFormValidation() {
+            // Validare CUI
+            function validateCUI(cui) {
+                if (!cui) return { valid: false, message: 'CUI-ul este obligatoriu' };
+                const cleaned = cui.replace(/[^0-9]/g, '');
+                if (cleaned.length < 2 || cleaned.length > 10) {
+                    return { valid: false, message: 'CUI invalid (2-10 cifre)' };
+                }
+                return { valid: true };
+            }
+            
+            // Validare CNP
+            function validateCNP(cnp) {
+                if (!cnp) return { valid: false, message: 'CNP-ul este obligatoriu' };
+                const cleaned = cnp.replace(/[^0-9]/g, '');
+                if (cleaned.length !== 13) {
+                    return { valid: false, message: 'CNP invalid (trebuie să aibă 13 cifre)' };
+                }
+                return { valid: true };
+            }
+            
+            // Validare email
+            function validateEmail(email) {
+                if (!email) return { valid: true }; // Optional
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    return { valid: false, message: 'Email invalid' };
+                }
+                return { valid: true };
+            }
+            
+            // Validare telefon
+            function validatePhone(phone) {
+                if (!phone) return { valid: true }; // Optional
+                const phoneRegex = /^[\d\s\-\+\(\)]{6,}$/;
+                if (!phoneRegex.test(phone)) {
+                    return { valid: false, message: 'Număr telefon invalid' };
+                }
+                return { valid: true };
+            }
+            
+            // Adaugă validare pe blur pentru CUI
+            const cuiInputs = document.querySelectorAll('input[id$="-cui"]');
+            cuiInputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    const result = validateCUI(this.value);
+                    showFieldValidation(this, result);
+                });
+            });
+            
+            // Adaugă validare pe blur pentru CNP
+            const cnpInputs = document.querySelectorAll('input[id$="-cnp"]');
+            cnpInputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    const result = validateCNP(this.value);
+                    showFieldValidation(this, result);
+                });
+            });
+            
+            // Adaugă validare pe blur pentru email
+            const emailInputs = document.querySelectorAll('input[type="email"]');
+            emailInputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    const result = validateEmail(this.value);
+                    showFieldValidation(this, result);
+                });
+            });
+            
+            // Adaugă validare pe blur pentru telefon
+            const phoneInputs = document.querySelectorAll('input[id*="phone"]');
+            phoneInputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    const result = validatePhone(this.value);
+                    showFieldValidation(this, result);
+                });
+            });
+        }
+        
+        function showFieldValidation(input, result) {
+            const formGroup = input.closest('.form-group');
+            if (!formGroup) return;
+            
+            // Remove existing error message
+            const existingError = formGroup.querySelector('.form-error');
+            if (existingError) existingError.remove();
+            
+            formGroup.classList.remove('error', 'success');
+            
+            if (!result.valid) {
+                formGroup.classList.add('error');
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'form-error';
+                errorMsg.textContent = result.message;
+                formGroup.appendChild(errorMsg);
+            } else if (input.value) {
+                formGroup.classList.add('success');
+            }
+        }
         
         function initTemplateSelector() {
             const selector = document.getElementById('template-selector-settings');
@@ -972,6 +2062,52 @@
                     card.classList.add('selected');
                 });
             });
+        }
+        
+        // Helper pentru mesaje de eroare friendly
+        function getFriendlyErrorMessage(error) {
+            const errorMsg = error.message || error.toString();
+            
+            // Erori de rețea
+            if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError')) {
+                return 'Nu se poate conecta la server. Verificați conexiunea la internet.';
+            }
+            
+            // Erori de autentificare
+            if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+                return 'Sesiunea a expirat. Vă rugăm să vă autentificați din nou.';
+            }
+            
+            // Erori de validare
+            if (errorMsg.includes('required') || errorMsg.includes('obligatori')) {
+                return 'Vă rugăm să completați toate câmpurile obligatorii.';
+            }
+            
+            if (errorMsg.includes('CUI')) {
+                return 'CUI-ul introdus nu este valid. Verificați și încercați din nou.';
+            }
+            
+            if (errorMsg.includes('CNP')) {
+                return 'CNP-ul introdus nu este valid (trebuie să aibă 13 cifre).';
+            }
+            
+            // Erori de bază de date
+            if (errorMsg.includes('database') || errorMsg.includes('DB')) {
+                return 'A apărut o problemă tehnică. Vă rugăm încercați din nou.';
+            }
+            
+            // Erori PDF
+            if (errorMsg.includes('PDF') || errorMsg.includes('pdf')) {
+                return 'Nu s-a putut genera documentul PDF. Încercați din nou.';
+            }
+            
+            // Erori generice de server
+            if (errorMsg.includes('500') || errorMsg.includes('Internal Server')) {
+                return 'Serverul întâmpină probleme. Vă rugăm încercați din nou peste câteva momente.';
+            }
+            
+            // Dacă nu e nimic specific, returnează mesajul original dar mai prietenos
+            return errorMsg || 'A apărut o eroare neașteptată. Vă rugăm încercați din nou.';
         }
         
         // Products Management
@@ -1067,34 +2203,6 @@
         
         // Form Submissions
         
-        // Settings Form
-        document.getElementById('settings-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const settingsData = Object.fromEntries(formData.entries());
-            
-            const selectedTemplate = document.querySelector('#template-selector-settings .template-card.selected');
-            if (selectedTemplate) {
-                settingsData.preferredTemplate = selectedTemplate.dataset.template;
-            }
-
-            try {
-                const response = await fetch('/api/settings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(settingsData)
-                });
-                const result = await response.json();
-                if (result.success) {
-                    showToast('Setările au fost salvate cu succes!');
-                } else {
-                    throw new Error(result.error || 'A apărut o eroare la salvarea setărilor.');
-                }
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
-        });
-        
         // Invoice Form
         document.getElementById('invoice-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1140,6 +2248,13 @@
                 products: products
             };
 
+            // Loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Se generează...';
+            lucide.createIcons();
+
             try {
                 const response = await fetch('/api/invoices', {
                     method: 'POST',
@@ -1158,7 +2273,11 @@
                     throw new Error(result.error || 'A apărut o eroare la generarea facturii.');
                 }
             } catch (error) {
-                showToast(error.message, 'error');
+                showToast(getFriendlyErrorMessage(error), 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                lucide.createIcons();
             }
         });
         
@@ -1168,20 +2287,56 @@
                 const response = await fetch('/api/settings');
                 const result = await response.json();
                 if (result.success && result.settings) {
-                    const form = document.getElementById('settings-form');
-                    for (const key in result.settings) {
-                        const input = form.querySelector(`[name="${key}"]`);
-                        if (input) {
-                            input.value = result.settings[key] || '';
+                    const settings = result.settings;
+                    
+                    // Populate all forms with settings
+                    const allForms = document.querySelectorAll('.settings-form');
+                    allForms.forEach(form => {
+                        for (const key in settings) {
+                            const input = form.querySelector(`[name="${key}"]`);
+                            if (input) {
+                                if (input.type === 'checkbox') {
+                                    input.checked = settings[key] === true || settings[key] === 'true';
+                                } else {
+                                    input.value = settings[key] || '';
+                                }
+                            }
                         }
+                    });
+                    
+                    // Handle VAT settings on both pages
+                    const isVatPayer = settings.isVatPayer !== false;
+                    const vatPayer1 = document.getElementById('is-vat-payer');
+                    const vatPayer2 = document.getElementById('is-vat-payer-2');
+                    const vatRate1 = document.getElementById('vat-rate');
+                    const vatRate2 = document.getElementById('vat-rate-2');
+                    const vatRateGroup1 = document.getElementById('vat-rate-group');
+                    const vatRateGroup2 = document.getElementById('vat-rate-group-2');
+                    
+                    if (vatPayer1) vatPayer1.checked = isVatPayer;
+                    if (vatPayer2) vatPayer2.checked = isVatPayer;
+                    if (vatRate1) vatRate1.value = settings.vatRate || 19;
+                    if (vatRate2) vatRate2.value = settings.vatRate || 19;
+                    if (vatRateGroup1) vatRateGroup1.style.display = isVatPayer ? 'block' : 'none';
+                    if (vatRateGroup2) vatRateGroup2.style.display = isVatPayer ? 'block' : 'none';
+                    
+                    // Handle template selections
+                    const invoiceTemplate = settings.invoiceTemplate || 'modern';
+                    const invoiceCard = document.querySelector(`#template-selector-invoice .template-card[data-template="${invoiceTemplate}"]`);
+                    if (invoiceCard) {
+                        invoiceCard.click();
                     }
                     
-                    const preferredTemplate = result.settings.preferredTemplate;
-                    if (preferredTemplate) {
-                        const card = document.querySelector(`#template-selector-settings .template-card[data-template="${preferredTemplate}"]`);
-                        if (card) {
-                            card.click();
-                        }
+                    const proformaTemplate = settings.proformaTemplate || 'modern';
+                    const proformaCard = document.querySelector(`#template-selector-proforma .template-card[data-template="${proformaTemplate}"]`);
+                    if (proformaCard) {
+                        proformaCard.click();
+                    }
+                    
+                    const quoteTemplate = settings.quoteTemplate || 'modern';
+                    const quoteCard = document.querySelector(`#template-selector-quote .template-card[data-template="${quoteTemplate}"]`);
+                    if (quoteCard) {
+                        quoteCard.click();
                     }
                 }
             } catch (error) {
@@ -1190,6 +2345,28 @@
         }
 
         loadSettings();
+        
+        // VAT payer toggle for both pages
+        const vatPayer1 = document.getElementById('is-vat-payer');
+        const vatPayer2 = document.getElementById('is-vat-payer-2');
+        
+        if (vatPayer1) {
+            vatPayer1.addEventListener('change', function() {
+                const vatRateGroup = document.getElementById('vat-rate-group');
+                if (vatRateGroup) {
+                    vatRateGroup.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        }
+        
+        if (vatPayer2) {
+            vatPayer2.addEventListener('change', function() {
+                const vatRateGroup = document.getElementById('vat-rate-group-2');
+                if (vatRateGroup) {
+                    vatRateGroup.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        }
         
         // Load user info
         async function loadUserInfo() {
@@ -1212,6 +2389,95 @@
         }
         
         loadUserInfo();
+        
+        // Settings Submenu Toggle
+        document.getElementById('settings-toggle').addEventListener('click', function(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('settings-submenu');
+            submenu.classList.toggle('expanded');
+            const chevron = this.querySelector('.submenu-icon');
+            chevron.style.transform = submenu.classList.contains('expanded') ? 'rotate(180deg)' : '';
+        });
+        
+        // Handle all settings forms
+        const settingsForms = ['company-settings-form', 'vat-settings-form', 'numbering-settings-form', 'template-settings-form'];
+        
+        settingsForms.forEach(formId => {
+            const form = document.getElementById(formId);
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await saveSettings(e.target);
+                });
+            }
+        });
+        
+        // Unified save settings function
+        async function saveSettings(form) {
+            const formData = new FormData(form);
+            const settingsData = Object.fromEntries(formData.entries());
+            
+            // Capture template selections
+            const selectedInvoiceTemplate = document.querySelector('#template-selector-invoice .template-card.selected');
+            if (selectedInvoiceTemplate) {
+                settingsData.invoiceTemplate = selectedInvoiceTemplate.dataset.template;
+            }
+            
+            const selectedProformaTemplate = document.querySelector('#template-selector-proforma .template-card.selected');
+            if (selectedProformaTemplate) {
+                settingsData.proformaTemplate = selectedProformaTemplate.dataset.template;
+            }
+            
+            const selectedQuoteTemplate = document.querySelector('#template-selector-quote .template-card.selected');
+            if (selectedQuoteTemplate) {
+                settingsData.quoteTemplate = selectedQuoteTemplate.dataset.template;
+            }
+
+            // Handle VAT checkbox from both pages
+            const isVatPayerCheckbox = document.getElementById('is-vat-payer') || document.getElementById('is-vat-payer-2');
+            if (isVatPayerCheckbox) {
+                settingsData.isVatPayer = isVatPayerCheckbox.checked;
+            }
+            
+            // Convert numeric fields
+            if (settingsData.vatRate) {
+                settingsData.vatRate = parseFloat(settingsData.vatRate);
+            }
+            ['invoiceStartNumber', 'proformaStartNumber', 'quoteStartNumber'].forEach(field => {
+                if (settingsData[field]) {
+                    settingsData[field] = parseInt(settingsData[field]);
+                }
+            });
+
+            // Loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Se salvează...';
+            lucide.createIcons();
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settingsData)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Setările au fost salvate cu succes!');
+                    // Reload settings on all pages
+                    loadSettings();
+                } else {
+                    throw new Error(result.error || 'A apărut o eroare la salvarea setărilor.');
+                }
+            } catch (error) {
+                showToast(getFriendlyErrorMessage(error), 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                lucide.createIcons();
+            }
+        }
         
         // Logout functionality
         document.getElementById('logout-btn').addEventListener('click', () => {
@@ -1374,6 +2640,684 @@
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendChatMessage();
+            }
+        });
+
+        // ========== PROFORMA FUNCTIONALITY ==========
+        
+        // Proforma Products Management
+        let proformaProductCount = 0;
+        const proformaProductsContainer = document.getElementById('proforma-products-container');
+        
+        function addProformaProduct() {
+            proformaProductCount++;
+            const productItem = document.createElement('div');
+            productItem.classList.add('product-item');
+            productItem.innerHTML = `
+                <div class="form-group">
+                    <label>Descriere Produs/Serviciu</label>
+                    <input type="text" name="proforma-product-name-${proformaProductCount}" placeholder="ex: Servicii consultanță" required>
+                </div>
+                <div class="form-group">
+                    <label>Cant.</label>
+                    <input type="number" name="proforma-product-quantity-${proformaProductCount}" value="1" min="0" step="any" class="proforma-recalculate">
+                </div>
+                <div class="form-group">
+                    <label>U.M.</label>
+                    <input type="text" name="proforma-product-unit-${proformaProductCount}" value="buc">
+                </div>
+                <div class="form-group">
+                    <label>Preț Unitar</label>
+                    <input type="number" name="proforma-product-price-${proformaProductCount}" value="0" min="0" step="any" class="proforma-recalculate">
+                </div>
+                <div class="form-group">
+                    <label>TVA (%)</label>
+                    <input type="number" name="proforma-product-vat-${proformaProductCount}" value="19" min="0" class="proforma-recalculate">
+                </div>
+                <button type="button" class="btn btn-danger remove-product" style="margin-top: 1.5rem;">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            `;
+            proformaProductsContainer.appendChild(productItem);
+            lucide.createIcons();
+            
+            productItem.querySelector('.remove-product').addEventListener('click', () => {
+                productItem.remove();
+                calculateProformaTotals();
+            });
+            
+            productItem.querySelectorAll('.proforma-recalculate').forEach(input => {
+                input.addEventListener('input', calculateProformaTotals);
+            });
+        }
+
+        document.getElementById('add-proforma-product').addEventListener('click', addProformaProduct);
+
+        function calculateProformaTotals() {
+            let subtotal = 0;
+            let vat = 0;
+
+            proformaProductsContainer.querySelectorAll('.product-item').forEach(item => {
+                const quantity = parseFloat(item.querySelector('input[name^="proforma-product-quantity"]').value) || 0;
+                const price = parseFloat(item.querySelector('input[name^="proforma-product-price"]').value) || 0;
+                const vatRate = parseFloat(item.querySelector('input[name^="proforma-product-vat"]').value) || 0;
+
+                const itemSubtotal = quantity * price;
+                const itemVat = itemSubtotal * (vatRate / 100);
+
+                subtotal += itemSubtotal;
+                vat += itemVat;
+            });
+
+            const total = subtotal + vat;
+
+            document.getElementById('proforma-summary-subtotal').textContent = `${subtotal.toFixed(2)} RON`;
+            document.getElementById('proforma-summary-vat').textContent = `${vat.toFixed(2)} RON`;
+            document.getElementById('proforma-summary-total').textContent = `${total.toFixed(2)} RON`;
+        }
+
+        // Proforma Form Submit
+        document.getElementById('proforma-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const clientType = document.getElementById('proforma-client-type').value;
+            let clientData = {};
+            if (clientType === 'company') {
+                clientData = {
+                    type: 'company',
+                    name: document.getElementById('proforma-client-name').value,
+                    cui: document.getElementById('proforma-client-cui').value,
+                    regCom: document.getElementById('proforma-client-regCom').value,
+                    address: document.getElementById('proforma-client-address').value,
+                    city: document.getElementById('proforma-client-city').value,
+                    county: document.getElementById('proforma-client-county').value,
+                };
+            } else {
+                clientData = {
+                    type: 'individual',
+                    firstName: document.getElementById('proforma-client-firstName').value,
+                    lastName: document.getElementById('proforma-client-lastName').value,
+                    cnp: document.getElementById('proforma-client-cnp').value,
+                    address: document.getElementById('proforma-client-address').value,
+                    city: document.getElementById('proforma-client-city').value,
+                    county: document.getElementById('proforma-client-county').value,
+                };
+            }
+            
+            const products = [];
+            proformaProductsContainer.querySelectorAll('.product-item').forEach((item, index) => {
+                const i = index + 1;
+                products.push({
+                    name: item.querySelector(`input[name="proforma-product-name-${i}"]`).value,
+                    quantity: parseFloat(item.querySelector(`input[name="proforma-product-quantity-${i}"]`).value),
+                    unit: item.querySelector(`input[name="proforma-product-unit-${i}"]`).value,
+                    price: parseFloat(item.querySelector(`input[name="proforma-product-price-${i}"]`).value),
+                    vat: parseInt(item.querySelector(`input[name="proforma-product-vat-${i}"]`).value)
+                });
+            });
+
+            const proformaPayload = {
+                client: clientData,
+                products: products
+            };
+
+            // Loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Se generează...';
+            lucide.createIcons();
+
+            try {
+                const response = await fetch('/api/proformas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(proformaPayload)
+                });
+                const result = await response.json();
+                if (result.success && result.proforma.pdfPath) {
+                    showToast('Proforma a fost generată cu succes!');
+                    window.open(result.proforma.pdfPath, '_blank');
+                    e.target.reset();
+                    proformaProductsContainer.innerHTML = '';
+                    addProformaProduct();
+                    calculateProformaTotals();
+                } else {
+                    throw new Error(result.error || 'A apărut o eroare la generarea proformei.');
+                }
+            } catch (error) {
+                showToast(getFriendlyErrorMessage(error), 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                lucide.createIcons();
+            }
+        });
+
+        // Auto-complete functionality for proforma client
+        document.getElementById('autocomplete-proforma-client-btn').addEventListener('click', async () => {
+            const cuiInput = document.getElementById('proforma-client-cui');
+            const cui = cuiInput.value.trim();
+
+            if (!cui) {
+                showToast('Introduceți un CUI valid pentru client', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('autocomplete-proforma-client-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>';
+            lucide.createIcons();
+
+            try {
+                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`, {
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+
+                if (result.success && result.settings) {
+                    const data = result.settings;
+                    if (data.name) document.getElementById('proforma-client-name').value = data.name;
+                    if (data.address) document.getElementById('proforma-client-address').value = data.address;
+                    if (data.city) document.getElementById('proforma-client-city').value = data.city;
+                    if (data.county) document.getElementById('proforma-client-county').value = data.county;
+                    if (data.regCom) document.getElementById('proforma-client-regCom').value = data.regCom;
+
+                    showToast('Date client completate automat din ANAF!', 'success');
+                } else {
+                    throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="sparkles"></i>';
+                lucide.createIcons();
+            }
+        });
+
+        // Toggle client type for proforma
+        document.getElementById('proforma-client-type').addEventListener('change', () => {
+            const isIndividual = document.getElementById('proforma-client-type').value === 'individual';
+            const companyFields = document.getElementById('proforma-company-fields');
+            const individualFields = document.getElementById('proforma-individual-fields');
+            
+            if (isIndividual) {
+                companyFields.style.display = 'none';
+                individualFields.style.display = 'block';
+                document.getElementById('proforma-client-cui').required = false;
+                if (document.getElementById('proforma-client-firstName')) {
+                    document.getElementById('proforma-client-firstName').required = true;
+                    document.getElementById('proforma-client-lastName').required = true;
+                }
+            } else {
+                companyFields.style.display = 'block';
+                individualFields.style.display = 'none';
+                document.getElementById('proforma-client-cui').required = true;
+                if (document.getElementById('proforma-client-firstName')) {
+                    document.getElementById('proforma-client-firstName').required = false;
+                    document.getElementById('proforma-client-lastName').required = false;
+                }
+            }
+        });
+
+        // Toggle client type for invoices
+        document.getElementById('client-type').addEventListener('change', () => {
+            const isIndividual = document.getElementById('client-type').value === 'individual';
+            const companyFields = document.getElementById('company-fields');
+            const individualFields = document.getElementById('individual-fields');
+            
+            if (isIndividual) {
+                companyFields.style.display = 'none';
+                individualFields.style.display = 'block';
+                document.getElementById('client-cui').required = false;
+                if (document.getElementById('client-firstName')) {
+                    document.getElementById('client-firstName').required = true;
+                    document.getElementById('client-lastName').required = true;
+                }
+            } else {
+                companyFields.style.display = 'block';
+                individualFields.style.display = 'none';
+                document.getElementById('client-cui').required = true;
+                if (document.getElementById('client-firstName')) {
+                    document.getElementById('client-firstName').required = false;
+                    document.getElementById('client-lastName').required = false;
+                }
+            }
+        });
+
+        // Initialize first proforma product
+        addProformaProduct();
+
+        // Load invoices and proformas history
+        async function loadInvoices() {
+            try {
+                const response = await fetch('/api/invoices', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                const container = document.getElementById('invoicesList');
+                
+                if (!result.invoices || result.invoices.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Nu există facturi generate încă.</p>';
+                    return;
+                }
+                
+                let html = `
+                    <div style="margin-bottom: 20px; text-align: right;">
+                        <button onclick="exportInvoicesToExcel()" class="btn btn-primary" style="padding: 8px 16px;">
+                            <i data-lucide="download"></i> Export Excel
+                        </button>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                                <th style="padding: 12px;">Nr. Factură</th>
+                                <th style="padding: 12px;">Data</th>
+                                <th style="padding: 12px;">Client</th>
+                                <th style="padding: 12px;">Total</th>
+                                <th style="padding: 12px;">Acțiuni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                result.invoices.forEach(invoice => {
+                    const date = new Date(invoice.createdAt).toLocaleDateString('ro-RO');
+                    const clientName = invoice.client?.name || invoice.client?.firstName + ' ' + invoice.client?.lastName || 'N/A';
+                    const total = invoice.total?.toFixed(2) || '0.00';
+                    
+                    html += `
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 12px;">${invoice.invoiceNumber || 'N/A'}</td>
+                            <td style="padding: 12px;">${date}</td>
+                            <td style="padding: 12px;">${clientName}</td>
+                            <td style="padding: 12px;">${total} RON</td>
+                            <td style="padding: 12px;">
+                                <button onclick="window.open('${invoice.pdfPath}', '_blank')" class="btn btn-primary" style="padding: 6px 12px; font-size: 14px;">
+                                    <i data-lucide="download" style="width: 16px; height: 16px;"></i> Descarcă
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                lucide.createIcons();
+                
+                // Store invoices globally for export
+                window.invoicesData = result.invoices;
+                
+            } catch (error) {
+                console.error('Eroare la încărcarea facturilor:', error);
+                document.getElementById('invoicesList').innerHTML = '<p style="text-align: center; color: #d32f2f; padding: 40px;">Eroare la încărcarea facturilor.</p>';
+            }
+        }
+        
+        // Export invoices to Excel (CSV format)
+        function exportInvoicesToExcel() {
+            if (!window.invoicesData || window.invoicesData.length === 0) {
+                showToast('Nu există facturi de exportat', 'error');
+                return;
+            }
+            
+            // Create CSV content
+            let csv = '\uFEFF'; // UTF-8 BOM for Excel
+            csv += 'Nr. Factura,Data,Tip Client,Nume Client,CUI/CNP,Subtotal,TVA,Total,Status\n';
+            
+            window.invoicesData.forEach(invoice => {
+                const date = new Date(invoice.createdAt).toLocaleDateString('ro-RO');
+                const clientName = invoice.clientName || 'N/A';
+                const clientId = invoice.clientCUI || invoice.clientCNP || 'N/A';
+                const clientType = invoice.clientType === 'company' ? 'Firma' : 'Persoana Fizica';
+                
+                csv += `"${invoice.invoiceNumber}","${date}","${clientType}","${clientName}","${clientId}",`;
+                csv += `"${invoice.subtotal?.toFixed(2)}","${invoice.tvaAmount?.toFixed(2)}","${invoice.total?.toFixed(2)}","${invoice.status}"\n`;
+            });
+            
+            // Create download link
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `facturi_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast('Facturile au fost exportate cu succes!');
+        }
+        
+        // Preview functions
+        function closePreviewModal() {
+            const modal = document.getElementById('pdf-preview-modal');
+            modal.style.display = 'none';
+            const iframe = document.getElementById('pdf-preview-frame');
+            iframe.src = '';
+        }
+        
+        async function previewInvoice() {
+            const clientType = document.getElementById('client-type').value;
+            let clientData = {};
+            if (clientType === 'company') {
+                clientData = {
+                    type: 'company',
+                    name: document.getElementById('client-name').value,
+                    cui: document.getElementById('client-cui').value,
+                    regCom: document.getElementById('client-regCom').value,
+                    address: document.getElementById('client-address').value,
+                    city: document.getElementById('client-city').value,
+                    county: document.getElementById('client-county').value,
+                };
+            } else {
+                clientData = {
+                    type: 'individual',
+                    firstName: document.getElementById('client-firstName').value,
+                    lastName: document.getElementById('client-lastName').value,
+                    cnp: document.getElementById('client-cnp').value,
+                    address: document.getElementById('client-address').value,
+                    city: document.getElementById('client-city').value,
+                    county: document.getElementById('client-county').value,
+                };
+            }
+            
+            const products = [];
+            productsContainer.querySelectorAll('.product-item').forEach((item, index) => {
+                const i = index + 1;
+                products.push({
+                    name: item.querySelector(`input[name="product-name-${i}"]`).value,
+                    quantity: parseFloat(item.querySelector(`input[name="product-quantity-${i}"]`).value),
+                    unit: item.querySelector(`input[name="product-unit-${i}"]`).value,
+                    price: parseFloat(item.querySelector(`input[name="product-price-${i}"]`).value),
+                    vat: parseInt(item.querySelector(`input[name="product-vat-${i}"]`).value)
+                });
+            });
+
+            const invoicePayload = {
+                client: clientData,
+                products: products
+            };
+
+            try {
+                const response = await fetch('/api/preview/invoice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(invoicePayload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Eroare la generarea preview-ului');
+                }
+                
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                const iframe = document.getElementById('pdf-preview-frame');
+                iframe.src = url;
+                
+                const modal = document.getElementById('pdf-preview-modal');
+                modal.style.display = 'block';
+                
+                lucide.createIcons();
+            } catch (error) {
+                showToast(getFriendlyErrorMessage(error), 'error');
+            }
+        }
+        
+        async function previewProforma() {
+            const clientType = document.getElementById('proforma-client-type').value;
+            let clientData = {};
+            if (clientType === 'company') {
+                clientData = {
+                    type: 'company',
+                    name: document.getElementById('proforma-client-name').value,
+                    cui: document.getElementById('proforma-client-cui').value,
+                    regCom: document.getElementById('proforma-client-regCom').value,
+                    address: document.getElementById('proforma-client-address').value,
+                    city: document.getElementById('proforma-client-city').value,
+                    county: document.getElementById('proforma-client-county').value,
+                };
+            } else {
+                clientData = {
+                    type: 'individual',
+                    firstName: document.getElementById('proforma-client-firstName').value,
+                    lastName: document.getElementById('proforma-client-lastName').value,
+                    cnp: document.getElementById('proforma-client-cnp').value,
+                    address: document.getElementById('proforma-client-address').value,
+                    city: document.getElementById('proforma-client-city').value,
+                    county: document.getElementById('proforma-client-county').value,
+                };
+            }
+            
+            const products = [];
+            proformaProductsContainer.querySelectorAll('.product-item').forEach((item, index) => {
+                const i = index + 1;
+                products.push({
+                    name: item.querySelector(`input[name="proforma-product-name-${i}"]`).value,
+                    quantity: parseFloat(item.querySelector(`input[name="proforma-product-quantity-${i}"]`).value),
+                    unit: item.querySelector(`input[name="proforma-product-unit-${i}"]`).value,
+                    price: parseFloat(item.querySelector(`input[name="proforma-product-price-${i}"]`).value),
+                    vat: parseInt(item.querySelector(`input[name="proforma-product-vat-${i}"]`).value)
+                });
+            });
+
+            const proformaPayload = {
+                client: clientData,
+                products: products
+            };
+
+            try {
+                const response = await fetch('/api/preview/proforma', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(proformaPayload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Eroare la generarea preview-ului');
+                }
+                
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                const iframe = document.getElementById('pdf-preview-frame');
+                iframe.src = url;
+                
+                const modal = document.getElementById('pdf-preview-modal');
+                modal.style.display = 'block';
+                
+                lucide.createIcons();
+            } catch (error) {
+                showToast(getFriendlyErrorMessage(error), 'error');
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                // Load invoices and proformas
+                const [invoicesRes, proformasRes] = await Promise.all([
+                    fetch('/api/invoices', { method: 'GET', headers: { 'Content-Type': 'application/json' } }),
+                    fetch('/api/proformas', { method: 'GET', headers: { 'Content-Type': 'application/json' } })
+                ]);
+                
+                const invoicesData = await invoicesRes.json();
+                const proformasData = await proformasRes.json();
+                
+                const invoices = invoicesData.invoices || [];
+                const proformas = proformasData.proformas || [];
+                
+                // Calculate statistics
+                const totalInvoices = invoices.length;
+                const totalProformas = proformas.length;
+                const totalRevenue = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+                const avgInvoice = totalInvoices > 0 ? totalRevenue / totalInvoices : 0;
+                
+                // Update summary cards
+                document.getElementById('stat-total-invoices').textContent = totalInvoices;
+                document.getElementById('stat-total-proformas').textContent = totalProformas;
+                document.getElementById('stat-total-revenue').textContent = totalRevenue.toFixed(2) + ' RON';
+                document.getElementById('stat-avg-invoice').textContent = avgInvoice.toFixed(2) + ' RON';
+                
+                // Recent activity
+                const allDocs = [
+                    ...invoices.map(inv => ({ ...inv, type: 'Factură', number: inv.invoiceNumber, date: inv.createdAt })),
+                    ...proformas.map(pf => ({ ...pf, type: 'Proformă', number: pf.proformaNumber, date: pf.createdAt }))
+                ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+                
+                let activityHtml = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse;">';
+                activityHtml += '<thead><tr style="border-bottom: 2px solid var(--border); text-align: left;">';
+                activityHtml += '<th style="padding: 12px;">Tip</th><th style="padding: 12px;">Număr</th>';
+                activityHtml += '<th style="padding: 12px;">Client</th><th style="padding: 12px;">Total</th>';
+                activityHtml += '<th style="padding: 12px;">Data</th></tr></thead><tbody>';
+                
+                allDocs.forEach(doc => {
+                    const clientName = doc.clientName || 'N/A';
+                    const total = (doc.total || 0).toFixed(2);
+                    const date = new Date(doc.date).toLocaleDateString('ro-RO');
+                    activityHtml += `<tr style="border-bottom: 1px solid var(--border);">`;
+                    activityHtml += `<td style="padding: 12px;"><span style="background: ${doc.type === 'Factură' ? '#e3f2fd' : '#fff3e0'}; padding: 4px 8px; border-radius: 8px; font-size: 0.875rem;">${doc.type}</span></td>`;
+                    activityHtml += `<td style="padding: 12px;">${doc.number}</td>`;
+                    activityHtml += `<td style="padding: 12px;">${clientName}</td>`;
+                    activityHtml += `<td style="padding: 12px; font-weight: 600;">${total} RON</td>`;
+                    activityHtml += `<td style="padding: 12px;">${date}</td></tr>`;
+                });
+                
+                activityHtml += '</tbody></table></div>';
+                document.getElementById('recent-activity').innerHTML = activityHtml;
+                
+                // Top clients
+                const clientTotals = {};
+                invoices.forEach(inv => {
+                    const client = inv.clientName || 'Necunoscut';
+                    if (!clientTotals[client]) {
+                        clientTotals[client] = { name: client, total: 0, count: 0 };
+                    }
+                    clientTotals[client].total += inv.total || 0;
+                    clientTotals[client].count += 1;
+                });
+                
+                const topClients = Object.values(clientTotals)
+                    .sort((a, b) => b.total - a.total)
+                    .slice(0, 5);
+                
+                let clientsHtml = '<div>';
+                if (topClients.length === 0) {
+                    clientsHtml += '<p style="text-align: center; color: #666; padding: 20px;">Nu există date disponibile</p>';
+                } else {
+                    topClients.forEach((client, index) => {
+                        clientsHtml += `<div style="padding: 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">`;
+                        clientsHtml += `<div><span style="font-weight: 600; color: #667eea; margin-right: 8px;">#${index + 1}</span>`;
+                        clientsHtml += `<span style="font-weight: 500;">${client.name}</span>`;
+                        clientsHtml += `<span style="color: #666; font-size: 0.875rem; margin-left: 8px;">(${client.count} facturi)</span></div>`;
+                        clientsHtml += `<span style="font-weight: 600; color: #43e97b;">${client.total.toFixed(2)} RON</span>`;
+                        clientsHtml += `</div>`;
+                    });
+                }
+                clientsHtml += '</div>';
+                document.getElementById('top-clients').innerHTML = clientsHtml;
+                
+                lucide.createIcons();
+                
+            } catch (error) {
+                console.error('Eroare la încărcarea dashboard-ului:', error);
+                showToast('Eroare la încărcarea datelor', 'error');
+            }
+        }
+
+        async function loadProformas() {
+            try {
+                const response = await fetch('/api/proformas', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                const container = document.getElementById('proformasList');
+                
+                if (!result.proformas || result.proformas.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Nu există proforme generate încă.</p>';
+                    return;
+                }
+                
+                let html = `
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                                <th style="padding: 12px;">Nr. Proforma</th>
+                                <th style="padding: 12px;">Data</th>
+                                <th style="padding: 12px;">Client</th>
+                                <th style="padding: 12px;">Total</th>
+                                <th style="padding: 12px;">Acțiuni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                result.proformas.forEach(proforma => {
+                    const date = new Date(proforma.createdAt).toLocaleDateString('ro-RO');
+                    const clientName = proforma.client?.name || proforma.client?.firstName + ' ' + proforma.client?.lastName || 'N/A';
+                    const total = proforma.total?.toFixed(2) || '0.00';
+                    
+                    html += `
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 12px;">${proforma.proformaNumber || 'N/A'}</td>
+                            <td style="padding: 12px;">${date}</td>
+                            <td style="padding: 12px;">${clientName}</td>
+                            <td style="padding: 12px;">${total} RON</td>
+                            <td style="padding: 12px;">
+                                <button onclick="window.open('${proforma.pdfPath}', '_blank')" class="btn btn-primary" style="padding: 6px 12px; font-size: 14px;">
+                                    <i data-lucide="download" style="width: 16px; height: 16px;"></i> Descarcă
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                lucide.createIcons();
+                
+            } catch (error) {
+                console.error('Eroare la încărcarea proformelor:', error);
+                document.getElementById('proformasList').innerHTML = '<p style="text-align: center; color: #d32f2f; padding: 40px;">Eroare la încărcarea proformelor.</p>';
+            }
+        }
+
+        // Load history when navigating to those pages
+        const originalNavigateTo = window.navigateTo;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const hash = link.hash;
+                    
+                    // Load data when navigating to pages
+                    if (hash === '#invoices') {
+                        setTimeout(() => loadInvoices(), 100);
+                    } else if (hash === '#proformas') {
+                        setTimeout(() => loadProformas(), 100);
+                    } else if (hash === '#dashboard') {
+                        setTimeout(() => loadDashboard(), 100);
+                    }
+                });
+            });
+            
+            // Load on initial page
+            const currentHash = window.location.hash;
+            if (currentHash === '#invoices') {
+                setTimeout(() => loadInvoices(), 100);
+            } else if (currentHash === '#proformas') {
+                setTimeout(() => loadProformas(), 100);
+            } else if (currentHash === '#dashboard') {
+                setTimeout(() => loadDashboard(), 100);
             }
         });
 

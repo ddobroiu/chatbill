@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\""
   },
   "keywords": [
     "chat",
@@ -23,6 +27,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
     "express-session": "^1.18.2",
     "jsonwebtoken": "^9.0.2",
     "node-fetch": "^2.7.0",
@@ -33,10 +38,18 @@
     "pdfmake": "^0.2.20",
     "resend": "^6.5.2",
     "socket.io": "^4.7.2",
-    "uuid": "^9.0.1"
+    "stripe": "^20.0.0",
+    "uuid": "^9.0.1",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "nodemon": "^3.0.1",
+    "prettier": "^3.7.4",
     "prisma": "^5.7.1"
   }
 }

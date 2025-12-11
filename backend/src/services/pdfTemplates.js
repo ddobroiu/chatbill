@@ -57,11 +57,14 @@ const COLORS = {
 };
 
 // Template Modern (gradient, colorat)
-function renderModernTemplate(doc, invoice, companySettings) {
+function renderModernTemplate(doc, invoice, companySettings, isProforma = false) {
   const colors = COLORS.modern;
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
+  
+  const documentType = isProforma ? 'PROFORMA' : 'FACTURĂ';
+  const documentNumber = isProforma ? invoice.proformaNumber : invoice.number;
   
   // Header cu gradient (simulat cu dreptunghiuri)
   doc.rect(0, 0, 612, 150).fill(colors.primary);
@@ -71,7 +74,7 @@ function renderModernTemplate(doc, invoice, companySettings) {
   doc.fillColor('#ffffff')
      .fontSize(28)
      .font(boldFont)
-     .text(companySettings.name || 'COMPANIA MEA', 50, 40);
+     .text(companySettings.companyName || companySettings.name || 'COMPANIA MEA', 50, 40);
   
   doc.fontSize(10)
      .font(regularFont)
@@ -80,20 +83,24 @@ function renderModernTemplate(doc, invoice, companySettings) {
      .text(`${companySettings.address || 'Adresă'}`, 50, 105)
      .text(`${companySettings.city || 'Oraș'}, ${companySettings.county || 'Județ'}`, 50, 120);
 
-  // Număr factură (dreapta sus)
+  // Număr factură/proforma (dreapta sus)
   doc.fontSize(14)
      .font(boldFont)
-     .text(`FACTURĂ`, 400, 50, { width: 150, align: 'right' });
+     .text(documentType, 400, 50, { width: 150, align: 'right' });
   
   doc.fontSize(20)
      .fillColor(colors.accent)
-     .text(`#${invoice.number}`, 400, 70, { width: 150, align: 'right' });
+     .text(`#${documentNumber}`, 400, 70, { width: 150, align: 'right' });
   
+  const invoiceDate = invoice.date || invoice.createdAt;
   doc.fontSize(10)
      .fillColor('#ffffff')
      .font(regularFont)
-     .text(`Data: ${new Date(invoice.date).toLocaleDateString('ro-RO')}`, 400, 100, { width: 150, align: 'right' })
-     .text(`Scadență: ${new Date(invoice.dueDate).toLocaleDateString('ro-RO')}`, 400, 115, { width: 150, align: 'right' });
+     .text(`Data: ${new Date(invoiceDate).toLocaleDateString('ro-RO')}`, 400, 100, { width: 150, align: 'right' });
+  
+  if (!isProforma && invoice.dueDate) {
+    doc.text(`Scadență: ${new Date(invoice.dueDate).toLocaleDateString('ro-RO')}`, 400, 115, { width: 150, align: 'right' });
+  }
 
   // Client info
   let yPos = 180;
@@ -125,17 +132,20 @@ function renderModernTemplate(doc, invoice, companySettings) {
 
   // Tabel produse
   yPos += 20;
-  drawModernTable(doc, invoice.products, yPos, colors);
+  drawModernTable(doc, invoice, yPos, colors);
   
   return doc;
 }
 
 // Template Classic (profesional, corporate)
-function renderClassicTemplate(doc, invoice, companySettings) {
+function renderClassicTemplate(doc, invoice, companySettings, isProforma = false) {
   const colors = COLORS.classic;
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
+  
+  const documentType = isProforma ? 'PROFORMA' : 'FACTURĂ FISCALĂ';
+  const documentNumber = isProforma ? invoice.proformaNumber : invoice.number;
   
   // Header simplu cu border
   doc.rect(40, 40, 532, 100)
@@ -147,7 +157,7 @@ function renderClassicTemplate(doc, invoice, companySettings) {
   doc.fillColor(colors.primary)
      .fontSize(24)
      .font(boldFont)
-     .text(companySettings.name || 'COMPANIA MEA', 60, 60);
+     .text(companySettings.companyName || companySettings.name || 'COMPANIA MEA', 60, 60);
   
   doc.fontSize(9)
      .font(regularFont)
@@ -156,21 +166,25 @@ function renderClassicTemplate(doc, invoice, companySettings) {
      .text(`${companySettings.address || 'Adresă'}, ${companySettings.city || 'Oraș'}`, 60, 105)
      .text(`Tel: ${companySettings.phone || 'N/A'} | Email: ${companySettings.email || 'N/A'}`, 60, 120);
 
-  // Factură info (box dreapta)
+  // Document info (box dreapta)
   doc.rect(400, 40, 172, 100)
      .fillAndStroke(colors.lightGray, colors.primary);
   
   doc.fillColor(colors.primary)
      .fontSize(16)
      .font(boldFont)
-     .text('FACTURĂ FISCALĂ', 410, 50, { width: 152, align: 'center' });
+     .text(documentType, 410, 50, { width: 152, align: 'center' });
   
+  const invoiceDate = invoice.date || invoice.createdAt;
   doc.fontSize(11)
      .fillColor(colors.text)
      .font(regularFont)
-     .text(`Nr: ${invoice.number}`, 410, 75, { width: 152, align: 'center' })
-     .text(`Data: ${new Date(invoice.date).toLocaleDateString('ro-RO')}`, 410, 92, { width: 152, align: 'center' })
-     .text(`Scadență: ${new Date(invoice.dueDate).toLocaleDateString('ro-RO')}`, 410, 109, { width: 152, align: 'center' });
+     .text(`Nr: ${documentNumber}`, 410, 75, { width: 152, align: 'center' })
+     .text(`Data: ${new Date(invoiceDate).toLocaleDateString('ro-RO')}`, 410, 92, { width: 152, align: 'center' });
+  
+  if (!isProforma && invoice.dueDate) {
+    doc.text(`Scadență: ${new Date(invoice.dueDate).toLocaleDateString('ro-RO')}`, 410, 109, { width: 152, align: 'center' });
+  }
 
   // Client
   let yPos = 170;
@@ -199,43 +213,47 @@ function renderClassicTemplate(doc, invoice, companySettings) {
 
   // Tabel produse
   yPos = 280;
-  drawClassicTable(doc, invoice.products, yPos, colors);
+  drawClassicTable(doc, invoice, yPos, colors);
   
   return doc;
 }
 
 // Template Minimal (clean, minimalist)
-function renderMinimalTemplate(doc, invoice, companySettings) {
+function renderMinimalTemplate(doc, invoice, companySettings, isProforma = false) {
   const colors = COLORS.minimal;
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
   
+  const documentType = isProforma ? 'PROFORMA' : 'FACTURĂ';
+  const documentNumber = isProforma ? invoice.proformaNumber : invoice.number;
+  
   // Header minimalist
   doc.fillColor(colors.primary)
      .fontSize(32)
      .font(boldFont)
-     .text(companySettings.name || 'COMPANIA', 50, 50);
+     .text(companySettings.companyName || companySettings.name || 'COMPANIA', 50, 50);
   
   doc.fontSize(8)
      .font(regularFont)
      .fillColor(colors.secondary)
      .text(`${companySettings.address || ''} | ${companySettings.city || ''} | CUI: ${companySettings.cui || ''}`, 50, 90);
 
-  // Factură (dreapta, foarte simplu)
+  // Document (dreapta, foarte simplu)
   doc.fillColor(colors.primary)
      .fontSize(12)
      .font(regularFont)
-     .text('FACTURĂ', 450, 50, { width: 100, align: 'right' });
+     .text(documentType, 450, 50, { width: 100, align: 'right' });
   
   doc.fontSize(24)
      .font(boldFont)
-     .text(invoice.number, 400, 65, { width: 150, align: 'right' });
+     .text(documentNumber, 400, 65, { width: 150, align: 'right' });
   
+  const invoiceDate = invoice.date || invoice.createdAt;
   doc.fontSize(9)
      .font(regularFont)
      .fillColor(colors.secondary)
-     .text(new Date(invoice.date).toLocaleDateString('ro-RO'), 400, 95, { width: 150, align: 'right' });
+     .text(new Date(invoiceDate).toLocaleDateString('ro-RO'), 400, 95, { width: 150, align: 'right' });
 
   // Linie separatoare
   doc.moveTo(50, 120)
@@ -264,17 +282,20 @@ function renderMinimalTemplate(doc, invoice, companySettings) {
 
   // Tabel produse (minimal)
   yPos = 200;
-  drawMinimalTable(doc, invoice.products, yPos, colors);
+  drawMinimalTable(doc, invoice, yPos, colors);
   
   return doc;
 }
 
 // Template Elegant (premium, luxos)
-function renderElegantTemplate(doc, invoice, companySettings) {
+function renderElegantTemplate(doc, invoice, companySettings, isProforma = false) {
   const colors = COLORS.elegant;
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
+  
+  const documentType = isProforma ? 'PROFORMA' : 'FACTURĂ FISCALĂ';
+  const documentNumber = isProforma ? invoice.proformaNumber : invoice.number;
   
   // Border decorativ
   doc.rect(30, 30, 552, 782)
@@ -291,7 +312,7 @@ function renderElegantTemplate(doc, invoice, companySettings) {
   doc.fillColor(colors.primary)
      .fontSize(28)
      .font(boldFont)
-     .text(companySettings.name || 'COMPANIA', 60, 60, { width: 400 });
+     .text(companySettings.companyName || companySettings.name || 'COMPANIA', 60, 60, { width: 400 });
   
   doc.fontSize(9)
      .font(regularFont)
@@ -300,7 +321,7 @@ function renderElegantTemplate(doc, invoice, companySettings) {
      .text(`${companySettings.city || ''}, ${companySettings.county || ''}`, 60, 108)
      .text(`CUI: ${companySettings.cui || ''} | Reg. Com: ${companySettings.regCom || ''}`, 60, 121);
 
-  // Factură header (elegant box)
+  // Document header (elegant box)
   doc.rect(350, 60, 202, 75)
      .lineWidth(2)
      .strokeColor(colors.accent)
@@ -309,16 +330,17 @@ function renderElegantTemplate(doc, invoice, companySettings) {
   doc.fillColor(colors.primary)
      .fontSize(18)
      .font(boldFont)
-     .text('FACTURĂ FISCALĂ', 360, 75, { width: 182, align: 'center' });
+     .text(documentType, 360, 75, { width: 182, align: 'center' });
   
   doc.fontSize(14)
      .fillColor(colors.accent)
-     .text(`№ ${invoice.number}`, 360, 100, { width: 182, align: 'center' });
+     .text(`№ ${documentNumber}`, 360, 100, { width: 182, align: 'center' });
   
+  const invoiceDate = invoice.date || invoice.createdAt;
   doc.fontSize(9)
      .fillColor(colors.text)
      .font(regularFont)
-     .text(`Emisă: ${new Date(invoice.date).toLocaleDateString('ro-RO')}`, 360, 120, { width: 182, align: 'center' });
+     .text(`Emisă: ${new Date(invoiceDate).toLocaleDateString('ro-RO')}`, 360, 120, { width: 182, align: 'center' });
 
   // Client (elegant frame)
   let yPos = 170;
@@ -343,17 +365,18 @@ function renderElegantTemplate(doc, invoice, companySettings) {
 
   // Tabel produse
   yPos = 270;
-  drawElegantTable(doc, invoice.products, yPos, colors);
+  drawElegantTable(doc, invoice, yPos, colors);
   
   return doc;
 }
 
 // Funcții pentru desenare tabele (fiecare template are stilul său)
-function drawModernTable(doc, products, startY, colors) {
+function drawModernTable(doc, invoice, startY, colors) {
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
   
+  const products = invoice.products;
   const tableTop = startY;
   const itemX = 50;
   const descX = 150;
@@ -375,11 +398,9 @@ function drawModernTable(doc, products, startY, colors) {
      .text('Total', totalX, tableTop + 10);
   
   let y = tableTop + 40;
-  let total = 0;
   
   products.forEach((product, index) => {
     const itemTotal = product.quantity * product.price;
-    total += itemTotal;
     
     if (index % 2 === 0) {
       doc.rect(40, y - 5, 532, 25).fill(colors.lightGray);
@@ -397,33 +418,44 @@ function drawModernTable(doc, products, startY, colors) {
     y += 25;
   });
   
-  // Total
+  // Total - folosește datele din invoice
   y += 10;
-  const tva = total * 0.21; // TVA 21%
-  const totalTVA = total + tva;
+  const subtotal = invoice.subtotal || 0;
+  const tva = invoice.vatAmount || 0;
+  const totalGeneral = invoice.total || 0;
   
-  doc.rect(380, y, 192, 80)
+  // Înălțimea dreptunghiului depinde de afișarea TVA
+  const boxHeight = tva > 0 ? 80 : 60;
+  
+  doc.rect(380, y, 192, boxHeight)
      .fill(colors.lightGray);
   
   doc.fillColor(colors.text)
      .fontSize(10)
      .font(regularFont)
      .text('Subtotal:', 390, y + 10)
-     .text(`${total.toFixed(2)} RON`, 490, y + 10, { width: 70, align: 'right' })
-     .text('TVA (21%):', 390, y + 30)
-     .text(`${tva.toFixed(2)} RON`, 490, y + 30, { width: 70, align: 'right' });
+     .text(`${subtotal.toFixed(2)} RON`, 490, y + 10, { width: 70, align: 'right' });
   
+  // Afișează TVA doar dacă > 0
+  if (tva > 0) {
+    doc.text('TVA:', 390, y + 30)
+       .text(`${tva.toFixed(2)} RON`, 490, y + 30, { width: 70, align: 'right' });
+  }
+  
+  const totalYPos = tva > 0 ? y + 55 : y + 35;
   doc.font(boldFont)
      .fontSize(12)
-     .text('TOTAL:', 390, y + 55)
+     .text('TOTAL:', 390, totalYPos)
      .fillColor(colors.primary)
-     .text(`${totalTVA.toFixed(2)} RON`, 490, y + 55, { width: 70, align: 'right' });
+     .text(`${totalGeneral.toFixed(2)} RON`, 490, totalYPos, { width: 70, align: 'right' });
 }
 
-function drawClassicTable(doc, products, startY, colors) {
+function drawClassicTable(doc, invoice, startY, colors) {
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
+  
+  const products = invoice.products;
   
   // Similar cu modern dar mai sobru
   const tableTop = startY;
@@ -442,11 +474,9 @@ function drawClassicTable(doc, products, startY, colors) {
      .text('Valoare', 500, tableTop + 8);
   
   let y = tableTop + 35;
-  let total = 0;
   
   products.forEach((product, index) => {
     const itemTotal = product.quantity * product.price;
-    total += itemTotal;
     
     doc.rect(40, y - 5, 532, 20)
        .strokeColor(colors.border)
@@ -464,30 +494,38 @@ function drawClassicTable(doc, products, startY, colors) {
     y += 20;
   });
   
-  // Totale
+  // Totale - folosește datele din invoice
   y += 15;
-  const tva = total * 0.21;
-  const totalTVA = total + tva;
+  const subtotal = invoice.subtotal || 0;
+  const tva = invoice.vatAmount || 0;
+  const totalGeneral = invoice.total || 0;
   
   doc.fontSize(10)
      .font(regularFont)
+     .fillColor(colors.text)
      .text('Subtotal:', 400, y)
-     .text(`${total.toFixed(2)} RON`, 500, y)
-     .text('TVA 21%:', 400, y + 20)
-     .text(`${tva.toFixed(2)} RON`, 500, y + 20);
+     .text(`${subtotal.toFixed(2)} RON`, 500, y);
   
+  // Afișează TVA doar dacă > 0
+  if (tva > 0) {
+    doc.text('TVA:', 400, y + 20)
+       .text(`${tva.toFixed(2)} RON`, 500, y + 20);
+  }
+  
+  const totalYPos = tva > 0 ? y + 45 : y + 25;
   doc.fontSize(12)
      .font(boldFont)
      .fillColor(colors.primary)
-     .text('TOTAL DE PLATĂ:', 400, y + 45)
-     .text(`${totalTVA.toFixed(2)} RON`, 480, y + 45);
+     .text('TOTAL DE PLATĂ:', 400, totalYPos)
+     .text(`${totalGeneral.toFixed(2)} RON`, 480, totalYPos);
 }
 
-function drawMinimalTable(doc, products, startY, colors) {
+function drawMinimalTable(doc, invoice, startY, colors) {
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
   
+  const products = invoice.products;
   let y = startY;
   
   // Header simplu (doar linie)
@@ -503,11 +541,9 @@ function drawMinimalTable(doc, products, startY, colors) {
   doc.moveTo(50, y).lineTo(562, y).strokeColor(colors.primary).lineWidth(2).stroke();
   
   y += 15;
-  let total = 0;
   
   products.forEach((product) => {
     const itemTotal = product.quantity * product.price;
-    total += itemTotal;
     
     doc.fillColor(colors.text)
        .fontSize(9)
@@ -524,25 +560,32 @@ function drawMinimalTable(doc, products, startY, colors) {
   doc.moveTo(50, y).lineTo(562, y).strokeColor(colors.border).lineWidth(1).stroke();
   
   y += 20;
-  const tva = total * 0.21;
-  const totalTVA = total + tva;
+  const subtotal = invoice.subtotal || 0;
+  const tva = invoice.vatAmount || 0;
+  const totalGeneral = invoice.total || 0;
   
   doc.fontSize(9)
      .fillColor(colors.secondary)
-     .text(`Subtotal: ${total.toFixed(2)} RON`, 400, y, { width: 150, align: 'right' })
-     .text(`TVA 21%: ${tva.toFixed(2)} RON`, 400, y + 15, { width: 150, align: 'right' });
+     .text(`Subtotal: ${subtotal.toFixed(2)} RON`, 400, y, { width: 150, align: 'right' });
   
+  // Afișează TVA doar dacă > 0
+  if (tva > 0) {
+    doc.text(`TVA: ${tva.toFixed(2)} RON`, 400, y + 15, { width: 150, align: 'right' });
+  }
+  
+  const totalYPos = tva > 0 ? y + 40 : y + 25;
   doc.fontSize(14)
      .fillColor(colors.primary)
      .font(boldFont)
-     .text(`${totalTVA.toFixed(2)} RON`, 400, y + 40, { width: 150, align: 'right' });
+     .text(`${totalGeneral.toFixed(2)} RON`, 400, totalYPos, { width: 150, align: 'right' });
 }
 
-function drawElegantTable(doc, products, startY, colors) {
+function drawElegantTable(doc, invoice, startY, colors) {
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
   
+  const products = invoice.products;
   const tableTop = startY;
   
   // Header decorativ
@@ -561,11 +604,9 @@ function drawElegantTable(doc, products, startY, colors) {
      .text('Valoare', 510, tableTop + 10);
   
   let y = tableTop + 40;
-  let total = 0;
   
   products.forEach((product, index) => {
     const itemTotal = product.quantity * product.price;
-    total += itemTotal;
     
     doc.rect(60, y - 5, 492, 22)
        .strokeColor(colors.accent)
@@ -584,12 +625,16 @@ function drawElegantTable(doc, products, startY, colors) {
     y += 22;
   });
   
-  // Totale elegante
+  // Totale elegante - folosește datele din invoice
   y += 20;
-  const tva = total * 0.21;
-  const totalTVA = total + tva;
+  const subtotal = invoice.subtotal || 0;
+  const tva = invoice.vatAmount || 0;
+  const totalGeneral = invoice.total || 0;
   
-  doc.rect(350, y, 202, 90)
+  // Înălțimea dreptunghiului depinde de afișarea TVA
+  const boxHeight = tva > 0 ? 90 : 70;
+  
+  doc.rect(350, y, 202, boxHeight)
      .lineWidth(2)
      .strokeColor(colors.accent)
      .stroke();
@@ -598,22 +643,25 @@ function drawElegantTable(doc, products, startY, colors) {
      .fontSize(10)
      .font(regularFont)
      .text('Total fără TVA:', 365, y + 15)
-     .text(`${total.toFixed(2)} RON`, 470, y + 15, { width: 70, align: 'right' })
-     .text('TVA (21%):', 365, y + 35)
-     .text(`${tva.toFixed(2)} RON`, 470, y + 35, { width: 70, align: 'right' });
+     .text(`${subtotal.toFixed(2)} RON`, 470, y + 15, { width: 70, align: 'right' });
   
+  // Afișează TVA doar dacă > 0
+  if (tva > 0) {
+    doc.text('TVA:', 365, y + 35)
+       .text(`${tva.toFixed(2)} RON`, 470, y + 35, { width: 70, align: 'right' });
+  }
+  
+  const totalYPos = tva > 0 ? y + 60 : y + 40;
   doc.fillColor(colors.primary)
      .fontSize(12)
      .font(boldFont)
-     .text('TOTAL DE PLATĂ:', 365, y + 60)
-     .text(`${totalTVA.toFixed(2)} RON`, 450, y + 60, { width: 90, align: 'right' });
+     .text('TOTAL DE PLATĂ:', 365, totalYPos)
+     .text(`${totalGeneral.toFixed(2)} RON`, 450, totalYPos, { width: 90, align: 'right' });
 }
 
 module.exports = {
   renderModernTemplate,
   renderClassicTemplate,
-  renderMinimalTemplate,
-  renderElegantTemplate,
   COLORS
 };
 

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+coverage/
+logs/
+invoices/
+proformas/
+*.min.js
+package-lock.json
+yarn.lock
+.env
+.env.*

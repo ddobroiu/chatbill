@@ -1,19 +1,46 @@
 const express = require('express');
 const router = express.Router();
+const { z } = require('zod');
 const authController = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
+const { validateBody, validateQuery } = require('../middleware/validate');
+const {
+  registerSchema,
+  loginSchema,
+  requestResetSchema,
+  resetPasswordSchema,
+  verifyEmailSchema,
+  emailSchema,
+  passwordSchema
+} = require('../validation/schemas');
+const {
+  registerLimiter,
+  loginLimiter,
+  passwordResetLimiter,
+  authLimiter
+} = require('../middleware/rateLimiter');
 
 // Rute publice
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
-router.get('/verify-email', authController.verifyEmail);
-router.post('/resend-verification', authController.resendVerification);
+router.post('/register', registerLimiter, validateBody(registerSchema), authController.register);
+router.post('/login', loginLimiter, validateBody(loginSchema), authController.login);
+router.post('/forgot-password', passwordResetLimiter, validateBody(requestResetSchema), authController.forgotPassword);
+router.post('/reset-password', passwordResetLimiter, validateBody(resetPasswordSchema), authController.resetPassword);
+router.get('/verify-email', authLimiter, validateQuery(verifyEmailSchema), authController.verifyEmail);
+router.post('/resend-verification', authLimiter, validateBody(z.object({ email: emailSchema })), authController.resendVerification);
 
 // Rute protejate (necesită autentificare)
 router.get('/me', authenticateToken, authController.getCurrentUser);
-router.put('/profile', authenticateToken, authController.updateProfile);
-router.post('/change-password', authenticateToken, authController.changePassword);
+router.put('/profile', authenticateToken, validateBody(z.object({
+  email: emailSchema.optional(),
+  name: z.string().min(1).optional()
+})), authController.updateProfile);
+router.post('/change-password', authenticateToken, validateBody(z.object({
+  currentPassword: z.string().min(1, 'Parola curentă este obligatorie'),
+  newPassword: passwordSchema,
+  confirmPassword: z.string()
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: 'Parolele nu se potrivesc',
+  path: ['confirmPassword']
+})), authController.changePassword);
 
 module.exports = router;
