@@ -10,7 +10,16 @@
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix",
     "format": "prettier --write \"src/**/*.js\"",
-    "format:check": "prettier --check \"src/**/*.js\""
+    "format:check": "prettier --check \"src/**/*.js\"",
+    "db:generate": "npx prisma generate",
+    "db:migrate": "npx prisma migrate deploy",
+    "db:studio": "npx prisma studio",
+    "check-env": "node scripts/check-env.js",
+    "generate-secrets": "node scripts/generate-secrets.js",
+    "health-check": "node scripts/health-check.js",
+    "predeploy": "npm run check-env && npm run lint",
+    "deploy:railway": "railway up",
+    "deploy:render": "git push render main"
   },
   "keywords": [
     "chat",
