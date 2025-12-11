@@ -1,15 +1,18 @@
-providers = ["..."]
-
 [phases.setup]
-nixPkgs = ["nodejs_20"]
+nixPkgs = ["nodejs_20", "openssl"]
 
 [phases.install]
+dependsOn = ["setup"]
+paths = ["backend"]
 cmds = [
-  "cd backend && npm ci --only=production && npx prisma generate"
+  "cd backend && npm ci --only=production"
 ]
 
 [phases.build]
-cmds = ["echo 'Build completed'"]
+dependsOn = ["install"]
+cmds = [
+  "cd backend && npx prisma generate"
+]
 
 [start]
-cmd = "cd backend && npm start"
+cmd = "cd backend && npx prisma migrate deploy && npm start"
