@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Politica de Confidențialitate - ChatBill</title>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: #f8f9fa;
+      --foreground: #212529;
+      --card-background: #ffffff;
+      --primary: #0052cc;
+      --primary-foreground: #ffffff;
+      --secondary: #e9ecef;
+      --secondary-foreground: #495057;
+      --border: #dee2e6;
+      --input: #ced4da;
+      --success: #28a745;
+      --danger: #dc3545;
+      --font-sans: 'Inter', sans-serif;
+      --radius: 0.5rem;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--background);
+      color: var(--foreground);
+      line-height: 1.6;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+
+    .back-link {
+      position: absolute;
+      left: 2rem;
+      top: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+
+    .back-link:hover {
+      opacity: 0.8;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .content-card {
+      background: var(--card-background);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 3rem;
+      border: 1px solid var(--border);
+    }
+
+    .last-updated {
+      background: var(--secondary);
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+      color: var(--secondary-foreground);
+    }
+
+    h2 {
+      color: var(--primary);
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
+
+    h3 {
+      color: var(--foreground);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--foreground);
+    }
+
+    ul, ol {
+      margin-left: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    strong {
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    .contact-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: var(--radius);
+      margin-top: 2.5rem;
+    }
+
+    .contact-box h3 {
+      color: white;
+      margin-top: 0;
+    }
+
+    .contact-box a {
+      color: white;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 2px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .content-card {
+        padding: 2rem 1.5rem;
+      }
+
+      .container {
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .back-link {
+        position: static;
+        margin-bottom: 1rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      h3 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="login.html" class="back-link">
+      <i data-lucide="arrow-left"></i>
+      <span>Înapoi</span>
+    </a>
+    <h1>Politica de Confidențialitate</h1>
+    <p>ChatBill - Facturare Inteligentă</p>
+  </div>
+
+  <div class="container">
+    <div class="content-card">
+      <div class="last-updated">
+        <strong>Ultima actualizare:</strong> 11 decembrie 2025
+      </div>
+
+      <h2>1. Introducere</h2>
+      <p>
+        Bine ați venit la ChatBill! Ne angajăm să protejăm confidențialitatea și datele personale ale utilizatorilor noștri. 
+        Această Politică de Confidențialitate explică modul în care colectăm, folosim, stocăm și protejăm informațiile dumneavoastră 
+        personale în conformitate cu Regulamentul General privind Protecția Datelor (GDPR) și legislația românească în vigoare.
+      </p>
+      <p>
+        Prin utilizarea serviciilor ChatBill, sunteți de acord cu practicile descrise în această politică.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>2. Operatorul de Date</h2>
+      <p>
+        <strong>ChatBill</strong> este operatorul de date cu caracter personal pentru informațiile pe care le colectăm prin intermediul platformei noastre.
+      </p>
+      <p>
+        Pentru orice întrebări privind protecția datelor, ne puteți contacta la adresa de email listată la sfârșitul acestui document.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>3. Ce Date Colectăm</h2>
+      
+      <h3>3.1. Date de Identificare</h3>
+      <ul>
+        <li>Nume și prenume</li>
+        <li>Adresa de email</li>
+        <li>Număr de telefon (opțional)</li>
+      </ul>
+
+      <h3>3.2. Date ale Companiei</h3>
+      <ul>
+        <li>Denumirea companiei</li>
+        <li>Cod Unic de Înregistrare (CUI)</li>
+        <li>Număr de înregistrare la Registrul Comerțului</li>
+        <li>Adresa sediului social</li>
+        <li>Date bancare</li>
+        <li>Informații fiscale (cote TVA, regim special, etc.)</li>
+      </ul>
+
+      <h3>3.3. Date de Facturare</h3>
+      <ul>
+        <li>Informații despre clienți (denumire, CUI, adresă)</li>
+        <li>Detalii produse și servicii</li>
+        <li>Valori și date facturi</li>
+        <li>Istoric tranzacții</li>
+      </ul>
+
+      <h3>3.4. Date Tehnice și de Utilizare</h3>
+      <ul>
+        <li>Adresa IP</li>
+        <li>Tip de browser și versiune</li>
+        <li>Sistem de operare</li>
+        <li>Date de conectare și utilizare a platformei</li>
+        <li>Cookies și tehnologii similare</li>
+      </ul>
+
+      <h3>3.5. Date de Comunicare</h3>
+      <ul>
+        <li>Mesaje din chat-ul cu asistentul AI</li>
+        <li>Corespondență prin email</li>
+        <li>Feedback și recenzii</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>4. Cum Folosim Datele</h2>
+      <p>Folosim datele dumneavoastră personale în următoarele scopuri:</p>
+
+      <h3>4.1. Furnizarea Serviciilor</h3>
+      <ul>
+        <li>Crearea și gestionarea contului dumneavoastră</li>
+        <li>Generarea și gestionarea facturilor și proformelor</li>
+        <li>Transmiterea facturilor către ANAF (e-Factura)</li>
+        <li>Procesarea plăților prin Stripe</li>
+        <li>Oferirea asistenței prin chat AI</li>
+      </ul>
+
+      <h3>4.2. Comunicare</h3>
+      <ul>
+        <li>Trimiterea de notificări despre statusul facturilor</li>
+        <li>Răspunsuri la întrebările și solicitările dumneavoastră</li>
+        <li>Informații despre actualizări de produs</li>
+        <li>Marketing (doar cu consimțământul explicit)</li>
+      </ul>
+
+      <h3>4.3. Îmbunătățirea Serviciilor</h3>
+      <ul>
+        <li>Analiză și optimizare a funcționalităților</li>
+        <li>Îmbunătățirea experienței utilizatorului</li>
+        <li>Dezvoltarea de noi caracteristici</li>
+      </ul>
+
+      <h3>4.4. Conformitate Legală</h3>
+      <ul>
+        <li>Respectarea obligațiilor fiscale și legale</li>
+        <li>Prevenirea fraudei și abuzurilor</li>
+        <li>Răspunsuri la solicitări legale din partea autorităților</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>5. Baza Legală pentru Prelucrarea Datelor</h2>
+      <p>Prelucrăm datele dumneavoastră personale pe următoarele baze legale:</p>
+      <ul>
+        <li><strong>Executarea contractului:</strong> Pentru a vă furniza serviciile ChatBill</li>
+        <li><strong>Obligații legale:</strong> Pentru conformitatea cu legislația fiscală și contabilă</li>
+        <li><strong>Interes legitim:</strong> Pentru îmbunătățirea serviciilor și prevenirea fraudei</li>
+        <li><strong>Consimțământul:</strong> Pentru activități de marketing (când este cazul)</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>6. Partajarea Datelor</h2>
+      <p>Nu vindem și nu închiriem datele dumneavoastră personale către terțe părți. Partajăm datele doar în următoarele situații:</p>
+
+      <h3>6.1. Furnizori de Servicii</h3>
+      <ul>
+        <li><strong>ANAF (e-Factura):</strong> Pentru transmiterea facturilor conform legislației</li>
+        <li><strong>Stripe:</strong> Pentru procesarea plăților și abonamentelor</li>
+        <li><strong>OpenAI:</strong> Pentru funcționalitatea chat AI (date anonimizate)</li>
+        <li><strong>Hosting:</strong> Pentru stocarea și operarea platformei</li>
+        <li><strong>Email:</strong> Pentru trimiterea notificărilor</li>
+      </ul>
+
+      <h3>6.2. Obligații Legale</h3>
+      <p>
+        Putem dezvălui informațiile dumneavoastră când este necesar pentru:
+      </p>
+      <ul>
+        <li>Respectarea legii sau a unor proceduri juridice</li>
+        <li>Protejarea drepturilor și siguranței noastre sau ale altor utilizatori</li>
+        <li>Investigarea unor potențiale activități frauduloase</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>7. Securitatea Datelor</h2>
+      <p>
+        Implementăm măsuri tehnice și organizatorice adecvate pentru a proteja datele dumneavoastră personale:
+      </p>
+      <ul>
+        <li><strong>Criptare:</strong> Toate datele sunt transmise prin conexiuni HTTPS securizate</li>
+        <li><strong>Autentificare:</strong> Sistem de autentificare sigur cu parole criptate (bcrypt)</li>
+        <li><strong>Acces restricționat:</strong> Doar personalul autorizat are acces la date</li>
+        <li><strong>Backup-uri:</strong> Backup-uri regulate pentru prevenirea pierderii datelor</li>
+        <li><strong>Monitorizare:</strong> Sisteme de detectare și prevenire a incidentelor de securitate</li>
+        <li><strong>Actualizări:</strong> Întreținere și actualizare constantă a sistemelor</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>8. Retenția Datelor</h2>
+      <p>
+        Păstrăm datele dumneavoastră personale pentru perioada necesară îndeplinirii scopurilor pentru care au fost colectate:
+      </p>
+      <ul>
+        <li><strong>Date de cont:</strong> Pe durata existenței contului și până la 30 de zile după ștergere</li>
+        <li><strong>Date de facturare:</strong> Minim 10 ani conform legislației fiscale românești</li>
+        <li><strong>Date de comunicare:</strong> Până la 2 ani sau până la soluționarea problemei</li>
+        <li><strong>Date tehnice:</strong> Până la 12 luni</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>9. Drepturile Dumneavoastră</h2>
+      <p>
+        În conformitate cu GDPR, aveți următoarele drepturi privind datele dumneavoastră personale:
+      </p>
+
+      <h3>9.1. Dreptul de Acces</h3>
+      <p>
+        Puteți solicita o copie a datelor personale pe care le deținem despre dumneavoastră.
+      </p>
+
+      <h3>9.2. Dreptul de Rectificare</h3>
+      <p>
+        Puteți solicita corectarea datelor inexacte sau completarea datelor incomplete.
+      </p>
+
+      <h3>9.3. Dreptul la Ștergere ("Dreptul de a fi Uitat")</h3>
+      <p>
+        Puteți solicita ștergerea datelor dumneavoastră, cu excepția cazurilor în care suntem obligați legal să le păstrăm 
+        (de exemplu, datele de facturare pentru conformitatea fiscală).
+      </p>
+
+      <h3>9.4. Dreptul la Restricționarea Prelucrării</h3>
+      <p>
+        Puteți solicita limitarea modului în care folosim datele dumneavoastră în anumite circumstanțe.
+      </p>
+
+      <h3>9.5. Dreptul la Portabilitatea Datelor</h3>
+      <p>
+        Puteți solicita să vă transferăm datele către un alt furnizor de servicii într-un format structurat.
+      </p>
+
+      <h3>9.6. Dreptul de Opoziție</h3>
+      <p>
+        Puteți să vă opuneți prelucrării datelor pentru anumite scopuri, cum ar fi marketingul direct.
+      </p>
+
+      <h3>9.7. Dreptul de a Retrage Consimțământul</h3>
+      <p>
+        Unde prelucrarea se bazează pe consimțământ, îl puteți retrage oricând.
+      </p>
+
+      <h3>9.8. Dreptul de a Depune Plângere</h3>
+      <p>
+        Aveți dreptul de a depune o plângere la Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP) 
+        dacă considerați că drepturile dumneavoastră au fost încălcate.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>10. Cookies și Tehnologii Similare</h2>
+      <p>
+        ChatBill folosește cookies și tehnologii similare pentru:
+      </p>
+      <ul>
+        <li><strong>Cookies esențiale:</strong> Necesare pentru funcționarea platformei (autentificare, sesiune)</li>
+        <li><strong>Cookies de performanță:</strong> Pentru analiza și îmbunătățirea serviciilor</li>
+        <li><strong>Cookies funcționale:</strong> Pentru reținerea preferințelor utilizatorului</li>
+      </ul>
+      <p>
+        Puteți gestiona preferințele de cookies din setările browser-ului dumneavoastră, însă dezactivarea anumitor cookies 
+        poate afecta funcționalitatea platformei.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>11. Transfer Internațional de Date</h2>
+      <p>
+        Datele dumneavoastră pot fi transferate și prelucrate în țări din afara Spațiului Economic European (SEE) de către 
+        furnizorii noștri de servicii (de exemplu, OpenAI pentru funcționalitatea AI).
+      </p>
+      <p>
+        Ne asigurăm că astfel de transferuri sunt protejate prin mecanisme adecvate, cum ar fi:
+      </p>
+      <ul>
+        <li>Clauze contractuale standard aprobate de Comisia Europeană</li>
+        <li>Certificări de conformitate (de exemplu, Privacy Shield sau echivalent)</li>
+        <li>Măsuri suplimentare de securitate</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>12. Confidențialitatea Minorilor</h2>
+      <p>
+        Serviciile ChatBill sunt destinate persoanelor cu vârsta de minimum 18 ani. Nu colectăm în mod intenționat date 
+        de la minori sub 18 ani. Dacă descoperim că am colectat date de la un minor, vom lua măsuri pentru a șterge 
+        aceste informații cât mai curând posibil.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>13. Modificări ale Politicii de Confidențialitate</h2>
+      <p>
+        Ne rezervăm dreptul de a modifica această Politică de Confidențialitate în orice moment. Orice modificări vor fi 
+        publicate pe această pagină cu data actualizării. Modificările substanțiale vor fi comunicate prin email sau 
+        prin notificare în platformă.
+      </p>
+      <p>
+        Vă recomandăm să revedeți periodic această politică pentru a fi la curent cu modul în care protejăm datele dumneavoastră.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>14. Legislație Aplicabilă</h2>
+      <p>
+        Această Politică de Confidențialitate este guvernată de și interpretată în conformitate cu legile României. 
+        Orice dispută care rezultă din sau în legătură cu această politică va fi supusă jurisdicției exclusive a 
+        instanțelor competente din România.
+      </p>
+
+      <div class="contact-box">
+        <h3>15. Contact</h3>
+        <p>
+          Pentru orice întrebări, solicitări sau nelămuriri privind această Politică de Confidențialitate sau 
+          pentru a vă exercita drepturile, ne puteți contacta:
+        </p>
+        <p>
+          <strong>Email:</strong> <a href="mailto:privacy@chatbill.ro">privacy@chatbill.ro</a><br>
+          <strong>Sau prin:</strong> <a href="mailto:support@chatbill.ro">support@chatbill.ro</a>
+        </p>
+        <p style="margin-top: 1.5rem; margin-bottom: 0;">
+          <strong>Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP)</strong><br>
+          Website: <a href="https://www.dataprotection.ro" target="_blank">www.dataprotection.ro</a><br>
+          Email: anspdcp@dataprotection.ro
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>

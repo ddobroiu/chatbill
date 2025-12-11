@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termeni și Condiții - ChatBill</title>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: #f8f9fa;
+      --foreground: #212529;
+      --card-background: #ffffff;
+      --primary: #0052cc;
+      --primary-foreground: #ffffff;
+      --secondary: #e9ecef;
+      --secondary-foreground: #495057;
+      --border: #dee2e6;
+      --input: #ced4da;
+      --success: #28a745;
+      --danger: #dc3545;
+      --font-sans: 'Inter', sans-serif;
+      --radius: 0.5rem;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--background);
+      color: var(--foreground);
+      line-height: 1.6;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+
+    .back-link {
+      position: absolute;
+      left: 2rem;
+      top: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+
+    .back-link:hover {
+      opacity: 0.8;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .content-card {
+      background: var(--card-background);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 3rem;
+      border: 1px solid var(--border);
+    }
+
+    .last-updated {
+      background: var(--secondary);
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+      color: var(--secondary-foreground);
+    }
+
+    h2 {
+      color: var(--primary);
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
+
+    h3 {
+      color: var(--foreground);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--foreground);
+    }
+
+    ul, ol {
+      margin-left: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    strong {
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    .warning-box {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin: 1.5rem 0;
+    }
+
+    .info-box {
+      background: #d1ecf1;
+      border-left: 4px solid #17a2b8;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin: 1.5rem 0;
+    }
+
+    .contact-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: var(--radius);
+      margin-top: 2.5rem;
+    }
+
+    .contact-box h3 {
+      color: white;
+      margin-top: 0;
+    }
+
+    .contact-box a {
+      color: white;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 2px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .content-card {
+        padding: 2rem 1.5rem;
+      }
+
+      .container {
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .back-link {
+        position: static;
+        margin-bottom: 1rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      h3 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="login.html" class="back-link">
+      <i data-lucide="arrow-left"></i>
+      <span>Înapoi</span>
+    </a>
+    <h1>Termeni și Condiții</h1>
+    <p>ChatBill - Facturare Inteligentă</p>
+  </div>
+
+  <div class="container">
+    <div class="content-card">
+      <div class="last-updated">
+        <strong>Ultima actualizare:</strong> 11 decembrie 2025
+      </div>
+
+      <h2>1. Introducere și Acceptarea Termenilor</h2>
+      <p>
+        Bine ați venit la <strong>ChatBill</strong>! Vă mulțumim că ați ales platforma noastră de facturare inteligentă.
+      </p>
+      <p>
+        Acești Termeni și Condiții ("Termeni") guvernează utilizarea platformei ChatBill și a serviciilor asociate 
+        ("Servicii"). Prin crearea unui cont sau prin utilizarea Serviciilor noastre, confirmați că ați citit, înțeles 
+        și acceptat acești Termeni în totalitate.
+      </p>
+
+      <div class="warning-box">
+        <strong>Atenție:</strong> Dacă nu sunteți de acord cu acești Termeni, vă rugăm să nu utilizați Serviciile ChatBill. 
+        Utilizarea continuă a platformei constituie acceptarea oricăror modificări ulterioare ale acestor Termeni.
+      </div>
+
+      <hr class="section-divider">
+
+      <h2>2. Definiții</h2>
+      <ul>
+        <li><strong>"ChatBill"</strong> sau <strong>"Noi"</strong> - platforma de facturare și furnizorul de servicii</li>
+        <li><strong>"Utilizator"</strong>, <strong>"Dvs."</strong> sau <strong>"Client"</strong> - persoana sau entitatea care folosește Serviciile</li>
+        <li><strong>"Cont"</strong> - contul individual creat pe platformă</li>
+        <li><strong>"Servicii"</strong> - toate funcționalitățile oferite de ChatBill, inclusiv generare facturi, integrare ANAF, chat AI, etc.</li>
+        <li><strong>"Conținut"</strong> - toate datele, informațiile, textele și documentele încărcate sau generate în platformă</li>
+        <li><strong>"Abonament"</strong> - planul de servicii ales și plătit periodic</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>3. Eligibilitate și Înregistrare</h2>
+      
+      <h3>3.1. Cerințe de Eligibilitate</h3>
+      <p>Pentru a utiliza ChatBill, trebuie să îndepliniți următoarele condiții:</p>
+      <ul>
+        <li>Aveți minimum 18 ani</li>
+        <li>Dețineți capacitate juridică deplină</li>
+        <li>Reprezentați legal o entitate/companie (în cazul conturilor de afaceri)</li>
+        <li>Nu vi s-a interzis anterior accesul la Servicii</li>
+        <li>Respectați toate legile aplicabile din România</li>
+      </ul>
+
+      <h3>3.2. Crearea Contului</h3>
+      <p>Pentru a crea un cont, trebuie să:</p>
+      <ul>
+        <li>Furnizați informații complete, exacte și actualizate</li>
+        <li>Creați o parolă sigură</li>
+        <li>Verificați adresa de email</li>
+        <li>Acceptați acești Termeni și Politica de Confidențialitate</li>
+      </ul>
+
+      <h3>3.3. Securitatea Contului</h3>
+      <p>Sunteți responsabil pentru:</p>
+      <ul>
+        <li>Menținerea confidențialității parolei</li>
+        <li>Toate activitățile din contul dumneavoastră</li>
+        <li>Notificarea imediată a oricărei utilizări neautorizate</li>
+        <li>Deconectarea la sfârșitul fiecărei sesiuni</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>4. Serviciile ChatBill</h2>
+
+      <h3>4.1. Descrierea Serviciilor</h3>
+      <p>ChatBill oferă următoarele funcționalități principale:</p>
+      <ul>
+        <li><strong>Generare Facturi și Proforma:</strong> Creare automată și manuală de documente</li>
+        <li><strong>Integrare ANAF (e-Factura):</strong> Transmitere automată către sistemul e-Factura</li>
+        <li><strong>Gestionare Clienți și Produse:</strong> Bază de date pentru clienți și catalog de produse</li>
+        <li><strong>Chat AI:</strong> Asistent inteligent pentru întrebări și suport</li>
+        <li><strong>Rapoarte și Statistici:</strong> Analize financiare și rapoarte</li>
+        <li><strong>Șabloane Personalizabile:</strong> Template-uri pentru documente</li>
+        <li><strong>Notificări Email:</strong> Alerte automate despre statusul documentelor</li>
+      </ul>
+
+      <h3>4.2. Modificări ale Serviciilor</h3>
+      <p>
+        Ne rezervăm dreptul de a modifica, suspenda sau întrerupe orice parte a Serviciilor, temporar sau permanent, 
+        cu sau fără notificare prealabilă. Nu suntem răspunzători față de dumneavoastră sau față de terțe părți 
+        pentru orice modificare, suspendare sau întrerupere a Serviciilor.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>5. Planuri și Plăți</h2>
+
+      <h3>5.1. Tipuri de Abonamente</h3>
+      <p>ChatBill oferă mai multe planuri de abonament:</p>
+      <ul>
+        <li><strong>Plan Gratuit:</strong> Funcționalități de bază cu limitări</li>
+        <li><strong>Plan Pro:</strong> Funcționalități complete pentru afaceri mici și mijlocii</li>
+        <li><strong>Plan Enterprise:</strong> Soluții personalizate pentru companii mari</li>
+      </ul>
+
+      <h3>5.2. Prețuri și Facturare</h3>
+      <ul>
+        <li>Prețurile sunt afișate în RON și includ TVA</li>
+        <li>Abonamentele se plătesc lunar sau anual în avans</li>
+        <li>Procesarea plăților se face prin Stripe</li>
+        <li>Facturile sunt generate automat și trimise prin email</li>
+      </ul>
+
+      <h3>5.3. Reînnoire Automată</h3>
+      <p>
+        Abonamentele se reînnoiesc automat la sfârșitul perioadei de facturare, cu excepția cazului în care 
+        anulați înainte de data reînnoirii. Veți fi notificat cu 7 zile înainte de reînnoire.
+      </p>
+
+      <h3>5.4. Modificări de Preț</h3>
+      <p>
+        Ne rezervăm dreptul de a modifica prețurile cu o notificare de minimum 30 de zile. Modificările nu afectează 
+        abonamentele deja plătite până la următoarea perioadă de facturare.
+      </p>
+
+      <h3>5.5. Politica de Rambursare</h3>
+      <div class="info-box">
+        <strong>Rambursări:</strong>
+        <ul style="margin-top: 0.5rem;">
+          <li>Primele 14 zile: rambursare integrală fără justificare</li>
+          <li>După 14 zile: rambursare pro-rata în cazuri excepționale</li>
+          <li>Abonamentele anuale: rambursare parțială după prima lună</li>
+          <li>Solicitările de rambursare se procesează în 5-10 zile lucrătoare</li>
+        </ul>
+      </div>
+
+      <hr class="section-divider">
+
+      <h2>6. Utilizarea Acceptabilă</h2>
+
+      <h3>6.1. Obligațiile Utilizatorului</h3>
+      <p>Vă angajați să:</p>
+      <ul>
+        <li>Utilizați Serviciile conform legii și acestor Termeni</li>
+        <li>Furnizați informații corecte și actualizate</li>
+        <li>Nu partajați contul cu alte persoane</li>
+        <li>Nu utilizați Serviciile pentru activități ilegale</li>
+        <li>Respectați drepturile de proprietate intelectuală</li>
+        <li>Nu încercați să hackuiți sau să compriteți sistemul</li>
+      </ul>
+
+      <h3>6.2. Utilizări Interzise</h3>
+      <p>Este strict interzis să:</p>
+      <ul>
+        <li>Folosiți Serviciile pentru fraudă fiscală sau spălare de bani</li>
+        <li>Generați facturi false sau înșelătoare</li>
+        <li>Încărcați malware, viruși sau cod malițios</li>
+        <li>Copiați, modificați sau distribuiți software-ul nostru</li>
+        <li>Utilizați roboți, scrapere sau alte mijloace automate neautorizate</li>
+        <li>Supraîncărcați sau sabotați infrastructura</li>
+        <li>Încălcați drepturile altor utilizatori</li>
+        <li>Folosiți Serviciile pentru spam sau marketing neautorizat</li>
+      </ul>
+
+      <h3>6.3. Consecințe ale Încălcării</h3>
+      <p>
+        Încălcarea acestor reguli poate duce la:
+      </p>
+      <ul>
+        <li>Avertisment oficial</li>
+        <li>Suspendarea temporară a contului</li>
+        <li>Închiderea permanentă a contului</li>
+        <li>Acțiuni legale și sesizări la autorități</li>
+        <li>Imposibilitatea de a crea un nou cont</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>7. Proprietate Intelectuală</h2>
+
+      <h3>7.1. Proprietatea ChatBill</h3>
+      <p>
+        Toate drepturile de proprietate intelectuală asupra ChatBill, inclusiv dar fără limitare la software, 
+        design, logo-uri, text, grafice și interfață, sunt și rămân proprietatea exclusivă a ChatBill sau a 
+        licențiatorilor săi.
+      </p>
+
+      <h3>7.2. Licență de Utilizare</h3>
+      <p>
+        Vă acordăm o licență limitată, neexclusivă, netransferabilă și revocabilă de a accesa și utiliza Serviciile 
+        pentru scopul lor destinat, conform acestor Termeni.
+      </p>
+
+      <h3>7.3. Conținutul Utilizatorului</h3>
+      <p>
+        Păstrați toate drepturile asupra datelor și documentelor pe care le creați în ChatBill. Ne acordați o 
+        licență limitată de a prelucra aceste date în scopul furnizării Serviciilor.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>8. Confidențialitate și Protecția Datelor</h2>
+      <p>
+        Protecția datelor dumneavoastră este o prioritate. Colectarea, utilizarea și protecția informațiilor 
+        personale sunt reglementate de <a href="privacy-policy.html" style="color: var(--primary); text-decoration: underline;">Politica noastră de Confidențialitate</a>, 
+        care face parte integrantă din acești Termeni.
+      </p>
+      <p>Puncte cheie:</p>
+      <ul>
+        <li>Suntem conformi cu GDPR și legislația română</li>
+        <li>Datele sunt criptate și stocate securizat</li>
+        <li>Nu vindem datele dumneavoastră către terți</li>
+        <li>Aveți control complet asupra datelor dumneavoastră</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>9. Integrarea cu Servicii Terțe</h2>
+
+      <h3>9.1. ANAF (e-Factura)</h3>
+      <p>
+        ChatBill se integrează cu sistemul e-Factura al ANAF pentru transmiterea automată a facturilor. 
+        Sunteți responsabil pentru:
+      </p>
+      <ul>
+        <li>Obținerea certificatului digital necesar</li>
+        <li>Acuratețea datelor fiscale transmise</li>
+        <li>Conformitatea cu legislația fiscală</li>
+        <li>Verificarea statusului facturilor în SPV</li>
+      </ul>
+
+      <h3>9.2. Stripe (Procesare Plăți)</h3>
+      <p>
+        Plățile sunt procesate de Stripe Inc. Sunteți, de asemenea, supus 
+        <a href="https://stripe.com/ro/legal/ssa" target="_blank" rel="noopener" style="color: var(--primary);">Termenilor de Serviciu Stripe</a>.
+      </p>
+
+      <h3>9.3. OpenAI (Chat AI)</h3>
+      <p>
+        Funcționalitatea chat AI folosește tehnologia OpenAI. Conversațiile sunt anonimizate înainte de procesare și 
+        nu sunt folosite pentru antrenarea modelelor AI.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>10. Limitarea Răspunderii</h2>
+
+      <h3>10.1. Garanții</h3>
+      <p>
+        Serviciile sunt furnizate "CA ATARE" și "CONFORM DISPONIBILITĂȚII". Nu garantăm că:
+      </p>
+      <ul>
+        <li>Serviciile vor fi neîntrerupte sau fără erori</li>
+        <li>Toate defectele vor fi corectate</li>
+        <li>Serviciile sunt compatibile cu toate sistemele</li>
+        <li>Rezultatele vor îndeplini așteptările dumneavoastră</li>
+      </ul>
+
+      <h3>10.2. Limitări de Răspundere</h3>
+      <div class="warning-box">
+        <strong>Important:</strong> În măsura maximă permisă de lege, ChatBill nu este răspunzător pentru:
+        <ul style="margin-top: 0.5rem;">
+          <li>Pierderi de profit, date sau oportunități comerciale</li>
+          <li>Daune indirecte, incidentale sau consecutive</li>
+          <li>Erori în documentele generate</li>
+          <li>Probleme cauzate de servicii terțe (ANAF, Stripe, etc.)</li>
+          <li>Întreruperi ale serviciului din cauze în afara controlului nostru</li>
+        </ul>
+        <p style="margin-top: 0.5rem; margin-bottom: 0;">
+          Răspunderea totală a ChatBill nu va depăși suma plătită de dumneavoastră în ultimele 12 luni.
+        </p>
+      </div>
+
+      <h3>10.3. Forță Majoră</h3>
+      <p>
+        Nu suntem răspunzători pentru întârzieri sau neexecutarea obligațiilor cauzate de evenimente în afara 
+        controlului nostru rezonabil (dezastre naturale, atacuri cibernetice, schimbări legislative, etc.).
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>11. Suspendarea și Închiderea Contului</h2>
+
+      <h3>11.1. Suspendarea de către ChatBill</h3>
+      <p>Ne rezervăm dreptul de a suspenda sau închide contul dumneavoastră dacă:</p>
+      <ul>
+        <li>Încălcați acești Termeni</li>
+        <li>Nu achitați abonamentul</li>
+        <li>Detectăm activități suspicioase sau frauduloase</li>
+        <li>Primim o cerere legală din partea autorităților</li>
+        <li>Contul este inactiv mai mult de 12 luni consecutive</li>
+      </ul>
+
+      <h3>11.2. Ștergerea de către Utilizator</h3>
+      <p>
+        Puteți șterge contul oricând din secțiunea Setări. Odată șters:
+      </p>
+      <ul>
+        <li>Veți pierde accesul la toate datele (cu excepția celor păstrate legal)</li>
+        <li>Abonamentele active vor fi anulate (fără rambursare dacă nu se justifică)</li>
+        <li>Datele vor fi șterse conform Politicii de Confidențialitate</li>
+        <li>Facturile fiscale vor fi păstrate 10 ani conform legii</li>
+      </ul>
+
+      <hr class="section-divider">
+
+      <h2>12. Modificări ale Termenilor</h2>
+      <p>
+        Ne rezervăm dreptul de a modifica acești Termeni în orice moment. Modificările vor fi comunicate prin:
+      </p>
+      <ul>
+        <li>Email către adresa înregistrată</li>
+        <li>Notificare în platformă</li>
+        <li>Publicare pe pagina de Termeni cu data actualizată</li>
+      </ul>
+      <p>
+        Utilizarea continuă a Serviciilor după notificarea modificărilor constituie acceptarea noilor Termeni. 
+        Dacă nu sunteți de acord, trebuie să încetați utilizarea Serviciilor și să vă închideți contul.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>13. Legislație Aplicabilă și Jurisdicție</h2>
+
+      <h3>13.1. Legea Aplicabilă</h3>
+      <p>
+        Acești Termeni sunt guvernați de legile României. Orice dispute vor fi interpretate conform legislației române.
+      </p>
+
+      <h3>13.2. Rezolvarea Disputelor</h3>
+      <p>În caz de conflict sau dispută:</p>
+      <ol>
+        <li><strong>Negociere amiabilă:</strong> Încercăm să rezolvăm problema prin dialog direct</li>
+        <li><strong>Mediere:</strong> Dacă negocierea eșuează, putem apela la un mediator autorizat</li>
+        <li><strong>Jurisdicție:</strong> Orice litigiu va fi supus instanțelor competente din România</li>
+      </ol>
+
+      <h3>13.3. Protecția Consumatorului</h3>
+      <p>
+        Acești Termeni nu limitează drepturile pe care le aveți în calitate de consumator conform legislației 
+        române și europene privind protecția consumatorului.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>14. Dispoziții Generale</h2>
+
+      <h3>14.1. Integralitatea Acordului</h3>
+      <p>
+        Acești Termeni, împreună cu Politica de Confidențialitate, constituie acordul integral între dumneavoastră 
+        și ChatBill privind utilizarea Serviciilor.
+      </p>
+
+      <h3>14.2. Separabilitate</h3>
+      <p>
+        Dacă o prevedere din acești Termeni este considerată invalidă sau inaplicabilă, celelalte prevederi rămân 
+        în vigoare.
+      </p>
+
+      <h3>14.3. Cesiunea</h3>
+      <p>
+        Nu puteți transfera drepturile sau obligațiile din acești Termeni fără acordul nostru scris. ChatBill poate 
+        cesiona drepturile sale în cazul unei fuziuni, achiziții sau vânzări de active.
+      </p>
+
+      <h3>14.4. Renunțare</h3>
+      <p>
+        Faptul că nu exercităm un drept sau nu aplicăm o prevedere nu constituie o renunțare la acel drept sau prevedere.
+      </p>
+
+      <h3>14.5. Limba</h3>
+      <p>
+        Acești Termeni sunt redactați în limba română. În caz de traduceri, versiunea în limba română prevalează.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>15. Informații de Contact și Suport</h2>
+      <p>
+        Pentru asistență, întrebări sau reclamații legate de acești Termeni și Condiții:
+      </p>
+
+      <div class="contact-box">
+        <h3>Contact</h3>
+        <p>
+          <strong>Email Suport:</strong> <a href="mailto:support@chatbill.ro">support@chatbill.ro</a><br>
+          <strong>Email Legal:</strong> <a href="mailto:legal@chatbill.ro">legal@chatbill.ro</a>
+        </p>
+        <p style="margin-top: 1.5rem;">
+          <strong>Program de răspuns:</strong> Luni - Vineri, 9:00 - 18:00 (ora României)<br>
+          <strong>Timp mediu de răspuns:</strong> 24-48 ore în zile lucrătoare
+        </p>
+        <p style="margin-top: 1.5rem; margin-bottom: 0;">
+          Pentru reclamații privind protecția datelor, consultați 
+          <a href="privacy-policy.html">Politica de Confidențialitate</a>.
+        </p>
+      </div>
+
+      <div class="info-box" style="margin-top: 2rem;">
+        <strong>Documente conexe:</strong>
+        <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+          <li><a href="privacy-policy.html" style="color: var(--primary); font-weight: 500;">Politica de Confidențialitate</a></li>
+          <li>Politica de Cookies (în dezvoltare)</li>
+          <li>Ghid de utilizare (în dezvoltare)</li>
+        </ul>
+      </div>
+
+      <p style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--secondary-foreground);">
+        © 2025 ChatBill. Toate drepturile rezervate.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>

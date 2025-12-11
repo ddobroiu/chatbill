@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ștergere Date Utilizator - ChatBill</title>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: #f8f9fa;
+      --foreground: #212529;
+      --card-background: #ffffff;
+      --primary: #0052cc;
+      --primary-foreground: #ffffff;
+      --secondary: #e9ecef;
+      --secondary-foreground: #495057;
+      --border: #dee2e6;
+      --input: #ced4da;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --font-sans: 'Inter', sans-serif;
+      --radius: 0.5rem;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--background);
+      color: var(--foreground);
+      line-height: 1.6;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+
+    .back-link {
+      position: absolute;
+      left: 2rem;
+      top: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+
+    .back-link:hover {
+      opacity: 0.8;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .content-card {
+      background: var(--card-background);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 3rem;
+      border: 1px solid var(--border);
+    }
+
+    .warning-banner {
+      background: #fff3cd;
+      border-left: 4px solid var(--warning);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: start;
+      gap: 1rem;
+    }
+
+    .warning-banner i {
+      color: var(--warning);
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+
+    .info-box {
+      background: #d1ecf1;
+      border-left: 4px solid #17a2b8;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin: 1.5rem 0;
+    }
+
+    .danger-box {
+      background: #f8d7da;
+      border-left: 4px solid var(--danger);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin: 1.5rem 0;
+    }
+
+    h2 {
+      color: var(--primary);
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
+
+    h3 {
+      color: var(--foreground);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--foreground);
+    }
+
+    ul, ol {
+      margin-left: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    strong {
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    .form-section {
+      background: var(--secondary);
+      padding: 2rem;
+      border-radius: var(--radius);
+      margin: 2rem 0;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--foreground);
+    }
+
+    label .required {
+      color: var(--danger);
+    }
+
+    input[type="text"],
+    input[type="email"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--input);
+      border-radius: var(--radius);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: start;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin-top: 0.3rem;
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      margin: 0;
+      cursor: pointer;
+      font-weight: 400;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+
+    .btn-primary:hover {
+      background: #003d99;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: var(--secondary-foreground);
+    }
+
+    .btn-secondary:hover {
+      background: #d3d8dc;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 2px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+      margin: 1.5rem 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.5rem;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -1.65rem;
+      top: 0.3rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid var(--card-background);
+    }
+
+    .timeline-item h4 {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-item p {
+      margin: 0;
+      color: var(--secondary-foreground);
+    }
+
+    .contact-info {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: var(--radius);
+      margin-top: 2rem;
+    }
+
+    .contact-info h3 {
+      color: white;
+      margin-top: 0;
+    }
+
+    .contact-info a {
+      color: white;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .success-message {
+      background: #d4edda;
+      border-left: 4px solid var(--success);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin: 1.5rem 0;
+      display: none;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .content-card {
+        padding: 2rem 1.5rem;
+      }
+
+      .form-section {
+        padding: 1.5rem;
+      }
+
+      .container {
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .back-link {
+        position: static;
+        display: inline-flex;
+        margin-bottom: 1rem;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      h3 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="privacy-policy.html" class="back-link">
+      <i data-lucide="arrow-left"></i>
+      <span>Înapoi</span>
+    </a>
+    <h1>Ștergerea Datelor Utilizator</h1>
+    <p>Solicitare de Ștergere a Datelor Personale</p>
+  </div>
+
+  <div class="container">
+    <div class="content-card">
+      <div class="warning-banner">
+        <i data-lucide="alert-triangle" size="24"></i>
+        <div>
+          <strong>Atenție:</strong> Ștergerea datelor este o acțiune permanentă și ireversibilă. 
+          Odată procesată cererea, nu veți mai putea recupera datele șterse.
+        </div>
+      </div>
+
+      <h2>Despre Ștergerea Datelor</h2>
+      <p>
+        Conform <strong>GDPR (Regulamentul General privind Protecția Datelor)</strong>, aveți dreptul de a solicita 
+        ștergerea datelor personale pe care le deținem despre dumneavoastră ("Dreptul de a fi Uitat").
+      </p>
+      <p>
+        ChatBill respectă pe deplin acest drept și vă oferă posibilitatea de a șterge contul și datele asociate 
+        în orice moment.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>Ce Date Vor Fi Șterse</h2>
+      <p>La ștergerea contului, următoarele date vor fi eliminate permanent:</p>
+      <ul>
+        <li><strong>Date de cont:</strong> Email, parolă, nume, telefon</li>
+        <li><strong>Date ale companiei:</strong> Denumire, CUI, adresă, date bancare</li>
+        <li><strong>Clienți și contacte:</strong> Lista de clienți și informațiile acestora</li>
+        <li><strong>Produse și servicii:</strong> Catalogul de produse</li>
+        <li><strong>Conversații chat:</strong> Istoric discuții cu asistentul AI</li>
+        <li><strong>Setări și preferințe:</strong> Configurări personalizate</li>
+        <li><strong>Date de abonament:</strong> Informații despre planul actual</li>
+      </ul>
+
+      <div class="danger-box">
+        <strong>Date care NU pot fi șterse imediat:</strong>
+        <ul style="margin-top: 0.5rem;">
+          <li><strong>Facturi emise:</strong> Păstrate 10 ani conform Codului Fiscal României (Art. 25, Legea 207/2015)</li>
+          <li><strong>Proforma emise:</strong> Păstrate pentru conformitate fiscală</li>
+          <li><strong>Tranzacții financiare:</strong> Istoric plăți pentru reconcilieri contabile</li>
+          <li><strong>Date transmise la ANAF:</strong> Facturi deja raportate prin e-Factura</li>
+        </ul>
+        <p style="margin-top: 1rem; margin-bottom: 0;">
+          Aceste date sunt păstrate în baza <strong>obligațiilor legale</strong> și vor fi șterse automat 
+          după expirarea perioadei de retenție legală.
+        </p>
+      </div>
+
+      <hr class="section-divider">
+
+      <h2>Procesul de Ștergere</h2>
+      <p>Procesul de ștergere a datelor urmează următorii pași:</p>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <h4>Pasul 1: Cerere de Ștergere</h4>
+          <p>Completați formularul de mai jos sau trimiteți un email</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Pasul 2: Verificare Identitate</h4>
+          <p>Confirmăm identitatea pentru securitate (răspuns în 24-48 ore)</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Pasul 3: Confirmare Finală</h4>
+          <p>Primiți un email cu link de confirmare finală</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Pasul 4: Ștergere Date</h4>
+          <p>Datele sunt șterse în 30 de zile de la confirmare</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Pasul 5: Confirmare Ștergere</h4>
+          <p>Primiți confirmarea că datele au fost șterse</p>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Notă:</strong> Aveți dreptul de a anula cererea oricând în primele 14 zile 
+        de la solicitarea inițială.
+      </div>
+
+      <hr class="section-divider">
+
+      <h2>Alternative la Ștergerea Completă</h2>
+      <p>Înainte de a șterge definitiv contul, considerați următoarele alternative:</p>
+
+      <h3>1. Exportarea Datelor</h3>
+      <p>
+        Descărcați o copie a tuturor datelor dumneavoastră înainte de ștergere. 
+        Puteți solicita un export complet în format JSON sau CSV.
+      </p>
+
+      <h3>2. Dezactivarea Contului</h3>
+      <p>
+        Dezactivați temporar contul fără a-l șterge. Contul va fi suspendat, dar datele rămân intacte 
+        pentru o eventuală reactivare viitoare.
+      </p>
+
+      <h3>3. Anularea Abonamentului</h3>
+      <p>
+        Dacă problema este costul, puteți trece la planul gratuit fără a pierde datele.
+      </p>
+
+      <hr class="section-divider">
+
+      <h2>Formular de Solicitare Ștergere Date</h2>
+      
+      <div class="form-section">
+        <form id="deletionForm">
+          <div class="form-group">
+            <label for="email">
+              Adresa de Email (Contul ChatBill) <span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required 
+              placeholder="email@exemplu.ro"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="fullName">
+              Nume Complet <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="fullName" 
+              name="fullName" 
+              required 
+              placeholder="Nume și Prenume"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="reason">
+              Motivul Ștergerii (Opțional)
+            </label>
+            <select id="reason" name="reason">
+              <option value="">Selectați un motiv...</option>
+              <option value="no_longer_needed">Nu mai am nevoie de serviciu</option>
+              <option value="switching_service">Trec la un alt serviciu</option>
+              <option value="privacy_concerns">Preocupări legate de confidențialitate</option>
+              <option value="too_expensive">Prea scump</option>
+              <option value="technical_issues">Probleme tehnice</option>
+              <option value="other">Altele</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="additionalInfo">
+              Informații Suplimentare (Opțional)
+            </label>
+            <textarea 
+              id="additionalInfo" 
+              name="additionalInfo" 
+              placeholder="Detalii suplimentare despre cererea dumneavoastră..."
+            ></textarea>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="exportData" name="exportData">
+            <label for="exportData">
+              Doresc să primesc o copie a datelor mele înainte de ștergere
+            </label>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="confirmation" name="confirmation" required>
+            <label for="confirmation">
+              <strong>Confirm că înțeleg că ștergerea este permanentă și ireversibilă</strong> <span class="required">*</span>
+            </label>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="gdprConsent" name="gdprConsent" required>
+            <label for="gdprConsent">
+              Confirm că am citit și înțeles <a href="privacy-policy.html" style="color: var(--primary);">Politica de Confidențialitate</a> <span class="required">*</span>
+            </label>
+          </div>
+
+          <div class="success-message" id="successMessage">
+            <strong>✓ Cererea a fost trimisă cu succes!</strong>
+            <p style="margin-top: 0.5rem; margin-bottom: 0;">
+              Veți primi un email de confirmare în maxim 48 de ore.
+            </p>
+          </div>
+
+          <div class="button-group">
+            <button type="submit" class="btn btn-danger">
+              <i data-lucide="trash-2"></i>
+              Trimite Cererea de Ștergere
+            </button>
+            <a href="privacy-policy.html" class="btn btn-secondary">
+              Anulează
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <hr class="section-divider">
+
+      <h2>Metode Alternative de Solicitare</h2>
+      
+      <h3>Prin Email</h3>
+      <p>
+        Puteți trimite o solicitare direct prin email la:
+        <strong><a href="mailto:privacy@chatbill.ro" style="color: var(--primary);">privacy@chatbill.ro</a></strong>
+      </p>
+      <p>Includeți în email:</p>
+      <ul>
+        <li>Adresa de email a contului ChatBill</li>
+        <li>Numele complet</li>
+        <li>Confirmarea că doriți ștergerea permanentă</li>
+        <li>Mențiune dacă doriți export de date înainte</li>
+      </ul>
+
+      <h3>Din Aplicație</h3>
+      <p>
+        Dacă aveți încă acces la cont, puteți șterge contul direct din:
+      </p>
+      <p>
+        <strong>Setări → Cont → Ștergere Cont</strong>
+      </p>
+
+      <div class="contact-info">
+        <h3>Contact și Suport</h3>
+        <p>
+          Pentru întrebări sau asistență privind ștergerea datelor:
+        </p>
+        <p>
+          <strong>Email Protecție Date:</strong> <a href="mailto:privacy@chatbill.ro">privacy@chatbill.ro</a><br>
+          <strong>Email Suport General:</strong> <a href="mailto:support@chatbill.ro">support@chatbill.ro</a>
+        </p>
+        <p style="margin-top: 1.5rem;">
+          <strong>Timp de răspuns:</strong> 24-48 ore în zile lucrătoare<br>
+          <strong>Program:</strong> Luni - Vineri, 9:00 - 18:00
+        </p>
+        <p style="margin-top: 1.5rem; margin-bottom: 0;">
+          Pentru reclamații GDPR, puteți contacta și 
+          <strong>Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP)</strong> 
+          la <a href="https://www.dataprotection.ro" target="_blank">www.dataprotection.ro</a>
+        </p>
+      </div>
+
+      <p style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--secondary-foreground); font-size: 0.9rem;">
+        ChatBill respectă drepturile GDPR și legislația română privind protecția datelor.<br>
+        Ultima actualizare: 11 decembrie 2025
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Form submission handler
+    document.getElementById('deletionForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Validate required fields
+      if (!data.email || !data.fullName || !data.confirmation || !data.gdprConsent) {
+        alert('Vă rugăm să completați toate câmpurile obligatorii și să bifați căsuțele de confirmare.');
+        return;
+      }
+
+      // In production, this would send to backend
+      console.log('Data deletion request:', data);
+      
+      // Show success message
+      document.getElementById('successMessage').classList.add('show');
+      
+      // Scroll to success message
+      document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Optionally reset form
+      setTimeout(() => {
+        // this.reset();
+        // In production, you might redirect to a confirmation page
+      }, 2000);
+    });
+
+    // Email validation
+    document.getElementById('email').addEventListener('blur', function() {
+      const email = this.value;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (email && !emailRegex.test(email)) {
+        this.setCustomValidity('Vă rugăm să introduceți o adresă de email validă.');
+      } else {
+        this.setCustomValidity('');
+      }
+    });
+  </script>
+</body>
+</html>
