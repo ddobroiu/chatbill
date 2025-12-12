@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const offerController = require('../controllers/offerController');
-// const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
-// Protect routes - TEMPORAR DEZACTIVAT PENTRU DEVELOPMENT
-// router.use(authenticateToken);
+// Rute publice - nu necesită autentificare
+router.post('/create', optionalAuth, offerController.createOffer);
 
-// Creare ofertă nouă
-router.post('/create', offerController.createOffer);
+// Rute protejate - necesită autentificare
+router.use(authenticateToken);
 
 // Obține toate ofertele
 router.get('/', offerController.getOffers);

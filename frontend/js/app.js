@@ -101,18 +101,92 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Helper pentru colectarea datelor companiei emitente
+function getProviderData() {
+    // Încearcă să obții date din localStorage (salvate anterior)
+    const savedSettings = localStorage.getItem('companySettings');
+    
+    // Sau citește direct din formular
+    const cui = document.getElementById('settingsCui')?.value || 
+                (savedSettings ? JSON.parse(savedSettings).cui : '');
+    const name = document.getElementById('settingsName')?.value || 
+                 (savedSettings ? JSON.parse(savedSettings).name : '');
+    const regCom = document.getElementById('settingsRegCom')?.value || 
+                   (savedSettings ? JSON.parse(savedSettings).regCom : '');
+    const address = document.getElementById('settingsAddress')?.value || 
+                    (savedSettings ? JSON.parse(savedSettings).address : '');
+    const city = document.getElementById('settingsCity')?.value || 
+                 (savedSettings ? JSON.parse(savedSettings).city : '');
+    const county = document.getElementById('settingsCounty')?.value || 
+                   (savedSettings ? JSON.parse(savedSettings).county : '');
+    const phone = document.getElementById('settingsPhone')?.value || 
+                  (savedSettings ? JSON.parse(savedSettings).phone : '');
+    const email = document.getElementById('settingsEmail')?.value || 
+                  (savedSettings ? JSON.parse(savedSettings).email : '');
+    const bank = document.getElementById('settingsBank')?.value || 
+                 (savedSettings ? JSON.parse(savedSettings).bank : '');
+    const iban = document.getElementById('settingsIban')?.value || 
+                 (savedSettings ? JSON.parse(savedSettings).iban : '');
+    const capital = document.getElementById('settingsCapital')?.value || 
+                    (savedSettings ? JSON.parse(savedSettings).capital : '');
+    
+    // Setări TVA
+    const isVatPayer = document.getElementById('isVatPayer')?.checked !== false;
+    const vatRate = parseFloat(document.getElementById('vatRate')?.value || '19');
+    
+    // Setări numerotare
+    const series = document.getElementById('invoiceSeries')?.value || 'FAC';
+    const startNumber = parseInt(document.getElementById('invoiceStartNumber')?.value || '1');
+    
+    return {
+        cui,
+        name,
+        regCom,
+        address,
+        city,
+        county,
+        phone,
+        email,
+        bank,
+        iban,
+        capital,
+        isVatPayer,
+        vatRate,
+        series,
+        startNumber
+    };
+}
+
 async function loadSettings() {
     try {
         const response = await fetch('http://localhost:3000/api/settings', {
             headers: getAuthHeaders()
         });
-        const data = await response.json();
         
-        if (data.success && data.settings) {
-            populateSettingsForm(data.settings);
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success && data.settings) {
+                populateSettingsForm(data.settings);
+                // Salvează în localStorage pentru backup
+                localStorage.setItem('companySettings', JSON.stringify(data.settings));
+                return;
+            }
         }
     } catch (error) {
-        console.error('Eroare încărcare setări:', error);
+        console.error('Eroare încărcare setări din backend:', error);
+    }
+    
+    // Fallback - încarcă din localStorage pentru useri neautentificați
+    const savedSettings = localStorage.getItem('companySettings');
+    if (savedSettings) {
+        try {
+            const settings = JSON.parse(savedSettings);
+            populateSettingsForm(settings);
+            console.log('✅ Setări încărcate din localStorage');
+        } catch (error) {
+            console.error('Eroare parsare setări din localStorage:', error);
+        }
     }
 }
 
@@ -128,15 +202,26 @@ function populateSettingsForm(settings) {
         email: 'settingsEmail',
         bank: 'settingsBank',
         iban: 'settingsIban',
-        capital: 'settingsCapital'
+        capital: 'settingsCapital',
+        vatRate: 'vatRate',
+        invoiceSeries: 'invoiceSeries',
+        invoiceStartNumber: 'invoiceStartNumber',
+        proformaSeries: 'proformaSeries',
+        proformaStartNumber: 'proformaStartNumber'
     };
 
     Object.keys(mapping).forEach(key => {
         const input = document.getElementById(mapping[key]);
-        if (input && settings[key]) {
+        if (input && settings[key] !== undefined && settings[key] !== null) {
             input.value = settings[key];
         }
     });
+    
+    // Checkbox pentru plătitor TVA
+    const isVatPayerCheckbox = document.getElementById('isVatPayer');
+    if (isVatPayerCheckbox && settings.isVatPayer !== undefined) {
+        isVatPayerCheckbox.checked = settings.isVatPayer;
+    }
 }
 
 async function autoCompleteSettings() {
@@ -173,6 +258,8 @@ async function saveSettings(event) {
 
     showMessage('settingsMessage', '💾 Salvare setări...', 'info');
 
+    // Încearcă să salvezi în backend (pentru useri autentificați)
+    // Dacă eșuează (401), salvează în localStorage
     try {
         const response = await fetch('http://localhost:3000/api/settings', {
             method: 'PUT',
@@ -184,12 +271,20 @@ async function saveSettings(event) {
         
         if (data.success) {
             showMessage('settingsMessage', '✅ Setări salvate cu succes!', 'success');
+            // Salvează și în localStorage pentru backup
+            localStorage.setItem('companySettings', JSON.stringify(settings));
+        } else if (response.status === 401) {
+            // User neautentificat - salvează doar în localStorage
+            localStorage.setItem('companySettings', JSON.stringify(settings));
+            showMessage('settingsMessage', '✅ Setări salvate local! Pentru salvare permanentă, creați un cont.', 'success');
         } else {
             showMessage('settingsMessage', '❌ Eroare la salvarea setărilor', 'error');
         }
     } catch (error) {
         console.error('Eroare salvare setări:', error);
-        showMessage('settingsMessage', '❌ Eroare la salvarea setărilor', 'error');
+        // Fallback - salvează în localStorage
+        localStorage.setItem('companySettings', JSON.stringify(settings));
+        showMessage('settingsMessage', '✅ Setări salvate local! Pentru salvare permanentă, creați un cont.', 'success');
     }
 }
 
@@ -338,6 +433,16 @@ async function generateInvoice(event) {
         return;
     }
 
+    // Colectează date companie emitentă din formular setări (pentru useri neautentificați)
+    const provider = getProviderData();
+    
+    if (!provider.cui || !provider.name) {
+        showMessage('invoiceMessage', '❌ Completați datele companiei în secțiunea Setări!', 'error');
+        // Scroll to settings
+        document.getElementById('company-settings').scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
     const invoiceData = {
         client: isIndividual ? {
             type: 'individual',
@@ -357,7 +462,8 @@ async function generateInvoice(event) {
             county: formData.get('clientCounty')
         },
         products: products,
-        template: document.getElementById('selectedTemplate').value || 'modern'
+        template: document.getElementById('selectedTemplate').value || 'modern',
+        provider: provider // Include datele companiei emitente
     };
 
     try {
