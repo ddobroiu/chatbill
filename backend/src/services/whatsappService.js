@@ -52,6 +52,10 @@ async function sendVerificationCode(phoneNumber, code) {
     }
 
     // Trimite prin Meta WhatsApp Business API
+    console.log('📤 Trimit mesaj WhatsApp prin Meta API...');
+    console.log('🔗 URL:', `${WHATSAPP_API_URL}/${WHATSAPP_PHONE_ID}/messages`);
+    console.log('📱 To:', formattedPhone);
+    
     const response = await axios.post(
       `${WHATSAPP_API_URL}/${WHATSAPP_PHONE_ID}/messages`,
       {
@@ -70,14 +74,19 @@ async function sendVerificationCode(phoneNumber, code) {
       }
     );
 
-    console.log('✅ Cod WhatsApp trimis cu succes prin Meta API');
+    console.log('✅ Răspuns Meta API:', JSON.stringify(response.data, null, 2));
+    console.log('📩 Message ID:', response.data.messages?.[0]?.id);
+    
     return {
       success: true,
       messageId: response.data.messages[0].id
     };
 
   } catch (error) {
-    console.error('❌ Eroare trimitere WhatsApp:', error.response?.data || error.message);
+    console.error('❌ Eroare trimitere WhatsApp:');
+    console.error('📛 Status:', error.response?.status);
+    console.error('📛 Data:', JSON.stringify(error.response?.data, null, 2));
+    console.error('📛 Message:', error.message);
     
     // În development, nu aruncăm eroare
     if (process.env.NODE_ENV === 'development') {
