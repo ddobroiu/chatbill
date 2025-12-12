@@ -1398,6 +1398,58 @@
                 <h2>Chat GPT Asistent</h2>
                 <p>Discutați cu asistentul AI pentru ajutor și recomandări.</p>
             </div>
+            
+            <!-- Banner informativ pentru utilizatori nelogați -->
+            <div id="chat-guest-banner" class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; margin-bottom: 1rem; display: none;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i data-lucide="info" style="width: 32px; height: 32px; flex-shrink: 0;"></i>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: white;">✨ Crează cont gratuit și începe să emiti facturi!</h4>
+                        <p style="margin: 0; opacity: 0.95; font-size: 0.9rem;">
+                            Ai 7 zile de probă gratuită. Poți pune întrebări aici, dar pentru a genera facturi trebuie să ai un cont.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+                        <a href="register.html" class="btn" style="background: white; color: #667eea; text-decoration: none;">Înregistrează-te</a>
+                        <a href="login.html" class="btn btn-secondary" style="border-color: white; color: white; text-decoration: none;">Logare</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Banner pentru utilizatori logați fără date companie -->
+            <div id="chat-no-settings-banner" class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; margin-bottom: 1rem; display: none;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i data-lucide="alert-circle" style="width: 32px; height: 32px; flex-shrink: 0;"></i>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: white;">📋 Completează datele companiei</h4>
+                        <p style="margin: 0; opacity: 0.95; font-size: 0.9rem;">
+                            Pentru a genera facturi, trebuie să completezi datele companiei tale în secțiunea Setări.
+                        </p>
+                    </div>
+                    <a href="#company-settings" class="btn" style="background: white; color: #f5576c; text-decoration: none;">
+                        <i data-lucide="settings"></i>
+                        Setări
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Banner pentru trial expiration -->
+            <div id="chat-trial-banner" class="card" style="background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%); color: white; border: none; margin-bottom: 1rem; display: none;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i data-lucide="clock" style="width: 32px; height: 32px; flex-shrink: 0;"></i>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: white;" id="trial-banner-title">⏰ Perioada de probă</h4>
+                        <p style="margin: 0; opacity: 0.95; font-size: 0.9rem;" id="trial-banner-message">
+                            Încă 7 zile rămase în perioada de probă gratuită.
+                        </p>
+                    </div>
+                    <a href="#subscription" class="btn" style="background: white; color: #19547b; text-decoration: none;">
+                        <i data-lucide="credit-card"></i>
+                        Vezi Planuri
+                    </a>
+                </div>
+            </div>
+            
             <div class="card" style="height: 600px; display: flex; flex-direction: column;">
                 <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; background: var(--background);">
                     <div style="text-align: center; color: var(--secondary-foreground); padding: 2rem;">
@@ -2769,63 +2821,18 @@
         const chatInput = document.getElementById('chat-input');
         const chatSendBtn = document.getElementById('chat-send-btn');
         
-        function addChatMessage(message, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.style.cssText = `
-                margin-bottom: 1rem;
-                padding: 1rem;
-                border-radius: var(--radius);
-                background: ${isUser ? 'var(--primary)' : 'white'};
-                color: ${isUser ? 'white' : 'var(--foreground)'};
-                max-width: 80%;
-                margin-left: ${isUser ? 'auto' : '0'};
-                margin-right: ${isUser ? '0' : 'auto'};
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            `;
-            messageDiv.textContent = message;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        
-        // Session ID pentru chat (stocat în localStorage)
-        let chatSessionId = localStorage.getItem('chatSessionId');
-
-        async function sendChatMessage() {
-            const message = chatInput.value.trim();
-            if (!message) return;
-
-            addChatMessage(message, true);
-            chatInput.value = '';
-            chatSendBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/ai-chat/message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message,
-                        sessionId: chatSessionId,
-                        source: 'web'
-                    })
-                });
-                const result = await response.json();
-
-                if (result.success && result.message) {
-                    // Salvează session ID pentru continuitate
-                    if (result.sessionId && !chatSessionId) {
-                        chatSessionId = result.sessionId;
-                        localStorage.setItem('chatSessionId', chatSessionId);
-                    }
-                    addChatMessage(result.message, false);
-                } else {
-                    throw new Error(result.error || 'Eroare la trimiterea mesajului');
+        // Conectează butonul de trimitere
+        if (chatSendBtn && chatInput) {
+            chatSendBtn.addEventListener('click', sendGPTMessage);
+            
+            // Permite Enter pentru trimitere
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendGPTMessage();
                 }
-            } catch (error) {
-                addChatMessage('Ne pare rău, a apărut o eroare. Vă rugăm să încercați din nou.', false);
-                showToast(error.message, 'error');
-            } finally {
-                chatSendBtn.disabled = false;
-            }
+            });
+        }
         }
         
         chatSendBtn.addEventListener('click', sendChatMessage);

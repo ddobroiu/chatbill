@@ -1,18 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const gptChatController = require('../controllers/gptChatController');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
-// Protejez toate rutele
-router.use(authenticateToken);
+// Ruta pentru mesaje - autentificare opțională (funcționează și pentru guest users)
+router.post('/message', optionalAuth, gptChatController.sendMessage);
 
-// Trimite mesaj către GPT
-router.post('/message', gptChatController.sendMessage);
-
-// Obține istoric conversații
-router.get('/history', gptChatController.getHistory);
-
-// Șterge istoric conversații
-router.delete('/history', gptChatController.clearHistory);
+// Rutele pentru istoric necesită autentificare obligatorie
+router.get('/history', authenticateToken, gptChatController.getHistory);
+router.delete('/history', authenticateToken, gptChatController.clearHistory);
 
 module.exports = router;

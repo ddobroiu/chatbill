@@ -1,5 +1,6 @@
 const OpenAI = require('openai');
 const prisma = require('../db/prismaWrapper');
+const { checkCanGenerateInvoice } = require('../middleware/subscriptionCheck');
 
 // Verifică dacă API key-ul există
 if (!process.env.OPENAI_API_KEY) {
@@ -26,6 +27,25 @@ Cunoștințe despre ChatBill:
 - Export PDF pentru facturi
 - Gestionare clienți și produse
 - Istoric facturi generate
+
+**IMPORTANT - Limitări pentru generarea de facturi:**
+- Utilizatorii NELOGAȚI pot folosi chat-ul pentru întrebări, dar NU pot genera facturi
+- Pentru a genera facturi, utilizatorul TREBUIE să:
+  1. Creeze un cont și se logheze
+  2. Completeze datele companiei în Setări
+  3. Aibă perioada de probă activă (7 zile gratuite) SAU abonament activ
+
+- Dacă un utilizator nelogat cere să genereze o factură, răspunde politicos:
+  "📋 Pentru a genera facturi, trebuie mai întâi să îți creezi un cont gratuit. 
+  
+  ✨ Ai 7 zile de probă gratuită pentru a testa toate funcționalitățile!
+  
+  🔗 Click pe 'Creează cont' din meniu pentru a începe."
+
+- Dacă un utilizator logat fără date companie cere o factură:
+  "📋 Pentru a genera facturi, trebuie să completezi datele companiei tale.
+  
+  🔗 Accesează Setări > Date Companie și completează informațiile necesare (nume companie, CUI, adresă, etc.)"
 
 Terminologie română - Înțelegi următoarele abrevieri și variante:
 - "juridice" sau "PJ" = persoane juridice (companii, SRL, SA, etc.)
@@ -75,7 +95,7 @@ async function sendMessage(req, res) {
     }
 
     const { message, conversationHistory = [] } = req.body;
-    const userId = req.user.id;
+    const userId = req.user?.id; // Poate fi undefined pentru utilizatori nelogați
 
     if (!message) {
       return res.status(400).json({
@@ -84,9 +104,46 @@ async function sendMessage(req, res) {
       });
     }
 
+    // Verifică dacă mesajul conține intenție de a genera o factură
+    const invoiceKeywords = ['genereaza factura', 'creeaza factura', 'factura noua', 'vreau o factura', 
+                             'fac o factura', 'emite factura', 'factura pentru', 'sa fac o factura'];
+    const wantsToGenerateInvoice = invoiceKeywords.some(keyword => 
+      message.toLowerCase().includes(keyword)
+    );
+
+    let additionalContext = '';
+    let permissionCheck = null;
+
+    // Dacă utilizatorul vrea să genereze o factură, verifică permisiunile
+    if (wantsToGenerateInvoice) {
+      if (!userId) {
+        // Utilizator nelogat
+        additionalContext = `\n\n[CONTEXT SISTEM: Utilizatorul NU este autentificat. Nu poate genera facturi. Sugerează-i să creeze un cont gratuit cu 7 zile de probă.]`;
+      } else {
+        // Utilizator logat - verifică permisiuni complete
+        permissionCheck = await checkCanGenerateInvoice(userId);
+        
+        if (!permissionCheck.canGenerate) {
+          // Nu poate genera facturi - adaugă context pentru GPT
+          if (permissionCheck.reason === 'no_company_settings' || permissionCheck.reason === 'incomplete_company_settings') {
+            additionalContext = `\n\n[CONTEXT SISTEM: Utilizatorul este logat dar NU are datele companiei completate. Nu poate genera facturi. Îndrumă-l să acceseze Setări > Date Companie.]`;
+          } else if (permissionCheck.reason === 'subscription_required') {
+            additionalContext = `\n\n[CONTEXT SISTEM: Perioada de probă (7 zile) a expirat. Utilizatorul trebuie să activeze un abonament pentru a genera facturi. Îndrumă-l către secțiunea Abonament.]`;
+          }
+        } else {
+          // Poate genera facturi - informează GPT
+          if (permissionCheck.inTrial) {
+            additionalContext = `\n\n[CONTEXT SISTEM: Utilizatorul este în perioada de probă (${permissionCheck.trialDaysLeft} zile rămase). Poate genera facturi. Însă GPT nu poate genera factura direct - trebuie să-l îndrume către Generator > Factură.]`;
+          } else {
+            additionalContext = `\n\n[CONTEXT SISTEM: Utilizatorul are abonament activ. Poate genera facturi. Însă GPT nu poate genera factura direct - trebuie să-l îndrume către Generator > Factură.]`;
+          }
+        }
+      }
+    }
+
     // Construiește istoricul conversației pentru context
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: SYSTEM_PROMPT + additionalContext },
       ...conversationHistory.map(msg => ({
         role: msg.role,
         content: msg.content
@@ -94,7 +151,7 @@ async function sendMessage(req, res) {
       { role: 'user', content: message }
     ];
 
-    console.log(`💬 GPT Chat - User ${userId}: ${message.substring(0, 50)}...`);
+    console.log(`💬 GPT Chat - ${userId ? `User ${userId}` : 'Guest'}: ${message.substring(0, 50)}...`);
 
     // Apel către OpenAI GPT-4
     const completion = await openai.chat.completions.create({
@@ -102,44 +159,46 @@ async function sendMessage(req, res) {
       messages: messages,
       temperature: 0.7,
       max_tokens: 1000,
-      user: `user_${userId}`
+      user: userId ? `user_${userId}` : 'guest'
     });
 
     const assistantMessage = completion.choices[0].message.content;
 
-    // Salvează conversația în baza de date (opțional)
-    try {
-      await prisma.chatMessage.create({
-        data: {
-          userId: userId,
-          role: 'user',
-          content: message,
-          metadata: {
-            model: 'gpt-4o-mini',
-            tokens: completion.usage.total_tokens
+    // Salvează conversația în baza de date doar pentru utilizatori logați
+    if (userId) {
+      try {
+        await prisma.chatMessage.create({
+          data: {
+            userId: userId,
+            role: 'user',
+            content: message,
+            metadata: {
+              model: 'gpt-4o-mini',
+              tokens: completion.usage.total_tokens
+            }
           }
-        }
-      });
+        });
 
-      await prisma.chatMessage.create({
-        data: {
-          userId: userId,
-          role: 'assistant',
-          content: assistantMessage,
-          metadata: {
-            model: 'gpt-4o-mini',
-            tokens: completion.usage.total_tokens
+        await prisma.chatMessage.create({
+          data: {
+            userId: userId,
+            role: 'assistant',
+            content: assistantMessage,
+            metadata: {
+              model: 'gpt-4o-mini',
+              tokens: completion.usage.total_tokens
+            }
           }
-        }
-      });
-    } catch (dbError) {
-      console.warn('⚠️ Nu s-a putut salva mesajul în DB:', dbError.message);
-      // Continuă chiar dacă salvarea eșuează
+        });
+      } catch (dbError) {
+        console.warn('⚠️ Nu s-a putut salva mesajul în DB:', dbError.message);
+        // Continuă chiar dacă salvarea eșuează
+      }
     }
 
     console.log(`✅ GPT răspuns: ${assistantMessage.substring(0, 50)}... (${completion.usage.total_tokens} tokens)`);
 
-    res.json({
+    const response = {
       success: true,
       message: assistantMessage,
       usage: {
@@ -147,7 +206,19 @@ async function sendMessage(req, res) {
         completion_tokens: completion.usage.completion_tokens,
         total_tokens: completion.usage.total_tokens
       }
-    });
+    };
+
+    // Adaugă informații despre permisiuni dacă sunt relevante
+    if (permissionCheck) {
+      response.permission = {
+        canGenerate: permissionCheck.canGenerate,
+        reason: permissionCheck.reason,
+        inTrial: permissionCheck.inTrial,
+        trialDaysLeft: permissionCheck.trialDaysLeft
+      };
+    }
+
+    res.json(response);
 
   } catch (error) {
     console.error('❌ Eroare GPT Chat:', error);

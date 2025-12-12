@@ -8,6 +8,57 @@ function isLoggedIn() {
     return checkAuth();
 }
 
+async function updateChatBanners() {
+    const loggedIn = isLoggedIn();
+    
+    const guestBanner = document.getElementById('chat-guest-banner');
+    const noSettingsBanner = document.getElementById('chat-no-settings-banner');
+    const trialBanner = document.getElementById('chat-trial-banner');
+    
+    // Reset toate bannerele
+    if (guestBanner) guestBanner.style.display = 'none';
+    if (noSettingsBanner) noSettingsBanner.style.display = 'none';
+    if (trialBanner) trialBanner.style.display = 'none';
+    
+    if (!loggedIn) {
+        // Afișează banner pentru guest
+        if (guestBanner) {
+            guestBanner.style.display = 'block';
+            // Re-inițializează iconurile
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+    } else {
+        // Utilizator logat - verifică setări și abonament
+        try {
+            // Verifică setările companiei
+            const settingsResponse = await fetch('http://localhost:3000/api/settings', {
+                headers: getAuthHeaders()
+            });
+            
+            if (settingsResponse.ok) {
+                const settingsData = await settingsResponse.json();
+                
+                if (!settingsData.settings || !settingsData.settings.companyName || !settingsData.settings.cui) {
+                    // Nu are setări complete
+                    if (noSettingsBanner) {
+                        noSettingsBanner.style.display = 'block';
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    }
+                } else {
+                    // Are setări - verifică trial/abonament
+                    // Aceasta va fi gestionată dinamic când GPT răspunde
+                }
+            }
+        } catch (error) {
+            console.error('Eroare verificare setări:', error);
+        }
+    }
+}
+
 function updateUIBasedOnAuth() {
     const loggedIn = isLoggedIn();
     
@@ -126,6 +177,9 @@ function switchTab(tabName) {
 window.addEventListener('DOMContentLoaded', () => {
     // Update UI based on authentication status
     updateUIBasedOnAuth();
+    
+    // Update chat banners based on auth status
+    updateChatBanners();
     
     // Initialize template selector
     initTemplateSelector();
@@ -957,7 +1011,7 @@ setInterval(checkANAFStatus, 5 * 60 * 1000);
 let gptConversationHistory = [];
 
 async function sendGPTMessage() {
-    const input = document.getElementById('chatInput');
+    const input = document.getElementById('chat-input');
     const message = input.value.trim();
     
     if (!message) return;
@@ -970,7 +1024,7 @@ async function sendGPTMessage() {
     gptConversationHistory.push({ role: 'user', content: message });
     
     // Afișează indicator typing
-    const messagesContainer = document.getElementById('chatMessages');
+    const messagesContainer = document.getElementById('chat-messages');
     const typingDiv = document.createElement('div');
     typingDiv.className = 'chat-message assistant';
     typingDiv.id = 'typing-indicator';
@@ -1004,6 +1058,11 @@ async function sendGPTMessage() {
             displayGPTMessage('assistant', data.message);
             gptConversationHistory.push({ role: 'assistant', content: data.message });
             
+            // Verifică dacă există informații despre permisiuni
+            if (data.permission) {
+                updateTrialBanner(data.permission);
+            }
+            
             // Log tokens folosiți
             if (data.usage) {
                 console.log(`💰 Tokens: ${data.usage.total_tokens} (prompt: ${data.usage.prompt_tokens}, completion: ${data.usage.completion_tokens})`);
@@ -1022,8 +1081,36 @@ async function sendGPTMessage() {
     }
 }
 
+function updateTrialBanner(permission) {
+    const trialBanner = document.getElementById('chat-trial-banner');
+    const trialTitle = document.getElementById('trial-banner-title');
+    const trialMessage = document.getElementById('trial-banner-message');
+    
+    if (!trialBanner || !trialTitle || !trialMessage) return;
+    
+    if (permission.inTrial && permission.canGenerate) {
+        // În perioada de probă
+        trialTitle.textContent = '⏰ Perioada de probă';
+        trialMessage.textContent = `Încă ${permission.trialDaysLeft} ${permission.trialDaysLeft === 1 ? 'zi rămasă' : 'zile rămase'} în perioada de probă gratuită.`;
+        trialBanner.style.display = 'block';
+    } else if (permission.reason === 'subscription_required') {
+        // Trial expirat
+        trialTitle.textContent = '💳 Perioada de probă expirată';
+        trialMessage.textContent = 'Pentru a continua să emiti facturi, activează un abonament.';
+        trialBanner.style.display = 'block';
+    } else if (permission.canGenerate && !permission.inTrial) {
+        // Are abonament activ - ascunde banner-ul
+        trialBanner.style.display = 'none';
+    }
+    
+    // Re-inițializează iconurile
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
 function displayGPTMessage(role, message) {
-    const messagesContainer = document.getElementById('chatMessages');
+    const messagesContainer = document.getElementById('chat-messages');
     
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${role}`;
