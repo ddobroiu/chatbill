@@ -426,7 +426,7 @@ async function updateUIBasedOnAuth() {
 
         // Du-te automat pe chat DOAR dacă nu ești deja pe o pagină validă pentru guest
         const currentHash = window.location.hash;
-        if (!currentHash || currentHash === '#' || currentHash === '#dashboard' || currentHash.includes('#generator') || currentHash.includes('#istoric') || currentHash.includes('#settings')) {
+        if (!currentHash || currentHash === '#' || currentHash === '#dashboard' || currentHash.includes('#generator') || currentHash.includes('#istoric') || currentHash === '#settings') {
             console.log('⚡ Redirect automat către #chat (hash invalid pentru guest:', currentHash, ')');
             window.location.hash = '#chat';
         } else {
@@ -473,6 +473,30 @@ async function updateUIBasedOnAuth() {
                 console.error('❌ Logout button NOT FOUND after creation!');
             }
 
+            // Populate user info (name + email) above subscription
+            try {
+                fetch(`${API_URL}/api/auth/me`, { headers: getAuthHeaders() })
+                  .then(r => r.ok ? r.json() : null)
+                  .then(data => {
+                    if (data && data.success && data.user) {
+                        updateUserInfo({
+                            name: data.user.name,
+                            email: data.user.email
+                        });
+                    } else {
+                        // fallback from token payload
+                        loadUserData().then(u => { if (u) updateUserInfo(u); });
+                    }
+                  })
+                  .catch(err => {
+                    console.error('Eroare încărcare me:', err);
+                    loadUserData().then(u => { if (u) updateUserInfo(u); });
+                  });
+            } catch (e) {
+                console.error('Eroare afișare user info:', e);
+                loadUserData().then(u => { if (u) updateUserInfo(u); });
+            }
+
             console.log('✅ Footer restaurat pentru utilizator logat');
         }
     }
@@ -503,6 +527,380 @@ function getAuthHeaders() {
     
     return headers;
 }
+
+// ========== COMPANY SETTINGS (new UI in index.html) ==========
+let companySettingsHandlersBound = false;
+
+function populateCompanySettingsFormNew(settings) {
+    const map = {
+        name: 'company-name',
+        cui: 'company-cui',
+        regCom: 'company-regCom',
+        address: 'company-address',
+        city: 'company-city',
+        county: 'company-county',
+        postalCode: 'company-postalCode',
+        phone: 'company-phone',
+        email: 'company-email',
+        bank: 'company-bank',
+        iban: 'company-iban',
+        capital: 'company-capital',
+        legalRep: 'company-legalRep'
+    };
+    Object.entries(map).forEach(([key, id]) => {
+        const el = document.getElementById(id);
+        if (el && settings && settings[key] !== undefined && settings[key] !== null) {
+            el.value = settings[key] ?? '';
+        }
+    });
+}
+
+async function loadCompanySettingsNew() {
+    try {
+        const res = await fetch(`${API_URL}/api/settings`, { headers: getAuthHeaders() });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.settings) {
+                populateCompanySettingsFormNew(data.settings);
+                localStorage.setItem('companySettings', JSON.stringify(data.settings));
+                return;
+            }
+        }
+    } catch (e) {
+        console.error('Eroare încărcare setări (company-settings):', e);
+    }
+    // fallback din localStorage
+    const saved = localStorage.getItem('companySettings');
+    if (saved) {
+        try { populateCompanySettingsFormNew(JSON.parse(saved)); } catch {}
+    }
+}
+
+function bindCompanySettingsHandlers() {
+    if (companySettingsHandlersBound) return;
+    const form = document.getElementById('company-settings-form');
+    const autoBtn = document.getElementById('autocomplete-company-btn');
+    const cuiInput = document.getElementById('company-cui');
+
+    if (form && !form.dataset.listenerAdded) {
+        form.dataset.listenerAdded = 'true';
+        console.log('✅ Company settings form handler attached');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('[Company Settings] Form submitted');
+            const fd = new FormData(form);
+            const payload = Object.fromEntries(fd);
+            console.log('[Company Settings] Payload:', payload);
+            
+            // Show loading state on submit button
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                const oldHtml = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i data-lucide="loader-2"></i> Se salvează...';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+            
+            try {
+                console.log('[Company Settings] Sending to:', `${API_URL}/api/settings`);
+                const resp = await fetch(`${API_URL}/api/settings`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                console.log('[Company Settings] Response status:', resp.status);
+                const data = await resp.json();
+                console.log('[Company Settings] Response data:', data);
+                
+                if (resp.ok && data.success) {
+                    alert('✅ Date companie salvate cu succes');
+                    localStorage.setItem('companySettings', JSON.stringify(data.settings || payload));
+                } else if (resp.status === 401) {
+                    localStorage.setItem('companySettings', JSON.stringify(payload));
+                    alert('✅ Setări salvate local (autentificați-vă pentru salvare permanentă)');
+                } else {
+                    alert('❌ Eroare la salvarea datelor: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('[Company Settings] Eroare salvare:', err);
+                localStorage.setItem('companySettings', JSON.stringify(Object.fromEntries(new FormData(form))));
+                alert('✅ Setări salvate local (offline)');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i data-lucide="save"></i> Salvează Date';
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                }
+            }
+        });
+    } else {
+        console.log('[Company Settings] Form not found or already has handler');
+    }
+
+    if (autoBtn && !autoBtn.dataset.listenerAdded) {
+        autoBtn.dataset.listenerAdded = 'true';
+        autoBtn.addEventListener('click', async () => {
+            const cui = (cuiInput?.value || '').trim().replace(/[^0-9]/g, '');
+            if (!cui) { alert('Introduceți CUI'); return; }
+            autoBtn.disabled = true;
+            const oldHtml = autoBtn.innerHTML;
+            autoBtn.innerHTML = '<i data-lucide="loader-2"></i>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            try {
+                const resp = await fetch(`${API_URL}/api/settings/autocomplete/${cui}`, { headers: getAuthHeaders() });
+                const data = await resp.json();
+                if (data.success && data.settings) {
+                    populateCompanySettingsFormNew(data.settings);
+                    if (isLoggedIn()) {
+                        localStorage.setItem('companySettings', JSON.stringify(data.settings));
+                    }
+                    alert('✅ Date completate automat din ANAF');
+                } else {
+                    alert('❌ Companie negăsită în ANAF');
+                }
+            } catch (err) {
+                console.error('Eroare autocomplete:', err);
+                alert('❌ Eroare la interogarea ANAF');
+            } finally {
+                autoBtn.disabled = false;
+                autoBtn.innerHTML = oldHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+    }
+
+    companySettingsHandlersBound = true;
+}
+
+function initCompanySettingsPage() {
+    console.log('[Company Settings] Initializing page...');
+    const page = document.getElementById('company-settings');
+    if (!page) {
+        console.log('[Company Settings] Page element not found');
+        return;
+    }
+    console.log('[Company Settings] Page found, binding handlers and loading data');
+    bindCompanySettingsHandlers();
+    loadCompanySettingsNew();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.hash === '#company-settings') {
+        initCompanySettingsPage();
+    }
+});
+
+window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#company-settings') {
+        initCompanySettingsPage();
+    }
+    if (window.location.hash === '#whatsapp-settings') {
+        initWhatsAppSettingsPage();
+    }
+});
+
+// ========== WHATSAPP SETTINGS PAGE ==========
+let whatsappHandlersBound = false;
+
+async function initWhatsAppSettingsPage() {
+    const page = document.getElementById('whatsapp-settings');
+    if (!page) return;
+
+    // Check if user already has verified phone
+    if (isLoggedIn()) {
+        try {
+            const res = await fetch(`${API_URL}/api/auth/me`, { headers: getAuthHeaders() });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && data.user) {
+                    const phoneInput = document.getElementById('whatsapp-phone');
+                    const verifiedSection = document.getElementById('whatsapp-verified-section');
+                    const verifiedNumber = document.getElementById('whatsapp-verified-number');
+                    const verificationSection = document.getElementById('whatsapp-verification-section');
+
+                    if (phoneInput && data.user.phone) {
+                        phoneInput.value = data.user.phone;
+                    }
+
+                    if (data.user.phoneVerified && data.user.phone) {
+                        // Show verified state
+                        if (verifiedSection) {
+                            verifiedSection.style.display = 'block';
+                            if (verifiedNumber) {
+                                verifiedNumber.textContent = data.user.phone;
+                            }
+                        }
+                        if (verificationSection) {
+                            verificationSection.style.display = 'none';
+                        }
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Eroare verificare status WhatsApp:', e);
+        }
+    }
+
+    bindWhatsAppHandlers();
+}
+
+function bindWhatsAppHandlers() {
+    if (whatsappHandlersBound) return;
+
+    const sendBtn = document.getElementById('send-whatsapp-code-btn');
+    const verifyBtn = document.getElementById('verify-whatsapp-code-btn');
+    const resendBtn = document.getElementById('resend-whatsapp-code-btn');
+    const phoneInput = document.getElementById('whatsapp-phone');
+    const codeInput = document.getElementById('whatsapp-verification-code');
+
+    if (sendBtn && !sendBtn.dataset.listenerAdded) {
+        sendBtn.dataset.listenerAdded = 'true';
+        sendBtn.addEventListener('click', async () => {
+            const phone = phoneInput?.value?.trim();
+            if (!phone) {
+                alert('Introduceți numărul de telefon');
+                return;
+            }
+
+            sendBtn.disabled = true;
+            const oldHtml = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<i data-lucide="loader-2"></i> Se trimite...';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            try {
+                // First save phone to settings
+                const saveRes = await fetch(`${API_URL}/api/settings`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ phone })
+                });
+
+                if (saveRes.ok) {
+                    // Now request verification code
+                    const codeRes = await fetch(`${API_URL}/api/auth/resend-phone-code`, {
+                        method: 'POST',
+                        headers: getAuthHeaders()
+                    });
+
+                    const data = await codeRes.json();
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        document.getElementById('whatsapp-verification-section').style.display = 'block';
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    } else {
+                        alert('❌ ' + (data.error || 'Eroare la trimiterea codului'));
+                    }
+                } else {
+                    alert('❌ Eroare la salvarea numărului');
+                }
+            } catch (err) {
+                console.error('Eroare trimitere cod WhatsApp:', err);
+                alert('❌ Eroare la trimiterea codului');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = oldHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+    }
+
+    if (verifyBtn && !verifyBtn.dataset.listenerAdded) {
+        verifyBtn.dataset.listenerAdded = 'true';
+        verifyBtn.addEventListener('click', async () => {
+            const code = codeInput?.value?.trim();
+            if (!code || code.length !== 6) {
+                alert('Introduceți codul de 6 cifre');
+                return;
+            }
+
+            verifyBtn.disabled = true;
+            const oldHtml = verifyBtn.innerHTML;
+            verifyBtn.innerHTML = '<i data-lucide="loader-2"></i> Verificare...';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/verify-phone`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    // Show verified section
+                    const verifiedSection = document.getElementById('whatsapp-verified-section');
+                    const verifiedNumber = document.getElementById('whatsapp-verified-number');
+                    const verificationSection = document.getElementById('whatsapp-verification-section');
+                    
+                    if (verifiedSection) {
+                        verifiedSection.style.display = 'block';
+                        if (verifiedNumber && phoneInput) {
+                            verifiedNumber.textContent = phoneInput.value;
+                        }
+                    }
+                    if (verificationSection) {
+                        verificationSection.style.display = 'none';
+                    }
+                    if (codeInput) codeInput.value = '';
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                } else {
+                    alert('❌ ' + (data.error || 'Cod invalid'));
+                }
+            } catch (err) {
+                console.error('Eroare verificare cod:', err);
+                alert('❌ Eroare la verificare');
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = oldHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+    }
+
+    if (resendBtn && !resendBtn.dataset.listenerAdded) {
+        resendBtn.dataset.listenerAdded = 'true';
+        resendBtn.addEventListener('click', async () => {
+            resendBtn.disabled = true;
+            const oldHtml = resendBtn.innerHTML;
+            resendBtn.innerHTML = '<i data-lucide="loader-2"></i>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/resend-phone-code`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                } else {
+                    alert('❌ ' + (data.error || 'Eroare la retrimitere'));
+                }
+            } catch (err) {
+                console.error('Eroare retrimitere cod:', err);
+                alert('❌ Eroare la retrimitere');
+            } finally {
+                resendBtn.disabled = false;
+                resendBtn.innerHTML = oldHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+    }
+
+    whatsappHandlersBound = true;
+}
+
+// Initialize WhatsApp page on load if hash matches
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.hash === '#whatsapp-settings') {
+        initWhatsAppSettingsPage();
+    }
+});
 
 // ========== TEMPLATE SELECTOR ==========
 function initTemplateSelector() {

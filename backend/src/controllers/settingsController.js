@@ -68,7 +68,8 @@ async function getCompanySettings(req, res) {
               city: companyData.adresa?.oras || '',
               county: companyData.adresa?.judet || '',
               postalCode: companyData.adresa?.cod_postal || '',
-              phone: companyData.telefon || ''
+              phone: companyData.telefon || '',
+              email: user.email
             };
 
             settings = await prisma.companySettings.upsert({
@@ -135,6 +136,18 @@ async function updateCompanySettings(req, res) {
         ...updates
       }
     });
+    // Dacă utilizatorul a setat telefonul (WhatsApp), sincronizează în profil pentru verificare
+    if (updates.phone) {
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { phone: updates.phone }
+        });
+        console.log('✅ Telefon (WhatsApp) sincronizat în profilul utilizatorului pentru verificare');
+      } catch (syncErr) {
+        console.error('⚠️ Eroare sincronizare telefon în profil:', syncErr.message);
+      }
+    }
     
     console.log('✅ Setări salvate cu succes');
 

@@ -129,7 +129,8 @@ async function register(req, res) {
           city: companyData.adresa?.oras || '',
           county: companyData.adresa?.judet || '',
           postalCode: companyData.adresa?.cod_postal || '',
-          phone: companyData.telefon || ''
+          phone: companyData.telefon || '',
+          email: email.toLowerCase()
         };
 
         await prisma.companySettings.upsert({
@@ -145,8 +146,8 @@ async function register(req, res) {
         // Fallback la minim dacă iApp nu răspunde cu SUCCESS
         await prisma.companySettings.upsert({
           where: { userId: user.id },
-          update: { cui, name: company || '' },
-          create: { userId: user.id, cui, name: company || '' }
+          update: { cui, name: company || '', email: email.toLowerCase() },
+          create: { userId: user.id, cui, name: company || '', email: email.toLowerCase() }
         });
         console.log('ℹ️ Setări companie create cu date minime');
       }
@@ -156,8 +157,8 @@ async function register(req, res) {
       try {
         await prisma.companySettings.upsert({
           where: { userId: user.id },
-          update: { cui, name: company || '' },
-          create: { userId: user.id, cui, name: company || '' }
+          update: { cui, name: company || '', email: email.toLowerCase() },
+          create: { userId: user.id, cui, name: company || '', email: email.toLowerCase() }
         });
       } catch (e) {
         console.error('❌ Eroare creare setări minime:', e.message);
