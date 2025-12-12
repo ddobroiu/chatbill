@@ -27,6 +27,11 @@ router.post('/forgot-password', passwordResetLimiter, validateBody(requestResetS
 router.post('/reset-password', passwordResetLimiter, validateBody(resetPasswordSchema), authController.resetPassword);
 router.get('/verify-email', authLimiter, validateQuery(verifyEmailSchema), authController.verifyEmail);
 router.post('/resend-verification', authLimiter, validateBody(z.object({ email: emailSchema })), authController.resendVerification);
+router.post('/verify-email-code', authLimiter, validateBody(z.object({
+  email: emailSchema,
+  code: z.string().length(6, 'Codul trebuie să aibă 6 cifre')
+})), authController.verifyEmailCode);
+router.post('/resend-verification-code', authLimiter, validateBody(z.object({ email: emailSchema })), authController.resendEmailVerificationCode);
 
 // Rute protejate (necesită autentificare)
 router.get('/me', authenticateToken, authController.getCurrentUser);

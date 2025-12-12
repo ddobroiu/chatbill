@@ -307,10 +307,73 @@ async function sendNewsletterEmail(to, content) {
   }
 }
 
+// Trimitere email cu cod de verificare (6 cifre)
+async function sendEmailVerificationCode(to, name, code) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'ChatBill <noreply@chatbill.ro>',
+      to: [to],
+      subject: 'Codul tău de verificare - ChatBill',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; }
+            .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; }
+            .header h1 { color: white; margin: 0; font-size: 28px; }
+            .content { padding: 40px 30px; }
+            .code-box { background: #f8f9fa; border: 2px dashed #667eea; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0; }
+            .code { font-size: 48px; font-weight: bold; color: #667eea; letter-spacing: 8px; font-family: 'Courier New', monospace; }
+            .message { color: #495057; line-height: 1.6; margin: 20px 0; }
+            .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📧 Verifică-ți emailul</h1>
+            </div>
+            <div class="content">
+              <p class="message">Bună ${name},</p>
+              <p class="message">Bine ai venit la ChatBill! Pentru a-ți activa contul, introdu codul de mai jos în pagina de înregistrare:</p>
+
+              <div class="code-box">
+                <div class="code">${code}</div>
+              </div>
+
+              <p class="message">Codul este valabil <strong>15 minute</strong>.</p>
+              <p class="message">Dacă nu ai creat un cont ChatBill, poți ignora acest email.</p>
+            </div>
+            <div class="footer">
+              <p>© 2025 ChatBill. Toate drepturile rezervate.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    });
+
+    if (error) {
+      console.error('❌ Eroare Resend:', error);
+      return { success: false, error };
+    }
+
+    console.log('✅ Email cod verificare trimis către:', to);
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ Excepție trimitere cod:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 module.exports = {
   sendWelcomeEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendPasswordChangedEmail,
-  sendNewsletterEmail
+  sendNewsletterEmail,
+  sendEmailVerificationCode
 };
