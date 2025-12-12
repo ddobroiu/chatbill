@@ -682,8 +682,17 @@ function initCompanySettingsPage() {
         return;
     }
     console.log('[Company Settings] Page found, binding handlers and loading data');
+    
+    // Force rebind to ensure handler is attached
+    companySettingsHandlersBound = false;
+    
     bindCompanySettingsHandlers();
     loadCompanySettingsNew();
+    
+    // Ensure lucide icons are rendered
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
