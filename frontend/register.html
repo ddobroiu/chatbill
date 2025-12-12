@@ -202,20 +202,41 @@
 
     <div class="info-text">
       <i data-lucide="info" style="width: 16px; height: 16px; display: inline; vertical-align: middle;"></i>
-      Datele de facturare le puteți completa ulterior în Setări.
+      Completează datele firmei pentru a putea emite facturi.
     </div>
 
     <div id="message" class="message"></div>
 
     <form id="registerForm">
       <div class="form-group">
+        <label for="cui">CUI Firmă *</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="cui" name="cui" placeholder="ex: 12345678" required style="flex: 1;">
+          <button type="button" id="autocomplete-btn" class="btn" style="width: auto; padding: 0 1rem; background: #28a745; color: white;" title="Completează automat din ANAF">
+            <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="company">Nume Firmă</label>
+        <input type="text" id="company" name="company" placeholder="Se completează automat" readonly style="background: #f8f9fa;">
+      </div>
+
+      <div class="form-group">
         <label for="name">Nume complet</label>
         <input type="text" id="name" name="name" placeholder="Ion Popescu" required>
       </div>
 
       <div class="form-group">
-        <label for="email">Email</label>
+        <label for="email">Email *</label>
         <input type="email" id="email" name="email" placeholder="nume@exemplu.ro" required>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Telefon *</label>
+        <input type="tel" id="phone" name="phone" placeholder="0721234567" required>
+        <small style="color: #666; font-size: 0.75rem;">Vei primi cod de verificare pe WhatsApp</small>
       </div>
 
       <div class="form-group">
@@ -242,9 +263,16 @@
   <script>
     lucide.createIcons();
 
+    const API_URL = window.location.hostname === 'localhost' 
+      ? 'http://localhost:3000'
+      : window.location.origin;
+
     const registerForm = document.getElementById('registerForm');
     const registerBtn = document.getElementById('registerBtn');
     const messageDiv = document.getElementById('message');
+    const autocompleteBtn = document.getElementById('autocomplete-btn');
+    const cuiInput = document.getElementById('cui');
+    const companyInput = document.getElementById('company');
 
     function showMessage(text, type = 'error') {
       messageDiv.textContent = text;
@@ -254,15 +282,61 @@
       }, 5000);
     }
 
+    // Autocomplete ANAF pentru CUI
+    autocompleteBtn.addEventListener('click', async () => {
+      const cui = cuiInput.value.trim();
+
+      if (!cui) {
+        showMessage('Introduceți CUI-ul firmei');
+        return;
+      }
+
+      autocompleteBtn.disabled = true;
+      autocompleteBtn.innerHTML = '<i data-lucide="loader-2"></i>';
+      lucide.createIcons();
+
+      try {
+        const response = await fetch(`${API_URL}/api/settings/autocomplete/${encodeURIComponent(cui)}`);
+        const data = await response.json();
+
+        if (data.success && data.settings) {
+          companyInput.value = data.settings.name || '';
+          showMessage('Date firmă importate din ANAF!', 'success');
+        } else {
+          showMessage(data.error || 'Nu s-au găsit date pentru acest CUI');
+        }
+      } catch (error) {
+        console.error('Eroare autocomplete:', error);
+        showMessage('Eroare la încărcarea datelor ANAF');
+      } finally {
+        autocompleteBtn.disabled = false;
+        autocompleteBtn.innerHTML = '<i data-lucide="sparkles"></i>';
+        lucide.createIcons();
+      }
+    });
+
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      const cui = cuiInput.value.trim();
+      const company = companyInput.value.trim();
       const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
 
-      // Validare parolă
+      // Validare
+      if (!cui) {
+        showMessage('CUI-ul este obligatoriu');
+        return;
+      }
+
+      if (!phone) {
+        showMessage('Numărul de telefon este obligatoriu');
+        return;
+      }
+
       if (password !== confirmPassword) {
         showMessage('Parolele nu se potrivesc');
         return;
@@ -278,18 +352,25 @@
       lucide.createIcons();
 
       try {
-        const response = await fetch('/api/auth/register', {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ name, email, password })
+          body: JSON.stringify({ 
+            name, 
+            email, 
+            password, 
+            cui, 
+            company,
+            phone 
+          })
         });
 
         const data = await response.json();
 
         if (data.success) {
-          showMessage('Cont creat cu succes! Redirecționare...', 'success');
+          showMessage('Cont creat! Verifică WhatsApp pentru codul de confirmare...', 'success');
           
           // Autentificare automată
           if (data.token) {
