@@ -35,12 +35,14 @@ async function createInvoice(req, res) {
       });
     }
 
-    const { client, products, template: requestTemplate } = req.body;
-    const userId = req.user.id; // Asigură-te că ai middleware de autentificare
+    const { client, products, template: requestTemplate, provider } = req.body;
+    const userId = req.user?.id; // Optional - poate fi null pentru useri neautentificați
 
     console.log('🔵 Client:', client);
     console.log('🔵 Products:', products);
+    console.log('🔵 Provider:', provider);
     console.log('🔵 Template din request:', requestTemplate);
+    console.log('🔵 User ID:', userId || 'Guest');
 
     // Validare date client
     if (!client || !products || products.length === 0) {
@@ -51,25 +53,51 @@ async function createInvoice(req, res) {
       });
     }
 
-    // Obține setările companiei emitente specifice user-ului
-    const companySettings = await prisma.companySettings.findUnique({
-      where: { userId },
-    });
-
-    if (!companySettings) {
-      return res.status(404).json({
-        success: false,
-        error: 'Setările companiei nu au fost găsite. Vă rugăm să le configurați.',
+    // Obține setările companiei emitente
+    let companySettings = null;
+    
+    if (userId) {
+      // User autentificat - folosește setările salvate
+      companySettings = await prisma.companySettings.findUnique({
+        where: { userId },
       });
     }
     
+    // Dacă nu există setări (user neautentificat sau setări neconfigurate), folosește datele din provider
+    if (!companySettings && !provider) {
+      return res.status(400).json({
+        success: false,
+        error: 'Vă rugăm să completați datele companiei emitente.',
+      });
+    }
+    
+    // Construiește setările finale (din DB sau din request)
+    const finalSettings = companySettings || {
+      cui: provider?.cui,
+      name: provider?.name,
+      regCom: provider?.regCom,
+      address: provider?.address,
+      city: provider?.city,
+      county: provider?.county,
+      phone: provider?.phone,
+      email: provider?.email,
+      bank: provider?.bank,
+      iban: provider?.iban,
+      capital: provider?.capital,
+      isVatPayer: provider?.isVatPayer !== false,
+      vatRate: provider?.vatRate || 19,
+      invoiceTemplate: provider?.template || 'modern',
+      invoiceSeries: provider?.series || 'FAC',
+      invoiceStartNumber: provider?.startNumber || 1
+    };
+    
     // Determină template-ul final (folosește invoiceTemplate în loc de preferredTemplate)
-    const finalTemplate = requestTemplate || companySettings.invoiceTemplate || 'modern';
+    const finalTemplate = requestTemplate || finalSettings.invoiceTemplate || 'modern';
     console.log('🔵 Template final selectat pentru factură:', finalTemplate);
 
     // Verifică dacă compania este plătitoare de TVA
-    const isVatPayer = companySettings.isVatPayer !== false; // default true
-    const vatRateFromSettings = companySettings.vatRate || 19;
+    const isVatPayer = finalSettings.isVatPayer !== false; // default true
+    const vatRateFromSettings = finalSettings.vatRate || 19;
     
     console.log('🔵 Setări TVA - Plătitor:', isVatPayer, 'Cotă:', vatRateFromSettings + '%');
 
@@ -103,14 +131,17 @@ async function createInvoice(req, res) {
     const invoiceTotal = invoiceSubtotal + invoiceVatAmount;
 
     // Generare număr factură bazat pe setări
-    const invoiceSeries = companySettings.invoiceSeries || 'FAC';
-    const startNumber = companySettings.invoiceStartNumber || 1;
+    const invoiceSeries = finalSettings.invoiceSeries || 'FAC';
+    const startNumber = finalSettings.invoiceStartNumber || 1;
     
-    // Găsește ultima factură pentru acest user
-    const lastInvoice = await prisma.invoice.findFirst({
-      where: { userId },
+    // Găsește ultima factură pentru acest user (dacă e autentificat)
+    const lastInvoice = userId ? await prisma.invoice.findFirst({
+      where: { 
+        userId,
+        invoiceNumber: { startsWith: invoiceSeries } 
+      },
       orderBy: { createdAt: 'desc' }
-    });
+    }) : null;
     
     let invoiceNumber;
     if (lastInvoice && lastInvoice.number) {
@@ -137,18 +168,18 @@ async function createInvoice(req, res) {
       template: finalTemplate, // Adaugă template-ul selectat
       
       // Date emitent (din setări)
-      providerName: companySettings.name || '',
-      providerCUI: companySettings.cui || '',
-      providerRegCom: companySettings.regCom || '',
-      providerAddress: companySettings.address || '',
-      providerCity: companySettings.city || '',
-      providerCounty: companySettings.county || '',
-      providerPhone: companySettings.phone || '',
-      providerEmail: companySettings.email || '',
-      providerBank: companySettings.bank || '',
-      providerIBAN: companySettings.iban || '',
-      providerCapital: companySettings.capital || '',
-      providerLegalRep: companySettings.legalRep || '',
+      providerName: finalSettings.name || '',
+      providerCUI: finalSettings.cui || '',
+      providerRegCom: finalSettings.regCom || '',
+      providerAddress: finalSettings.address || '',
+      providerCity: finalSettings.city || '',
+      providerCounty: finalSettings.county || '',
+      providerPhone: finalSettings.phone || '',
+      providerEmail: finalSettings.email || '',
+      providerBank: finalSettings.bank || '',
+      providerIBAN: finalSettings.iban || '',
+      providerCapital: finalSettings.capital || '',
+      providerLegalRep: finalSettings.legalRep || '',
       
       // Date client/beneficiar
       clientType: client.type,
@@ -171,7 +202,11 @@ async function createInvoice(req, res) {
     // Salvează factura în baza de date
     console.log('🔵 Se salvează factura în DB...');
     const invoice = await prisma.invoice.create({
-      data: invoiceData,
+      data: {
+        ...invoiceData,
+        // userId e opțional - doar pentru useri autentificați
+        ...(userId && { userId })
+      },
       include: {
         items: true
       }
