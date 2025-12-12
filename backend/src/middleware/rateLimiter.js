@@ -15,10 +15,6 @@ const createRateLimiter = (windowMs, max, message) => {
     skipSuccessfulRequests: false,
     // Skip failed requests from count
     skipFailedRequests: false,
-    // Key generator - uses IP address
-    keyGenerator: (req) => {
-      return req.ip || req.connection.remoteAddress;
-    },
     // Handler called when limit is exceeded
     handler: (req, res) => {
       res.status(429).json({
