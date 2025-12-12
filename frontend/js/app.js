@@ -33,7 +33,7 @@ function checkAuth() {
             return false;
         }
         
-        console.log('✅ checkAuth: Token valid local');
+        console.log('✅ checkAuth: Token valid local (format corect, neexpirat)');
         return true;
     } catch (error) {
         console.error('❌ checkAuth: Eroare validare token:', error);
@@ -311,22 +311,25 @@ function updateUserInfo(userData) {
 }
 
 async function updateUIBasedOnAuth() {
-    let loggedIn = isLoggedIn();
+    console.log('🔐 updateUIBasedOnAuth START - verificare status...');
     
-    // Dacă pare logat, verifică și pe server
+    let loggedIn = isLoggedIn();
+    console.log('📍 Check local token:', loggedIn ? 'EXISTS' : 'NONE');
+    
+    // Dacă pare logat, VERIFICĂ OBLIGATORIU pe server ÎNAINTE de orice
     if (loggedIn) {
+        console.log('🔍 Verificare token pe server...');
         const serverValid = await verifyTokenOnServer();
+        console.log('📍 Server validation:', serverValid ? 'VALID' : 'INVALID');
+        
         if (!serverValid) {
-            console.log('⚠️ Token invalid pe server - curățare și reload');
+            console.log('❌ TOKEN INVALID - Curățare completă...');
             clearAuthData();
             loggedIn = false;
-            // Forțează reload pentru a reseta UI-ul complet
-            window.location.reload();
-            return;
         }
     }
     
-    console.log('🔐 updateUIBasedOnAuth - Status:', loggedIn ? 'LOGAT' : 'GUEST');
+    console.log('🔐 FINAL Status:', loggedIn ? '✅ LOGAT' : '👤 GUEST');
     
     if (!loggedIn) {
         console.log('👤 GUEST MODE - Afișez meniu simplu');
