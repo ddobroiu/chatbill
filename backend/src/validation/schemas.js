@@ -140,9 +140,9 @@ const createProformaSchema = z.object({
 
 // Settings schema
 const updateSettingsSchema = z.object({
-  companyName: z.string().min(1).optional(),
+  name: z.string().min(1).optional(),
   cui: cuiSchema.optional(),
-  registrationNumber: z.string().optional(),
+  regCom: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   county: z.string().optional(),
@@ -150,9 +150,10 @@ const updateSettingsSchema = z.object({
   postalCode: z.string().optional(),
   phone: phoneSchema,
   email: emailSchema.optional(),
-  bankName: z.string().optional(),
+  bank: z.string().optional(),
   iban: ibanSchema,
-  legalRepresentative: z.string().optional(),
+  capital: z.string().optional(),
+  legalRep: z.string().optional(),
   defaultTemplate: z.enum(['modern', 'classic', 'minimal', 'elegant']).optional(),
   invoicePrefix: z.string().optional(),
   invoiceStartNumber: z.number().int().positive().optional(),
