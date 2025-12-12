@@ -2061,7 +2061,23 @@
         <p>Se verifică autentificarea...</p>
     </div>
 
-    <div class="sidebar">
+        <script src="js/app.js"></script>
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                if (typeof updateUIBasedOnAuth === 'function') {
+                    updateUIBasedOnAuth();
+                }
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn && typeof logout === 'function') {
+                    logoutBtn.addEventListener('click', logout);
+                }
+            });
+        </script>
+    
+        <div class="sidebar">
         <div class="sidebar-header">
             <i data-lucide="message-circle" style="color: var(--primary);"></i>
             <h1>ChatBill</h1>
