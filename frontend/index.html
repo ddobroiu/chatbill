@@ -1950,6 +1950,11 @@
     <script src="/js/app.js"></script>
     <script>
         lucide.createIcons();
+        
+        // Update UI based on authentication status
+        if (typeof updateUIBasedOnAuth === 'function') {
+            updateUIBasedOnAuth();
+        }
 
         // Live preview for document numbering
         function updatePreview(seriesId, numberId, previewId) {
@@ -2652,13 +2657,16 @@
         }
         
         // Logout functionality
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            if (confirm('Sigur doriți să vă deconectați?')) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login.html';
-            }
-        });
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('Sigur doriți să vă deconectați?')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login.html';
+                }
+            });
+        }
 
         // Auto-complete functionality for company settings
         // Helper function to get auth headers
