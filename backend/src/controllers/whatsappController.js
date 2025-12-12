@@ -7,6 +7,52 @@ const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const WEBHOOK_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || process.env.WEBHOOK_VERIFY_TOKEN || 'chatbill-webhook-token';
 
+// Funcție internă pentru trimitere mesaj WhatsApp (fără response HTTP)
+async function sendWhatsAppMessageInternal(to, message, conversationId) {
+  if (!WHATSAPP_PHONE_ID || !WHATSAPP_TOKEN) {
+    throw new Error('WhatsApp API nu este configurat');
+  }
+
+  // Trimite mesajul prin WhatsApp API
+  const response = await axios.post(
+    `${WHATSAPP_API_URL}/${WHATSAPP_PHONE_ID}/messages`,
+    {
+      messaging_product: 'whatsapp',
+      to: to,
+      type: 'text',
+      text: {
+        body: message
+      }
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+
+  const whatsappMessageId = response.data.messages[0].id;
+
+  // Salvează mesajul în baza de date
+  await prisma.message.create({
+    data: {
+      conversationId: conversationId,
+      text: message,
+      sender: 'assistant',
+      whatsappMessageId: whatsappMessageId
+    }
+  });
+
+  // Actualizează conversația
+  await prisma.conversation.update({
+    where: { id: conversationId },
+    data: { updatedAt: new Date() }
+  });
+
+  return whatsappMessageId;
+}
+
 // Verificare webhook WhatsApp
 function verifyWebhook(req, res) {
   try {
@@ -86,9 +132,13 @@ async function receiveMessage(req, res) {
                   data: { updatedAt: new Date() }
                 });
 
-                // Aici poți adăuga logica pentru răspuns automat sau notificări
-                // De exemplu, trimite un răspuns automat:
-                // await sendWhatsAppMessage(from, 'Am primit mesajul tău!');
+                // Trimite răspuns automat înapoi către utilizator
+                try {
+                  await sendWhatsAppMessageInternal(from, `Am primit mesajul tău: "${messageBody}"\n\nÎți vom răspunde în curând!`, conversation.id);
+                  console.log(`✅ Răspuns automat trimis către ${from}`);
+                } catch (error) {
+                  console.error('❌ Eroare trimitere răspuns automat:', error.message);
+                }
               }
             }
 

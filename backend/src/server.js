@@ -7,6 +7,11 @@ const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
+
+// Trust proxy - IMPORTANT for Railway deployment (behind reverse proxy)
+// This allows Express to properly read X-Forwarded-For headers
+app.set('trust proxy', true);
+
 const server = http.createServer(app);
 
 // CORS Configuration - Allow only specific origins
