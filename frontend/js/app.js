@@ -280,15 +280,14 @@ function updateUIBasedOnAuth() {
     console.log('🔐 updateUIBasedOnAuth - Status:', loggedIn ? 'LOGAT' : 'GUEST');
     
     if (!loggedIn) {
-        console.log('👤 Utilizator GUEST - afișez doar chat');
+        console.log('👤 GUEST MODE - Afișez meniu simplu');
         
         // Ascunde tot în afară de chat
         const hideElements = [
             document.querySelector('a[href="#dashboard"]')?.closest('.nav-item'),
             document.querySelector('.nav-item-parent[data-submenu="generator"]'),
             document.querySelector('.nav-item-parent[data-submenu="istoric"]'),
-            document.querySelector('#settings-toggle')?.closest('.nav-item-parent'),
-            document.querySelector('.sidebar-footer')
+            document.querySelector('#settings-toggle')?.closest('.nav-item-parent')
         ];
         
         hideElements.forEach(el => {
@@ -299,7 +298,29 @@ function updateUIBasedOnAuth() {
         const chatLink = document.querySelector('a[href="#chat"]');
         if (chatLink) {
             const chatNavItem = chatLink.closest('.nav-item');
-            if (chatNavItem) chatNavItem.style.display = '';
+            if (chatNavItem) {
+                chatNavItem.style.display = '';
+                console.log('✅ Chat vizibil pentru GUEST');
+            }
+        }
+        
+        // Actualizează FOOTER-ul cu butoane de autentificare
+        const sidebarFooter = document.querySelector('.sidebar-footer');
+        if (sidebarFooter) {
+            sidebarFooter.innerHTML = `
+                <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <a href="register.html" class="btn btn-primary" style="width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i data-lucide="user-plus"></i>
+                        Creează cont
+                    </a>
+                    <a href="login.html" class="btn btn-secondary" style="width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i data-lucide="log-in"></i>
+                        Autentificare
+                    </a>
+                </div>
+            `;
+            lucide.createIcons();
+            console.log('✅ Footer actualizat cu butoane Register/Login');
         }
         
         // Du-te automat pe chat
@@ -308,19 +329,27 @@ function updateUIBasedOnAuth() {
             window.location.hash = '#chat';
         }
     } else {
-        console.log('👤 Utilizator LOGAT - afișez tot');
-        // Afișează tot
+        console.log('👤 LOGGED MODE - Afișez tot');
+        
+        // Afișează tot pentru utilizatori logați
         const showElements = [
             document.querySelector('a[href="#dashboard"]')?.closest('.nav-item'),
             document.querySelector('.nav-item-parent[data-submenu="generator"]'),
             document.querySelector('.nav-item-parent[data-submenu="istoric"]'),
-            document.querySelector('#settings-toggle')?.closest('.nav-item-parent'),
-            document.querySelector('.sidebar-footer')
+            document.querySelector('#settings-toggle')?.closest('.nav-item-parent')
         ];
         
         showElements.forEach(el => {
             if (el) el.style.display = '';
         });
+        
+        // Restaurează footer-ul original cu user info (se va popula în updateUserInfo)
+        const sidebarFooter = document.querySelector('.sidebar-footer');
+        if (sidebarFooter && !sidebarFooter.querySelector('.user-info')) {
+            // Footer-ul original ar trebui să existe deja în HTML
+            // Doar ne asigurăm că e vizibil
+            sidebarFooter.style.display = '';
+        }
     }
     
     console.log('✅ UI actualizat');
