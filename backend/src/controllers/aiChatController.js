@@ -618,8 +618,13 @@ async function sendMessage(req, res) {
       }
     }
     
-    // Generare factură
-    if (session.currentStep === 'confirm_add_more' && aiResponse.nextStep === 'generate_invoice') {
+    // Generare factură - detectare când utilizatorul confirmă finalizarea
+    const shouldGenerateInvoice = 
+      (session.currentStep === 'confirm_add_more' && aiResponse.nextStep === 'generate_invoice') ||
+      (aiResponse.nextStep === 'generate_invoice') ||
+      (message.toLowerCase().match(/genereaza|finalizeaza|da|confirm/i) && session.products && JSON.parse(session.productsData || '[]').length > 0);
+    
+    if (shouldGenerateInvoice) {
       // Colectează produsele
       const productsData = JSON.parse(session.productsData || '[]');
       const clientData = JSON.parse(session.clientData || '{}');
@@ -796,6 +801,120 @@ async function sendMessage(req, res) {
         metadata: Object.keys(metadataObj).length > 0 ? JSON.stringify(metadataObj) : null
       }
     });
+    
+    // DETECTARE ȘI GENERARE FACTURĂ
+    // Când utilizatorul confirmă după rezumat
+    const userWantsToGenerate = message.toLowerCase().trim() === 'da' || 
+                                 message.toLowerCase().includes('genereaza') ||
+                                 message.toLowerCase().includes('confirm');
+    
+    const hasClientData = session.clientCUI || session.clientName;
+    const productsData = session.productsData ? JSON.parse(session.productsData) : [];
+    
+    if (userWantsToGenerate && hasClientData && productsData.length > 0) {
+      console.log('🎯 GENERARE FACTURĂ DETECTATĂ!');
+      console.log('📦 Produse:', productsData);
+      console.log('🏢 Client:', session.clientName, session.clientCUI);
+      
+      try {
+        const clientData = session.clientData ? JSON.parse(session.clientData) : {};
+        
+        // Obține setările companiei utilizatorului
+        const companySettings = await prisma.companySettings.findUnique({
+          where: { userId: user.id }
+        });
+        
+        if (!companySettings) {
+          console.log('❌ Lipsesc setările companiei');
+          await prisma.chatMessage.create({
+            data: {
+              sessionId: session.id,
+              role: 'assistant',
+              content: '⚠️ Pentru a genera facturi, trebuie să completezi datele companiei în Setări > Date Companie.'
+            }
+          });
+          
+          return res.json({
+            success: true,
+            sessionId: session.id,
+            message: '⚠️ Pentru a genera facturi, trebuie să completezi datele companiei în Setări > Date Companie.',
+            step: 'error'
+          });
+        }
+        
+        // Generează factura folosind invoiceController
+        const invoiceData = {
+          userId: user.id,
+          client: {
+            type: session.clientType || 'company',
+            cui: clientData.cui || session.clientCUI,
+            name: clientData.name || session.clientName,
+            regCom: clientData.regCom || '',
+            address: clientData.address || 'Adresă necunoscută',
+            city: clientData.city || '',
+            county: clientData.county || ''
+          },
+          products: productsData.map(p => ({
+            name: p.name,
+            unit: p.unit || 'buc',
+            quantity: p.quantity || 1,
+            price: p.price,
+            vat: 19
+          }))
+        };
+        
+        console.log('📄 Date factură:', JSON.stringify(invoiceData, null, 2));
+        
+        // Creează mock req/res pentru invoiceController
+        const mockReq = { body: invoiceData, user: { id: user.id } };
+        let invoiceResult;
+        
+        const mockRes = {
+          status: (code) => ({
+            json: (data) => { invoiceResult = data; return mockRes; }
+          }),
+          json: (data) => { invoiceResult = data; return mockRes; }
+        };
+        
+        const { createInvoice } = require('./invoiceController');
+        await createInvoice(mockReq, mockRes);
+        
+        if (invoiceResult && invoiceResult.success) {
+          console.log('✅ Factură generată:', invoiceResult.invoice.invoiceNumber);
+          
+          await prisma.chatSession.update({
+            where: { id: session.id },
+            data: {
+              status: 'completed',
+              currentStep: 'done',
+              generatedInvoiceId: invoiceResult.invoice.id
+            }
+          });
+          
+          const successMsg = `✅ Factură generată cu succes!\n\n📄 Număr: ${invoiceResult.invoice.invoiceNumber}\n💰 Total: ${invoiceResult.invoice.total.toFixed(2)} RON\n\n📥 Descarcă PDF:\n${process.env.BASE_URL || 'http://localhost:3000'}/api/invoices/${invoiceResult.invoice.id}/download`;
+          
+          await prisma.chatMessage.create({
+            data: {
+              sessionId: session.id,
+              role: 'assistant',
+              content: successMsg
+            }
+          });
+          
+          return res.json({
+            success: true,
+            sessionId: session.id,
+            message: successMsg,
+            invoice: invoiceResult.invoice,
+            step: 'completed'
+          });
+        } else {
+          console.log('❌ Eroare generare factură:', invoiceResult);
+        }
+      } catch (genError) {
+        console.error('❌ Eroare la generarea facturii:', genError);
+      }
+    }
     
     res.json({
       success: true,
