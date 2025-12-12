@@ -38,22 +38,70 @@ async function getCompanySettings(req, res) {
       where: { userId }
     });
     
-    // Dacă nu există, returnează setări goale
+    // Dacă nu există în DB, încearcă să le completezi automat din iApp pe baza CUI-ului din profil
     if (!settings) {
-      settings = {
-        cui: '',
-        name: '',
-        address: '',
-        city: '',
-        county: '',
-        regCom: '',
-        phone: '',
-        email: '',
-        bank: '',
-        iban: '',
-        capital: '',
-        legalRep: ''
-      };
+      console.log('ℹ️ Nu există CompanySettings. Încerc auto-completare din iApp pe baza CUI-ului utilizatorului.');
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+
+      if (user?.cui) {
+        try {
+          const payload = { cif: user.cui, email_responsabil: IAPP_EMAIL_RESPONSABIL };
+          const iappResponse = await axios.post(
+            `${IAPP_API_URL}/info/cif`,
+            payload,
+            {
+              headers: {
+                'Authorization': getIAppAuthHeader(),
+                'Content-Type': 'application/json'
+              },
+              timeout: 10000
+            }
+          );
+
+          if (iappResponse.data && iappResponse.data.status === 'SUCCESS') {
+            const companyData = iappResponse.data.data.output;
+            const settingsData = {
+              cui: user.cui,
+              name: companyData.nume || user.company || '',
+              regCom: companyData.regcom || '',
+              address: companyData.adresa?.completa || companyData.adresa?.adresa || '',
+              city: companyData.adresa?.oras || '',
+              county: companyData.adresa?.judet || '',
+              postalCode: companyData.adresa?.cod_postal || '',
+              phone: companyData.telefon || ''
+            };
+
+            settings = await prisma.companySettings.upsert({
+              where: { userId },
+              update: settingsData,
+              create: { userId, ...settingsData }
+            });
+            console.log('✅ CompanySettings create automat din iApp la prima încărcare.');
+          } else {
+            console.log('ℹ️ iApp nu a întors SUCCESS. Trimit setări goale.');
+          }
+        } catch (autoErr) {
+          console.error('⚠️ Eroare auto-completare din iApp în getCompanySettings:', autoErr.response?.data || autoErr.message);
+        }
+      }
+
+      // Dacă tot nu există, trimite structură goală
+      if (!settings) {
+        settings = {
+          cui: '',
+          name: '',
+          address: '',
+          city: '',
+          county: '',
+          regCom: '',
+          phone: '',
+          email: '',
+          bank: '',
+          iban: '',
+          capital: '',
+          legalRep: ''
+        };
+      }
     }
     
     res.json({
