@@ -30,6 +30,7 @@ function generateToken(user) {
 async function register(req, res) {
   try {
     const { email, password, company, cui } = req.body;
+    console.log('[Auth] Register request received:', { email, company, cui });
 
     // Validare
     if (!email || !password) {
@@ -67,6 +68,7 @@ async function register(req, res) {
 
     // Hash parolă
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('[Auth] Password hashed');
 
     // Generează cod verificare email (6 cifre)
     const emailVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -87,6 +89,7 @@ async function register(req, res) {
         emailVerified: false
       }
     });
+    console.log('[Auth] User created:', user.id, user.email);
 
     // Creează setări companie cu datele de bază
     try {

@@ -343,6 +343,7 @@
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
 
+      console.log('[Register] Submit clicked', { cui, company, email });
       // Validare
       if (!cui) {
         showMessage('CUI-ul este obligatoriu');
@@ -364,6 +365,7 @@
       lucide.createIcons();
 
       try {
+        console.log('[Register] Sending request to', `${API_URL}/api/auth/register`);
         const response = await fetch(`${API_URL}/api/auth/register`, {
           method: 'POST',
           headers: {
@@ -376,12 +378,14 @@
             company
           })
         });
-
+        console.log('[Register] Response status:', response.status);
         const data = await response.json();
+        console.log('[Register] Response body:', data);
 
         if (data.success) {
           userEmail = email;
           tempToken = data.tempToken || '';
+          console.log('[Register] Success. Dev code (if any):', data.emailVerificationCode);
 
           // Ascunde formularul și arată secțiunea de verificare
           registerForm.style.display = 'none';
@@ -394,6 +398,7 @@
           throw new Error(data.error || 'Eroare la crearea contului');
         }
       } catch (error) {
+        console.error('[Register] Error:', error);
         showMessage(error.message);
         registerBtn.disabled = false;
         registerBtn.innerHTML = '<i data-lucide="user-plus"></i> Creează cont';
@@ -419,6 +424,7 @@
       lucide.createIcons();
 
       try {
+        console.log('[VerifyEmail] Sending verify for', userEmail, 'code:', code);
         const response = await fetch(`${API_URL}/api/auth/verify-email-code`, {
           method: 'POST',
           headers: {
@@ -429,8 +435,9 @@
             code: code
           })
         });
-
+        console.log('[VerifyEmail] Response status:', response.status);
         const data = await response.json();
+        console.log('[VerifyEmail] Response body:', data);
 
         if (data.success) {
           showMessage('Email verificat cu succes! Redirecționare...', 'success');
@@ -448,6 +455,7 @@
           throw new Error(data.error || 'Cod incorect');
         }
       } catch (error) {
+        console.error('[VerifyEmail] Error:', error);
         showMessage(error.message);
         verifyBtn.disabled = false;
         verifyBtn.innerHTML = '<i data-lucide="check"></i> Verifică';
@@ -461,6 +469,7 @@
       lucide.createIcons();
 
       try {
+        console.log('[ResendCode] Requesting resend for', userEmail);
         const response = await fetch(`${API_URL}/api/auth/resend-verification-code`, {
           method: 'POST',
           headers: {
@@ -468,8 +477,9 @@
           },
           body: JSON.stringify({ email: userEmail })
         });
-
+        console.log('[ResendCode] Response status:', response.status);
         const data = await response.json();
+        console.log('[ResendCode] Response body:', data);
 
         if (data.success) {
           showMessage('Cod retrimis! Verifică email-ul.', 'success');
@@ -477,6 +487,7 @@
           throw new Error(data.error || 'Eroare la retrimitera codului');
         }
       } catch (error) {
+        console.error('[ResendCode] Error:', error);
         showMessage(error.message);
       } finally {
         resendBtn.disabled = false;
