@@ -1,5 +1,6 @@
 const prisma = require('../db/prismaWrapper');
 const axios = require('axios');
+const aiChatController = require('./aiChatController');
 
 // WhatsApp API Configuration
 const WHATSAPP_API_VERSION = process.env.WHATSAPP_API_VERSION || 'v24.0';
@@ -8,7 +9,37 @@ const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.WH
 const WHATSAPP_TOKEN = process.env.META_API_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN || process.env.WHATSAPP_TOKEN;
 const WEBHOOK_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || process.env.WEBHOOK_VERIFY_TOKEN || 'chatbill-webhook-token';
 
-// Funcție internă pentru trimitere mesaj WhatsApp (fără response HTTP)
+// Funcție simplă pentru trimitere mesaj WhatsApp (doar trimite, nu salvează)
+// Salvarea în DB este făcută de aiChatController
+async function sendWhatsAppMessageToPhone(to, message) {
+  if (!WHATSAPP_PHONE_ID || !WHATSAPP_TOKEN) {
+    throw new Error('WhatsApp API nu este configurat');
+  }
+
+  // Trimite mesajul prin WhatsApp API
+  const response = await axios.post(
+    `${WHATSAPP_API_URL}/${WHATSAPP_PHONE_ID}/messages`,
+    {
+      messaging_product: 'whatsapp',
+      to: to,
+      type: 'text',
+      text: {
+        body: message
+      }
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+
+  return response.data.messages[0].id;
+}
+
+// Funcție internă pentru trimitere mesaj WhatsApp cu salvare în conversații
+// Folosită pentru trimiteri manuale din dashboard
 async function sendWhatsAppMessageInternal(to, message, conversationId) {
   if (!WHATSAPP_PHONE_ID || !WHATSAPP_TOKEN) {
     throw new Error('WhatsApp API nu este configurat');
@@ -98,47 +129,50 @@ async function receiveMessage(req, res) {
 
                 console.log(`📱 Mesaj WhatsApp primit de la ${from}: ${messageBody}`);
 
-                // Găsește sau crează conversația pentru acest număr de telefon
-                let conversation = await prisma.conversation.findFirst({
-                  where: {
-                    phoneNumber: from,
-                    type: 'whatsapp'
-                  }
-                });
-
-                if (!conversation) {
-                  conversation = await prisma.conversation.create({
-                    data: {
-                      title: `WhatsApp - ${from}`,
-                      phoneNumber: from,
-                      type: 'whatsapp'
-                    }
-                  });
-                }
-
-                // Salvează mesajul în baza de date
-                await prisma.message.create({
-                  data: {
-                    conversationId: conversation.id,
-                    text: messageBody,
-                    sender: 'user',
-                    whatsappMessageId: messageId,
-                    timestamp: new Date(parseInt(timestamp) * 1000)
-                  }
-                });
-
-                // Actualizează conversația
-                await prisma.conversation.update({
-                  where: { id: conversation.id },
-                  data: { updatedAt: new Date() }
-                });
-
-                // Trimite răspuns automat înapoi către utilizator
+                // Procesează mesajul prin AI Chat (același sistem ca pe website)
                 try {
-                  await sendWhatsAppMessageInternal(from, `Am primit mesajul tău: "${messageBody}"\n\nÎți vom răspunde în curând!`, conversation.id);
-                  console.log(`✅ Răspuns automat trimis către ${from}`);
+                  // Găsește sesiunea AI existentă pentru acest număr de telefon
+                  let chatSession = await prisma.chatSession.findFirst({
+                    where: {
+                      phoneNumber: from,
+                      source: 'whatsapp'
+                    },
+                    include: { chatMessages: { orderBy: { createdAt: 'asc' } } },
+                    orderBy: { createdAt: 'desc' }
+                  });
+
+                  // Creează mock request/response pentru a apela aiChatController
+                  const mockReq = {
+                    body: {
+                      sessionId: chatSession?.id,
+                      message: messageBody,
+                      source: 'whatsapp',
+                      phoneNumber: from
+                    }
+                  };
+
+                  let aiResponse;
+                  const mockRes = {
+                    json: (data) => { aiResponse = data; },
+                    status: (code) => ({ json: (data) => { aiResponse = data; } })
+                  };
+
+                  // Apelează AI Chat Controller
+                  await aiChatController.sendMessage(mockReq, mockRes);
+
+                  // Trimite răspunsul AI prin WhatsApp
+                  if (aiResponse && aiResponse.success && aiResponse.message) {
+                    await sendWhatsAppMessageToPhone(from, aiResponse.message);
+                    console.log(`🤖 Răspuns AI trimis către ${from}`);
+                  }
                 } catch (error) {
-                  console.error('❌ Eroare trimitere răspuns automat:', error.message);
+                  console.error('❌ Eroare procesare mesaj WhatsApp cu AI:', error);
+                  // Fallback - trimite mesaj generic dacă AI fails
+                  try {
+                    await sendWhatsAppMessageToPhone(from, 'Ne pare rău, am întâmpinat o problemă tehnică. Te rugăm să încerci din nou.');
+                  } catch (sendError) {
+                    console.error('❌ Eroare trimitere mesaj fallback:', sendError);
+                  }
                 }
               }
             }
