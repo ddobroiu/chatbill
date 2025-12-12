@@ -204,7 +204,7 @@
         }
 
         .nav-submenu.expanded {
-            max-height: 200px;
+            max-height: 500px;
         }
 
         .nav-submenu .nav-link {
@@ -1604,55 +1604,34 @@
         <div id="whatsapp-settings" class="page">
             <div class="page-header">
                 <h2>Setări WhatsApp</h2>
-                <p>Configurați și verificați numărul de telefon pentru notificări WhatsApp</p>
+                <p>Asociați numărul de telefon WhatsApp la contul dumneavoastră pentru notificări și facturare automată</p>
             </div>
             
             <div class="card">
                 <h3>Număr WhatsApp</h3>
-                <p style="margin-bottom: 1.5rem; color: var(--secondary-foreground);">Introduceți numărul de telefon pe care veți primi codul de verificare prin WhatsApp.</p>
+                <p style="margin-bottom: 1.5rem; color: var(--secondary-foreground);">
+                    Introduceți numărul de telefon WhatsApp pe care îl utilizați. Când veți trimite mesaje de pe acest număr, vă vom recunoaște automat și puteți emite facturi direct din conversație.
+                </p>
                 
                 <div class="form-grid" style="margin-bottom: 1.5rem;">
                     <div class="form-group">
-                        <label for="whatsapp-phone">Număr Telefon</label>
+                        <label for="whatsapp-phone">Număr Telefon WhatsApp</label>
                         <input type="tel" id="whatsapp-phone" placeholder="+40 7xx xxx xxx" style="font-size: 1rem;">
                         <p style="font-size: 0.8rem; color: var(--secondary-foreground); margin-top: 0.25rem;">Format: +40 7xx xxx xxx</p>
                     </div>
                 </div>
                 
-                <button type="button" id="send-whatsapp-code-btn" class="btn btn-primary" style="margin-bottom: 2rem;">
-                    <i data-lucide="send"></i>
-                    Trimite Cod pe WhatsApp
+                <button type="button" id="save-whatsapp-phone-btn" class="btn btn-primary">
+                    <i data-lucide="save"></i>
+                    Salvează Număr WhatsApp
                 </button>
                 
-                <div id="whatsapp-verification-section" style="display: none; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                    <h4 style="margin-bottom: 1rem;">Verificare Cod</h4>
-                    <p style="margin-bottom: 1rem; color: var(--secondary-foreground);">Am trimis un cod de 6 cifre pe WhatsApp. Introduceți-l mai jos:</p>
-                    
-                    <div class="form-grid" style="margin-bottom: 1rem;">
-                        <div class="form-group">
-                            <label for="whatsapp-verification-code">Cod Verificare</label>
-                            <input type="text" id="whatsapp-verification-code" placeholder="123456" maxlength="6" style="font-size: 1.2rem; letter-spacing: 0.3em; text-align: center;">
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                        <button type="button" id="verify-whatsapp-code-btn" class="btn btn-primary">
-                            <i data-lucide="check"></i>
-                            Verifică Cod
-                        </button>
-                        <button type="button" id="resend-whatsapp-code-btn" class="btn btn-secondary">
-                            <i data-lucide="refresh-cw"></i>
-                            Retrimite Cod
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="whatsapp-verified-section" style="display: none; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem;">
+                <div id="whatsapp-saved-section" style="display: none; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem;">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <i data-lucide="check-circle" style="width: 32px; height: 32px; color: #059669;"></i>
                         <div>
-                            <h4 style="margin: 0; color: #065f46;">Număr Verificat</h4>
-                            <p style="margin: 0.25rem 0 0 0; color: #047857;" id="whatsapp-verified-number"></p>
+                            <h4 style="margin: 0; color: #065f46;">Număr WhatsApp Asociat</h4>
+                            <p style="margin: 0.25rem 0 0 0; color: #047857;" id="whatsapp-saved-number"></p>
                         </div>
                     </div>
                 </div>

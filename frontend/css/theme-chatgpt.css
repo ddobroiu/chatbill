@@ -36,6 +36,10 @@ a:hover { color: #86efac; }
 .nav-link:hover { background-color: #2A2B32 !important; color: var(--foreground) !important; }
 .nav-link.active { background-color: #343541 !important; color: var(--foreground) !important; }
 
+.nav-submenu.expanded {
+  max-height: 500px !important;
+}
+
 .main-content {
   background: linear-gradient(180deg, #343541 0%, #2a2b32 100%) !important;
 }
