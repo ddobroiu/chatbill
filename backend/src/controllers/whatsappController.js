@@ -131,6 +131,20 @@ async function receiveMessage(req, res) {
 
                 // Procesează mesajul prin AI Chat (același sistem ca pe website)
                 try {
+                  // Verifică dacă numărul de telefon aparține unui utilizator înregistrat
+                  const user = await prisma.user.findFirst({
+                    where: { phone: from },
+                    include: {
+                      settings: true
+                    }
+                  });
+
+                  if (user) {
+                    console.log(`👤 Utilizator identificat: ${user.name} (${user.email})`);
+                  } else {
+                    console.log(`👤 Număr neînregistrat: ${from}`);
+                  }
+
                   // Găsește sesiunea AI existentă pentru acest număr de telefon
                   let chatSession = await prisma.chatSession.findFirst({
                     where: {
@@ -147,7 +161,18 @@ async function receiveMessage(req, res) {
                       sessionId: chatSession?.id,
                       message: messageBody,
                       source: 'whatsapp',
-                      phoneNumber: from
+                      phoneNumber: from,
+                      // Adaugă informații despre utilizator dacă există
+                      user: user ? {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        company: user.company || user.settings?.companyName,
+                        cui: user.cui || user.settings?.cui,
+                        hasAccount: true
+                      } : {
+                        hasAccount: false
+                      }
                     }
                   };
 

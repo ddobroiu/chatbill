@@ -116,7 +116,7 @@ STAREA CURENTĂ:
 Răspunde utilizatorului bazat pe ce a scris și pe starea conversației.`;
 
 // Funcție pentru generare răspuns AI folosind GPT-4
-async function generateAIResponseWithGPT(session, userMessage) {
+async function generateAIResponseWithGPT(session, userMessage, user = null) {
   // Verifică dacă OpenAI este disponibil
   if (!openai) {
     console.warn('⚠️ OpenAI nu e configurat, folosesc logica simplă');
@@ -142,7 +142,7 @@ async function generateAIResponseWithGPT(session, userMessage) {
       content: userMessage
     });
 
-    // Creează system prompt cu starea sesiunii
+    // Creează system prompt cu starea sesiunii și informații utilizator
     const sessionState = JSON.stringify({
       step: session.currentStep,
       clientType: session.clientType,
@@ -153,7 +153,41 @@ async function generateAIResponseWithGPT(session, userMessage) {
       productsCount: (session.products || []).length
     }, null, 2);
 
-    const systemPrompt = INVOICE_SYSTEM_PROMPT.replace('{{SESSION_STATE}}', sessionState);
+    // Adaugă context despre utilizator
+    let userContext = '';
+    if (user && user.hasAccount) {
+      userContext = `\n\n🔐 CONTEXT UTILIZATOR:
+Utilizatorul este AUTENTIFICAT în sistem:
+- Nume: ${user.name}
+- Email: ${user.email}
+${user.company ? `- Companie: ${user.company}` : ''}
+${user.cui ? `- CUI companie: ${user.cui}` : ''}
+
+IMPORTANT:
+- Salută utilizatorul pe NUME la prima interacțiune: "Bună ${user.name}! Cu ce te pot ajuta astăzi?"
+- Dacă are CUI și companie configurate, poți folosi aceste date automat pentru facturi
+- Oferă experiență personalizată și profesionistă
+- Menționează că poate vedea facturile în contul său de pe website
+`;
+    } else if (user && !user.hasAccount) {
+      userContext = `\n\n👤 CONTEXT UTILIZATOR:
+Utilizatorul NU are cont creat în sistem.
+
+IMPORTANT LA PRIMA INTERACȚIUNE:
+După salut, menționează:
+"💡 Sfat: Dacă îți creezi un cont gratuit pe chatbill.ro, vei putea:
+- Salva și gestiona toate facturile tale
+- Accesa istoricul complet
+- Configura datele companiei tale
+- Genera facturi mai rapid
+
+Între timp, te pot ajuta să generezi o factură aici pe WhatsApp!"
+
+Apoi continuă conversația normal pentru generarea facturii.
+`;
+    }
+
+    const systemPrompt = INVOICE_SYSTEM_PROMPT.replace('{{SESSION_STATE}}', sessionState) + userContext;
 
     // Apel GPT-4
     console.log(`🤖 Apel GPT-4 pentru sesiunea ${session.id}`);
@@ -439,10 +473,10 @@ function generateAIResponseFallback(session, userMessage) {
 // POST /api/ai-chat/message - Trimite mesaj și primește răspuns
 async function sendMessage(req, res) {
   try {
-    const { sessionId, message, source = 'web', phoneNumber } = req.body;
-    
+    const { sessionId, message, source = 'web', phoneNumber, user } = req.body;
+
     let session;
-    
+
     // Găsește sau creează sesiune
     if (sessionId) {
       session = await prisma.chatSession.findUnique({
@@ -450,7 +484,7 @@ async function sendMessage(req, res) {
         include: { chatMessages: { orderBy: { createdAt: 'asc' } } }
       });
     }
-    
+
     if (!session) {
       // Creează sesiune nouă
       session = await prisma.chatSession.create({
@@ -462,7 +496,7 @@ async function sendMessage(req, res) {
         include: { chatMessages: true }
       });
     }
-    
+
     // Salvează mesajul utilizatorului
     await prisma.chatMessage.create({
       data: {
@@ -471,9 +505,10 @@ async function sendMessage(req, res) {
         content: message
       }
     });
-    
+
     // Procesează mesajul bazat pe step curent - FOLOSEȘTE GPT-4!
-    const aiResponse = await generateAIResponseWithGPT(session, message);
+    // Trimite informații despre utilizator dacă există
+    const aiResponse = await generateAIResponseWithGPT(session, message, user);
     
     // Cazuri speciale care necesită API calls
     if (aiResponse.nextStep === 'verify_cui' && aiResponse.updates?.clientCUI) {
