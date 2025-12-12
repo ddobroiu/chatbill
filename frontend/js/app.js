@@ -395,12 +395,35 @@ async function updateUIBasedOnAuth() {
             if (el) el.style.display = '';
         });
         
-        // Restaurează footer-ul original cu user info (se va popula în updateUserInfo)
+        // Restaurează footer-ul original cu user info pentru utilizatori logați
         const sidebarFooter = document.querySelector('.sidebar-footer');
-        if (sidebarFooter && !sidebarFooter.querySelector('.user-info')) {
-            // Footer-ul original ar trebui să existe deja în HTML
-            // Doar ne asigurăm că e vizibil
-            sidebarFooter.style.display = '';
+        if (sidebarFooter) {
+            sidebarFooter.innerHTML = `
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Utilizator</div>
+                        <div class="user-email" id="userEmail"></div>
+                    </div>
+                </div>
+                <a href="#subscription" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <i data-lucide="credit-card"></i>
+                    Abonament
+                </a>
+                <button id="logout-btn" class="btn btn-secondary" style="width: 100%;">
+                    <i data-lucide="log-out"></i>
+                    Deconectare
+                </button>
+            `;
+            lucide.createIcons();
+            
+            // Re-attach logout handler
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+            }
+            
+            console.log('✅ Footer restaurat pentru utilizator logat');
         }
     }
     
