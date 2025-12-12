@@ -241,43 +241,32 @@ function updateUserInfo(userData) {
 function updateUIBasedOnAuth() {
     const loggedIn = isLoggedIn();
     
+    console.log('🔐 Status autentificare:', loggedIn ? 'LOGAT' : 'NELOGAT');
+    
     // Elemente care trebuie ascunse pentru utilizatori nelogați
     const authOnlyElements = [
         document.querySelector('a[href="#dashboard"]')?.closest('.nav-item'),
-        document.querySelector('.nav-item-parent[data-submenu="generator"]') || document.querySelector('.nav-parent-link[data-submenu="generator"]')?.closest('.nav-item-parent'),
-        document.querySelector('.nav-item-parent[data-submenu="istoric"]') || document.querySelector('.nav-parent-link[data-submenu="istoric"]')?.closest('.nav-item-parent'),
-        document.querySelector('#settings-toggle')?.closest('.nav-item'),
-        document.querySelector('.sidebar-footer .user-info'),
-        document.querySelector('a[href="#subscription"]'),
-        document.querySelector('#logout-btn')
-    ].filter(el => el !== null && el !== undefined);
+        document.querySelector('.nav-item-parent[data-submenu="generator"]'),
+        document.querySelector('.nav-item-parent[data-submenu="istoric"]'),
+        document.querySelector('#settings-toggle')?.closest('.nav-item-parent'),
+        document.querySelector('.sidebar-footer .user-info')
+    ];
     
-    authOnlyElements.forEach(el => {
-        if (el) {
-            el.style.display = loggedIn ? '' : 'none';
+    authOnlyElements.forEach(element => {
+        if (element) {
+            element.style.display = loggedIn ? '' : 'none';
         }
     });
     
-    // Actualizează footer-ul sidebar-ului pentru utilizatori nelogați
-    const sidebarFooter = document.querySelector('.sidebar-footer');
-    if (sidebarFooter && !loggedIn) {
-        // Creează butoane de autentificare pentru utilizatori nelogați
-        const authButtonsHTML = `
-            <a href="register.html" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                <i data-lucide="user-plus"></i>
-                Creează cont
-            </a>
-            <a href="login.html" class="btn btn-secondary" style="width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                <i data-lucide="log-in"></i>
-                Logare
-            </a>
-        `;
-        sidebarFooter.innerHTML = authButtonsHTML;
-        // Re-inițializează iconurile Lucide
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+    // Dacă nu e logat, mergi direct pe chat
+    if (!loggedIn) {
+        const currentHash = window.location.hash;
+        if (!currentHash || currentHash !== '#chat') {
+            window.location.hash = '#chat';
         }
     }
+    
+    console.log('✅ UI actualizat bazat pe autentificare');
 }
 
 function logout() {
