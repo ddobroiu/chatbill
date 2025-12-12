@@ -1532,14 +1532,46 @@ async function sendChatMessage() {
     }
     
     try {
+        // Get current user info if logged in
+        let userData = null;
+        if (isLoggedIn()) {
+            try {
+                const userRes = await fetch(`${API_URL}/api/auth/me`, { headers: getAuthHeaders() });
+                if (userRes.ok) {
+                    const userInfo = await userRes.json();
+                    if (userInfo.success && userInfo.user) {
+                        userData = {
+                            id: userInfo.user.id,
+                            name: userInfo.user.name,
+                            email: userInfo.user.email,
+                            company: userInfo.user.company,
+                            cui: userInfo.user.cui,
+                            hasAccount: true
+                        };
+                    }
+                }
+            } catch (e) {
+                console.error('Eroare obținere info user:', e);
+            }
+        }
+
+        const requestBody = {
+            sessionId: currentChatSessionId,
+            message: message,
+            source: 'web'
+        };
+
+        // Add user info if available
+        if (userData) {
+            requestBody.user = userData;
+        } else {
+            requestBody.user = { hasAccount: false };
+        }
+
         const response = await fetch(`${API_URL}/api/ai-chat/message`, {
             method: 'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify({
-                sessionId: currentChatSessionId,
-                message: message,
-                source: 'web'
-            })
+            body: JSON.stringify(requestBody)
         });
         
         const data = await response.json();

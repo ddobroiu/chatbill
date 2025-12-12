@@ -129,21 +129,24 @@ async function receiveMessage(req, res) {
                 const messageId = message.id;
                 const timestamp = message.timestamp;
 
-                console.log(`📱 Mesaj WhatsApp primit de la ${from}: ${messageBody}`);
+                // Normalizăm numărul - WhatsApp trimite fără +, adăugăm +
+                const normalizedPhone = from.startsWith('+') ? from : `+${from}`;
+
+                console.log(`📱 Mesaj WhatsApp primit de la ${from} (normalizat: ${normalizedPhone}): ${messageBody}`);
 
                 // Procesează mesajul prin AI Chat (același sistem ca pe website)
                 try {
                   // Verifică dacă numărul de telefon aparține unui utilizator înregistrat
                   const user = await prisma.user.findFirst({
                     where: {
-                      phone: from
+                      phone: normalizedPhone
                     }
                   });
 
                   if (user) {
                     console.log(`👤 Utilizator identificat: ${user.name} (${user.email})`);
                   } else {
-                    console.log(`👤 Număr neînregistrat: ${from}`);
+                    console.log(`👤 Număr neînregistrat: ${normalizedPhone}`);
                     // Trimite mesaj automat pentru utilizatori noi
                     await sendWhatsAppMessageToPhone(
                       from,
