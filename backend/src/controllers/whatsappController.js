@@ -178,20 +178,36 @@ async function receiveMessage(req, res) {
 
                   let aiResponse;
                   const mockRes = {
-                    json: (data) => { aiResponse = data; },
-                    status: (code) => ({ json: (data) => { aiResponse = data; } })
+                    json: (data) => {
+                      aiResponse = data;
+                      return mockRes;
+                    },
+                    status: (code) => {
+                      return {
+                        json: (data) => {
+                          aiResponse = data;
+                          return mockRes;
+                        }
+                      };
+                    }
                   };
 
                   // Apelează AI Chat Controller
+                  console.log(`🔄 Apelare AI Chat Controller pentru ${from}...`);
                   await aiChatController.sendMessage(mockReq, mockRes);
+                  console.log(`✅ AI Controller răspuns primit:`, aiResponse);
 
                   // Trimite răspunsul AI prin WhatsApp
                   if (aiResponse && aiResponse.success && aiResponse.message) {
+                    console.log(`📤 Trimit răspuns AI prin WhatsApp către ${from}...`);
                     await sendWhatsAppMessageToPhone(from, aiResponse.message);
                     console.log(`🤖 Răspuns AI trimis către ${from}`);
+                  } else {
+                    console.error(`❌ Răspuns AI invalid:`, aiResponse);
                   }
                 } catch (error) {
                   console.error('❌ Eroare procesare mesaj WhatsApp cu AI:', error);
+                  console.error('Stack trace:', error.stack);
                   // Fallback - trimite mesaj generic dacă AI fails
                   try {
                     await sendWhatsAppMessageToPhone(from, 'Ne pare rău, am întâmpinat o problemă tehnică. Te rugăm să încerci din nou.');
