@@ -1516,7 +1516,7 @@ async function startChatSession() {
 }
 
 async function sendChatMessage() {
-    const input = document.getElementById('chatInput');
+    const input = document.getElementById('chat-input');
     const message = input.value.trim();
     
     if (!message) return;

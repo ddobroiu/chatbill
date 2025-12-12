@@ -2196,14 +2196,14 @@
                 const chatSendBtn = document.getElementById('chat-send-btn');
                 const chatInput = document.getElementById('chat-input');
 
-                if (chatSendBtn && typeof sendGPTMessage === 'function') {
-                    chatSendBtn.addEventListener('click', sendGPTMessage);
+                if (chatSendBtn && typeof sendChatMessage === 'function') {
+                    chatSendBtn.addEventListener('click', sendChatMessage);
                 }
 
                 if (chatInput) {
                     chatInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter' && typeof sendGPTMessage === 'function') {
-                            sendGPTMessage();
+                        if (e.key === 'Enter' && typeof sendChatMessage === 'function') {
+                            sendChatMessage();
                         }
                     });
                 }
