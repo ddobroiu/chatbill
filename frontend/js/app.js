@@ -1453,4 +1453,44 @@ function previewOffer() {
     alert('🔍 Funcționalitatea de preview va fi disponibilă în curând!');
 }
 
+// ========== SETTINGS FORM CHANGE DETECTION ==========
+function setupSettingsFormListeners() {
+    // Lista tuturor formularelor de setări
+    const forms = [
+        { formId: 'company-settings-form', btnId: 'save-company-settings-btn' },
+        { formId: 'vat-settings-form', btnId: 'save-vat-settings-btn' },
+        { formId: 'numbering-settings-form', btnId: 'save-numbering-settings-btn' },
+        { formId: 'template-settings-form', btnId: 'save-template-settings-btn' }
+    ];
 
+    forms.forEach(({ formId, btnId }) => {
+        const form = document.getElementById(formId);
+        const saveBtn = document.getElementById(btnId);
+        
+        if (form && saveBtn) {
+            // Ascunde butonul inițial
+            saveBtn.style.display = 'none';
+            
+            // Detectează modificări în orice câmp din formular
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    saveBtn.style.display = 'inline-flex';
+                });
+                input.addEventListener('change', () => {
+                    saveBtn.style.display = 'inline-flex';
+                });
+            });
+            
+            // Ascunde butonul după salvare cu succes
+            form.addEventListener('submit', async (e) => {
+                // Așteaptă să se trimită formularul
+                // După salvare cu succes, ascunde butonul
+                const originalSubmit = form.onsubmit;
+                setTimeout(() => {
+                    saveBtn.style.display = 'none';
+                }, 2000); // Așteaptă 2 secunde după submit
+            });
+        }
+    });
+}

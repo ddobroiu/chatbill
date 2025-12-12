@@ -3509,8 +3509,8 @@
             } else if (currentHash === '#dashboard') {
                 setTimeout(() => loadDashboard(), 100);
             }
-        });
-
-    </script>
-</body>
-</html>
+            
+            // Setup settings form change detection
+            if (typeof setupSettingsFormListeners === 'function') {
+                setupSettingsFormListeners();
+            }
