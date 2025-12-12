@@ -936,57 +936,85 @@ async function handleInvoiceSubmit(event) {
     event.preventDefault();
     console.log('[Invoice Generator] Form submitted');
     
-    // Collect products
-    const products = [];
+    // Collect products - Format pentru backend schema
+    const items = [];
     const productItems = document.querySelectorAll('#products-container .product-item');
-    
+
     productItems.forEach(item => {
-        const name = item.querySelector('.product-name').value;
+        const description = item.querySelector('.product-name').value;
         const unit = item.querySelector('.product-unit').value;
         const quantity = parseFloat(item.querySelector('.product-quantity').value);
-        const price = parseFloat(item.querySelector('.product-price').value);
-        const vat = parseFloat(item.querySelector('.product-vat').value);
-        
-        if (name && quantity && price >= 0) {
-            products.push({ name, unit, quantity, price, vat });
+        const unitPrice = parseFloat(item.querySelector('.product-price').value);
+        const vatRate = parseFloat(item.querySelector('.product-vat').value);
+
+        if (description && quantity && unitPrice >= 0) {
+            items.push({
+                description,
+                unit,
+                quantity,
+                unitPrice,
+                vatRate
+            });
         }
     });
-    
-    if (products.length === 0) {
+
+    if (items.length === 0) {
         alert('Adăugați cel puțin un produs/serviciu');
         return;
     }
-    
-    // Collect client data
+
+    // Collect client data - Format pentru backend schema
     const clientType = document.getElementById('client-type').value;
-    
+    const clientAddress = document.getElementById('client-address').value || '';
+    const clientCity = document.getElementById('client-city').value || '';
+    const clientCounty = document.getElementById('client-county').value || '';
+
     const clientData = {
-        type: clientType
+        type: clientType,
+        address: {
+            street: clientAddress,
+            city: clientCity,
+            county: clientCounty,
+            country: 'România'
+        }
     };
-    
+
     if (clientType === 'company') {
         clientData.name = document.getElementById('client-name').value;
         clientData.cui = document.getElementById('client-cui').value.replace(/^RO/i, '');
-        clientData.regCom = document.getElementById('client-regCom').value;
-        clientData.address = document.getElementById('client-address').value;
-        clientData.city = document.getElementById('client-city').value;
-        clientData.county = document.getElementById('client-county').value;
+        clientData.registrationNumber = document.getElementById('client-regCom').value;
     } else {
         clientData.firstName = document.getElementById('client-firstName').value;
         clientData.lastName = document.getElementById('client-lastName').value;
         clientData.cnp = document.getElementById('client-cnp').value;
-        clientData.address = document.getElementById('client-address').value;
-        clientData.city = document.getElementById('client-city').value;
-        clientData.county = document.getElementById('client-county').value;
     }
-    
+
+    // Obține datele companiei (provider)
+    const companySettings = JSON.parse(localStorage.getItem('companySettings') || '{}');
+    const providerData = {
+        name: companySettings.name || 'Compania Mea SRL',
+        cui: (companySettings.cui || '').replace(/^RO/i, ''),
+        registrationNumber: companySettings.regCom || '',
+        address: {
+            street: companySettings.address || '',
+            city: companySettings.city || '',
+            county: companySettings.county || '',
+            country: 'România'
+        },
+        phone: companySettings.phone || '',
+        email: companySettings.email || '',
+        iban: companySettings.iban || '',
+        bankName: companySettings.bank || ''
+    };
+
     // Generează numărul facturii
     const invoiceNumber = generateDocumentNumber('invoice');
 
     const invoiceData = {
         invoiceNumber: invoiceNumber,
+        provider: providerData,
         client: clientData,
-        products: products
+        items: items
     };
 
     console.log('[Invoice Generator] Invoice data:', invoiceData);
