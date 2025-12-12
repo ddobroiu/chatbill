@@ -54,10 +54,13 @@ model User {
   resetTokenExpiry  DateTime?
 
   // Profile
-  phone             String?
-  company           String?
-  cui               String?
-  avatar            String?
+  phone                String?
+  phoneVerified        Boolean        @default(false)
+  phoneVerificationCode String?
+  phoneVerificationExpiry DateTime?
+  company              String?
+  cui                  String?
+  avatar               String?
 
   // Status
   isActive          Boolean        @default(true)

@@ -24,4 +24,8 @@ router.get('/conversations/:id/messages', apiLimiter, validateParams(idParamSche
 // Trimitere mesaj WhatsApp
 router.post('/send', chatLimiter, whatsappController.sendMessage);
 
+// Verificare telefon prin WhatsApp
+router.post('/send-verification', apiLimiter, whatsappController.sendPhoneVerificationCode);
+router.post('/verify-phone', apiLimiter, whatsappController.verifyPhoneCode);
+
 module.exports = router;

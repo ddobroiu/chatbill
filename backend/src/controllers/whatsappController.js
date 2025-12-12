@@ -1,6 +1,7 @@
 const prisma = require('../db/prismaWrapper');
 const axios = require('axios');
 const aiChatController = require('./aiChatController');
+const { generateVerificationCode, getCodeExpiry, isCodeValid } = require('../utils/phoneVerification');
 
 // WhatsApp API Configuration
 const WHATSAPP_API_VERSION = process.env.WHATSAPP_API_VERSION || 'v24.0';
@@ -131,15 +132,18 @@ async function receiveMessage(req, res) {
 
                 // Procesează mesajul prin AI Chat (același sistem ca pe website)
                 try {
-                  // Verifică dacă numărul de telefon aparține unui utilizator înregistrat
+                  // Verifică dacă numărul de telefon aparține unui utilizator înregistrat ȘI VERIFICAT
                   const user = await prisma.user.findFirst({
-                    where: { phone: from }
+                    where: {
+                      phone: from,
+                      phoneVerified: true // IMPORTANT: Doar numere verificate
+                    }
                   });
 
                   if (user) {
-                    console.log(`👤 Utilizator identificat: ${user.name} (${user.email})`);
+                    console.log(`👤 Utilizator identificat: ${user.name} (${user.email}) - Telefon verificat ✅`);
                   } else {
-                    console.log(`👤 Număr neînregistrat: ${from}`);
+                    console.log(`👤 Număr neînregistrat sau neverificat: ${from}`);
                   }
 
                   // Găsește sesiunea AI existentă pentru acest număr de telefon
@@ -452,6 +456,122 @@ async function getConversationMessages(req, res) {
   }
 }
 
+// POST /api/whatsapp/send-verification - Trimite cod de verificare pe WhatsApp
+async function sendPhoneVerificationCode(req, res) {
+  try {
+    const { phoneNumber } = req.body;
+    const userId = req.user.id; // Din middleware de autentificare
+
+    if (!phoneNumber) {
+      return res.status(400).json({ error: 'Numărul de telefon este obligatoriu' });
+    }
+
+    // Verifică dacă numărul este deja folosit de alt utilizator
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        phone: phoneNumber,
+        phoneVerified: true,
+        NOT: { id: userId }
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        error: 'Acest număr de telefon este deja asociat cu alt cont'
+      });
+    }
+
+    // Generează cod de verificare
+    const verificationCode = generateVerificationCode();
+    const expiry = getCodeExpiry();
+
+    // Salvează codul în baza de date
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        phone: phoneNumber,
+        phoneVerified: false,
+        phoneVerificationCode: verificationCode,
+        phoneVerificationExpiry: expiry
+      }
+    });
+
+    // Trimite codul pe WhatsApp
+    const message = `🔐 ChatBill - Cod de verificare\n\nCodul tău este: ${verificationCode}\n\nCodul este valabil 10 minute.\n\nDacă nu ai solicitat acest cod, te rugăm să ignori mesajul.`;
+
+    await sendWhatsAppMessageToPhone(phoneNumber, message);
+
+    console.log(`📱 Cod de verificare trimis pe WhatsApp către ${phoneNumber}`);
+
+    res.json({
+      success: true,
+      message: 'Codul de verificare a fost trimis pe WhatsApp',
+      expiresIn: 600 // 10 minute în secunde
+    });
+
+  } catch (error) {
+    console.error('Eroare trimitere cod verificare:', error);
+    res.status(500).json({
+      error: 'Eroare la trimiterea codului de verificare',
+      details: error.message
+    });
+  }
+}
+
+// POST /api/whatsapp/verify-phone - Verifică codul și asociază numărul cu contul
+async function verifyPhoneCode(req, res) {
+  try {
+    const { code } = req.body;
+    const userId = req.user.id;
+
+    if (!code) {
+      return res.status(400).json({ error: 'Codul de verificare este obligatoriu' });
+    }
+
+    // Găsește utilizatorul
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || !user.phone) {
+      return res.status(400).json({
+        error: 'Nu există un număr de telefon în așteptarea verificării'
+      });
+    }
+
+    // Verifică codul
+    if (!isCodeValid(user.phoneVerificationCode, code, user.phoneVerificationExpiry)) {
+      return res.status(400).json({
+        error: 'Cod invalid sau expirat. Te rugăm să soliciti un cod nou.'
+      });
+    }
+
+    // Marchează telefonul ca verificat și șterge codul
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        phoneVerified: true,
+        phoneVerificationCode: null,
+        phoneVerificationExpiry: null
+      }
+    });
+
+    console.log(`✅ Număr de telefon ${user.phone} verificat pentru user ${user.email}`);
+
+    res.json({
+      success: true,
+      message: 'Numărul de telefon a fost verificat cu succes!'
+    });
+
+  } catch (error) {
+    console.error('Eroare verificare cod:', error);
+    res.status(500).json({
+      error: 'Eroare la verificarea codului',
+      details: error.message
+    });
+  }
+}
+
 module.exports = {
   verifyWebhook,
   receiveMessage,
@@ -459,5 +579,7 @@ module.exports = {
   createConversation,
   getConversations,
   getConversation,
-  getConversationMessages
+  getConversationMessages,
+  sendPhoneVerificationCode,
+  verifyPhoneCode
 };
