@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF Templates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">🎨 Test PDF Template Generator</h1>
+
+        <!-- Template Selector -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Alege Template-ul</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="template" value="modern-minimal" checked class="peer sr-only">
+                    <div class="border-2 border-gray-200 rounded-lg p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition">
+                        <h3 class="font-bold text-lg mb-2">Modern Minimalist</h3>
+                        <p class="text-sm text-gray-600">Stripe-style, clean, aerisit</p>
+                    </div>
+                </label>
+
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="template" value="professional-clean" class="peer sr-only">
+                    <div class="border-2 border-gray-200 rounded-lg p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition">
+                        <h3 class="font-bold text-lg mb-2">Professional Clean</h3>
+                        <p class="text-sm text-gray-600">Vercel-style, gradient header</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Acțiuni</h2>
+            <div class="flex gap-4">
+                <button onclick="previewInvoice()" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition">
+                    👁️ Preview în Browser
+                </button>
+                <button onclick="downloadPDF()" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition">
+                    📥 Download PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div id="status" class="mt-6 p-4 rounded-lg hidden"></div>
+    </div>
+
+    <script>
+        // Date exemplu pentru factură
+        const invoiceData = {
+            invoice: {
+                invoiceNumber: "FAC000001",
+                issueDate: "13.12.2025",
+                status: "paid"
+            },
+            company: {
+                name: "Tech Solutions SRL",
+                cui: "RO12345678",
+                regCom: "J40/1234/2025",
+                address: "Str. Exemplu Nr. 10",
+                city: "București",
+                county: "București",
+                phone: "+40 721 234 567",
+                email: "contact@techsolutions.ro",
+                iban: "RO49AAAA1B31007593840000",
+                bank: "BCR",
+                isVatPayer: true,
+                vatRate: 21
+            },
+            client: {
+                type: "company",
+                name: "Client Company SRL",
+                cui: "RO87654321",
+                address: "Str. Client Nr. 20",
+                city: "Cluj-Napoca",
+                county: "Cluj"
+            },
+            products: [
+                {
+                    name: "Servicii dezvoltare web",
+                    unit: "luni",
+                    quantity: 1,
+                    price: 5000,
+                    vat: 19
+                },
+                {
+                    name: "Hosting cloud",
+                    unit: "luni",
+                    quantity: 12,
+                    price: 50,
+                    vat: 19
+                },
+                {
+                    name: "Suport tehnic",
+                    unit: "ore",
+                    quantity: 10,
+                    price: 150,
+                    vat: 19
+                }
+            ]
+        };
+
+        function getSelectedTemplate() {
+            const selected = document.querySelector('input[name="template"]:checked');
+            return selected ? selected.value : 'modern-minimal';
+        }
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `mt-6 p-4 rounded-lg ${
+                type === 'success' ? 'bg-green-100 text-green-800' :
+                type === 'error' ? 'bg-red-100 text-red-800' :
+                'bg-blue-100 text-blue-800'
+            }`;
+            status.textContent = message;
+            status.classList.remove('hidden');
+        }
+
+        async function previewInvoice() {
+            const template = getSelectedTemplate();
+            showStatus('⏳ Generare preview...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/invoices/preview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ...invoiceData,
+                        template
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Eroare la generarea preview-ului');
+                }
+
+                const html = await response.text();
+                const previewWindow = window.open('', '_blank');
+                previewWindow.document.write(html);
+                previewWindow.document.close();
+
+                showStatus('✅ Preview deschis în tab nou!', 'success');
+            } catch (error) {
+                console.error('Eroare:', error);
+                showStatus('❌ Eroare: ' + error.message, 'error');
+            }
+        }
+
+        async function downloadPDF() {
+            const template = getSelectedTemplate();
+            showStatus('⏳ Generare PDF...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/invoices/generate-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ...invoiceData,
+                        template
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Eroare la generarea PDF-ului');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Factura_${invoiceData.invoice.invoiceNumber}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showStatus('✅ PDF descărcat cu succes!', 'success');
+            } catch (error) {
+                console.error('Eroare:', error);
+                showStatus('❌ Eroare: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
