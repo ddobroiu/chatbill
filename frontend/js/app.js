@@ -1,9 +1,18 @@
 // ========== API CONFIGURATION ==========
 // Version: 2025-12-12-20:15 - FIXED USER DELETION DETECTION
-// Detectează automat URL-ul API-ului
-const API_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:3000'
-  : window.location.origin;
+// Detectează automat URL-ul API-ului (robust pentru file:// sau preview local)
+let API_URL;
+try {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isFileProtocol = window.location.protocol === 'file:' || !window.location.hostname;
+    if (isLocalhost || isFileProtocol) {
+        API_URL = 'http://localhost:3000';
+    } else {
+        API_URL = window.location.origin;
+    }
+} catch {
+    API_URL = 'http://localhost:3000';
+}
 
 console.log('🌐 API URL:', API_URL);
 console.log('📦 App.js version: 2025-12-12-20:15');
@@ -348,32 +357,39 @@ async function updateUIBasedOnAuth() {
     const loader = document.getElementById('auth-loader');
     if (loader) loader.style.display = 'flex';
 
-    const hasLocalToken = !!localStorage.getItem('token');
-    let loggedIn = false;
+    try {
+        const hasLocalToken = !!localStorage.getItem('token');
+        let loggedIn = false;
 
-    console.log('📍 STEP 1: Check local token existence:', hasLocalToken ? '✅ TOKEN EXISTS' : '❌ NO TOKEN');
+        console.log('📍 STEP 1: Check local token existence:', hasLocalToken ? '✅ TOKEN EXISTS' : '❌ NO TOKEN');
 
-    if (hasLocalToken) {
-        console.log('📍 STEP 2: Token exists locally, verifying with server...');
-        const serverValid = await verifyTokenOnServer();
-        console.log('📍 STEP 3: Server validation result:', serverValid ? '✅ VALID' : '❌ INVALID');
-        
-        if (serverValid) {
-            loggedIn = true;
+        if (hasLocalToken) {
+            console.log('📍 STEP 2: Token exists locally, verifying with server...');
+            let serverValid = false;
+            try {
+                serverValid = await verifyTokenOnServer();
+            } catch (verErr) {
+                console.error('⚠️ verifyTokenOnServer threw error, treating as invalid:', verErr);
+                serverValid = false;
+            }
+            console.log('📍 STEP 3: Server validation result:', serverValid ? '✅ VALID' : '❌ INVALID');
+            
+            if (serverValid) {
+                loggedIn = true;
+            } else {
+                console.error('❌❌❌ TOKEN INVALID ON SERVER - Clearing all auth data...');
+                clearAuthData();
+                loggedIn = false;
+            }
         } else {
-            console.error('❌❌❌ TOKEN INVALID ON SERVER - Clearing all auth data...');
-            clearAuthData();
-            loggedIn = false;
+            console.log('📍 STEP 2 & 3: SKIPPED (no local token)');
         }
-    } else {
-        console.log('📍 STEP 2 & 3: SKIPPED (no local token)');
-    }
 
-    console.log('\n🎯 ======================================');
-    console.log('🎯 FINAL AUTH STATUS:', loggedIn ? '✅✅✅ LOGGED IN' : '❌❌❌ GUEST MODE');
-    console.log('🎯 ======================================\n');
+        console.log('\n🎯 ======================================');
+        console.log('🎯 FINAL AUTH STATUS:', loggedIn ? '✅✅✅ LOGGED IN' : '❌❌❌ GUEST MODE');
+        console.log('🎯 ======================================\n');
 
-    if (!loggedIn) {
+        if (!loggedIn) {
         console.log('👤👤👤 ENTERING GUEST MODE - Setting up UI...');
 
         // Ascunde tot în afară de chat
@@ -432,7 +448,7 @@ async function updateUIBasedOnAuth() {
         } else {
             console.log('✅ Hash valid pentru guest:', currentHash);
         }
-    } else {
+        } else {
         console.log('👤👤👤 ENTERING LOGGED MODE - Setting up UI...');
 
         // Afișează tot pentru utilizatori logați
@@ -499,13 +515,14 @@ async function updateUIBasedOnAuth() {
 
             console.log('✅ Footer restaurat pentru utilizator logat');
         }
+    } catch (e) {
+        console.error('❌ Eroare în updateUIBasedOnAuth:', e);
+    } finally {
+        if (loader) loader.style.display = 'none';
+        console.log('\n🏁 ========================================');
+        console.log('🏁 updateUIBasedOnAuth COMPLETED');
+        console.log('🏁 ========================================\n');
     }
-    
-    if (loader) loader.style.display = 'none';
-
-    console.log('\n🏁 ========================================');
-    console.log('🏁 updateUIBasedOnAuth COMPLETED');
-    console.log('🏁 ========================================\n');
 }
 
 function logout() {
@@ -572,7 +589,7 @@ async function loadCompanySettingsNew() {
     // fallback din localStorage
     const saved = localStorage.getItem('companySettings');
     if (saved) {
-        try { populateCompanySettingsFormNew(JSON.parse(saved)); } catch {}
+        try { populateCompanySettingsFormNew(JSON.parse(saved)); } catch (e) {}
     }
 }
 
@@ -695,11 +712,906 @@ function initCompanySettingsPage() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ========== INVOICE GENERATOR ==========
+let invoiceProducts = [];
+
+function initInvoiceGenerator() {
+    console.log('[Invoice Generator] Initializing...');
+    
+    const form = document.getElementById('invoice-form');
+    const addProductBtn = document.getElementById('add-product');
+    const clientTypeSelect = document.getElementById('client-type');
+    const autocompleteClientBtn = document.getElementById('autocomplete-client-btn');
+    
+    if (!form) {
+        console.log('[Invoice Generator] Form not found');
+        return;
+    }
+    
+    // Load company settings to auto-populate issuer data
+    loadCompanySettingsForInvoice();
+    
+    // Client type toggle
+    if (clientTypeSelect) {
+        clientTypeSelect.addEventListener('change', () => {
+            const type = clientTypeSelect.value;
+            const companyFields = document.getElementById('company-fields');
+            const individualFields = document.getElementById('individual-fields');
+            
+            if (type === 'company') {
+                companyFields.style.display = 'block';
+                individualFields.style.display = 'none';
+            } else {
+                companyFields.style.display = 'none';
+                individualFields.style.display = 'block';
+            }
+        });
+    }
+    
+    // Autocomplete client from ANAF
+    if (autocompleteClientBtn) {
+        autocompleteClientBtn.addEventListener('click', async () => {
+            const cuiInput = document.getElementById('client-cui');
+            const cui = cuiInput.value.trim().replace(/^RO/i, '');
+            
+            if (!cui) {
+                alert('Introduceți mai întâi CUI-ul');
+                return;
+            }
+            
+            autocompleteClientBtn.disabled = true;
+            const oldHtml = autocompleteClientBtn.innerHTML;
+            autocompleteClientBtn.innerHTML = '<i data-lucide="loader-2"></i>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            
+            try {
+                const resp = await fetch(`${API_URL}/api/settings/autocomplete/${cui}`, { 
+                    headers: getAuthHeaders() 
+                });
+                const data = await resp.json();
+                
+                if (data.success && data.settings) {
+                    document.getElementById('client-name').value = data.settings.name || '';
+                    document.getElementById('client-cui').value = data.settings.cui || '';
+                    document.getElementById('client-regCom').value = data.settings.regCom || '';
+                    document.getElementById('client-address').value = data.settings.address || '';
+                    document.getElementById('client-city').value = data.settings.city || '';
+                    document.getElementById('client-county').value = data.settings.county || '';
+                    alert('✅ Date completate automat din ANAF');
+                } else {
+                    alert('❌ Nu s-au găsit informații pentru acest CUI');
+                }
+            } catch (err) {
+                console.error('Eroare autocomplete:', err);
+                alert('❌ Eroare la căutarea datelor');
+            } finally {
+                autocompleteClientBtn.disabled = false;
+                autocompleteClientBtn.innerHTML = oldHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+    }
+    
+    // Add product
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', () => {
+            addInvoiceProduct();
+        });
+    }
+    
+    // Form submit
+    if (form && !form.dataset.invoiceListenerAdded) {
+        form.dataset.invoiceListenerAdded = 'true';
+        form.addEventListener('submit', handleInvoiceSubmit);
+    }
+    
+    // Add initial product
+    if (invoiceProducts.length === 0) {
+        addInvoiceProduct();
+    }
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function loadCompanySettingsForInvoice() {
+    try {
+        const resp = await fetch(`${API_URL}/api/settings`, { 
+            headers: getAuthHeaders() 
+        });
+        
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.success && data.settings) {
+                console.log('[Invoice Generator] Company settings loaded:', data.settings);
+                // Settings are loaded - invoice will use them from backend
+            }
+        }
+    } catch (err) {
+        console.error('[Invoice Generator] Error loading company settings:', err);
+    }
+}
+
+function addInvoiceProduct() {
+    const container = document.getElementById('products-container');
+    if (!container) return;
+    
+    const index = invoiceProducts.length;
+    const productDiv = document.createElement('div');
+    productDiv.className = 'product-item';
+    productDiv.dataset.index = index;
+    
+    productDiv.innerHTML = `
+        <div class="product-row">
+            <div class="form-group">
+                <label>Denumire Produs/Serviciu</label>
+                <input type="text" class="product-name" required>
+            </div>
+            <div class="form-group">
+                <label>U.M.</label>
+                <input type="text" class="product-unit" value="buc" required>
+            </div>
+            <div class="form-group">
+                <label>Cantitate</label>
+                <input type="number" class="product-quantity" value="1" min="0.01" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Preț Unitar (fără TVA)</label>
+                <input type="number" class="product-price" value="0" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>TVA (%)</label>
+                <input type="number" class="product-vat" value="19" min="0" max="100" step="1" required>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-danger btn-icon remove-product" title="Șterge produs">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(productDiv);
+    
+    // Add event listeners
+    const inputs = productDiv.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('input', calculateInvoiceTotals);
+    });
+    
+    const removeBtn = productDiv.querySelector('.remove-product');
+    removeBtn.addEventListener('click', () => {
+        productDiv.remove();
+        invoiceProducts.splice(index, 1);
+        calculateInvoiceTotals();
+    });
+    
+    invoiceProducts.push({});
+    calculateInvoiceTotals();
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function calculateInvoiceTotals() {
+    const productItems = document.querySelectorAll('#products-container .product-item');
+    let subtotal = 0;
+    let totalVat = 0;
+    
+    productItems.forEach(item => {
+        const quantity = parseFloat(item.querySelector('.product-quantity').value) || 0;
+        const price = parseFloat(item.querySelector('.product-price').value) || 0;
+        const vatRate = parseFloat(item.querySelector('.product-vat').value) || 0;
+        
+        const lineSubtotal = quantity * price;
+        const lineVat = lineSubtotal * (vatRate / 100);
+        
+        subtotal += lineSubtotal;
+        totalVat += lineVat;
+    });
+    
+    const total = subtotal + totalVat;
+    
+    document.getElementById('summary-subtotal').textContent = subtotal.toFixed(2) + ' RON';
+    document.getElementById('summary-vat').textContent = totalVat.toFixed(2) + ' RON';
+    document.getElementById('summary-total').textContent = total.toFixed(2) + ' RON';
+}
+
+async function handleInvoiceSubmit(event) {
+    event.preventDefault();
+    console.log('[Invoice Generator] Form submitted');
+    
+    // Collect products
+    const products = [];
+    const productItems = document.querySelectorAll('#products-container .product-item');
+    
+    productItems.forEach(item => {
+        const name = item.querySelector('.product-name').value;
+        const unit = item.querySelector('.product-unit').value;
+        const quantity = parseFloat(item.querySelector('.product-quantity').value);
+        const price = parseFloat(item.querySelector('.product-price').value);
+        const vat = parseFloat(item.querySelector('.product-vat').value);
+        
+        if (name && quantity && price >= 0) {
+            products.push({ name, unit, quantity, price, vat });
+        }
+    });
+    
+    if (products.length === 0) {
+        alert('Adăugați cel puțin un produs/serviciu');
+        return;
+    }
+    
+    // Collect client data
+    const clientType = document.getElementById('client-type').value;
+    
+    const clientData = {
+        type: clientType
+    };
+    
+    if (clientType === 'company') {
+        clientData.name = document.getElementById('client-name').value;
+        clientData.cui = document.getElementById('client-cui').value.replace(/^RO/i, '');
+        clientData.regCom = document.getElementById('client-regCom').value;
+        clientData.address = document.getElementById('client-address').value;
+        clientData.city = document.getElementById('client-city').value;
+        clientData.county = document.getElementById('client-county').value;
+    } else {
+        clientData.firstName = document.getElementById('client-firstName').value;
+        clientData.lastName = document.getElementById('client-lastName').value;
+        clientData.cnp = document.getElementById('client-cnp').value;
+        clientData.address = document.getElementById('client-address').value;
+        clientData.city = document.getElementById('client-city').value;
+        clientData.county = document.getElementById('client-county').value;
+    }
+    
+    const invoiceData = {
+        client: clientData,
+        products: products
+    };
+    
+    console.log('[Invoice Generator] Invoice data:', invoiceData);
+    
+    // Show loading
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        const oldHtml = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i data-lucide="loader-2"></i> Generare...';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+        try {
+            const resp = await fetch(`${API_URL}/api/invoices`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(invoiceData)
+            });
+            
+            const data = await resp.json();
+            console.log('[Invoice Generator] Response:', data);
+            
+            if (resp.ok && data.success) {
+                alert(`✅ Factura ${data.invoice.invoiceNumber} a fost generată cu succes!`);
+                
+                // Reset form
+                event.target.reset();
+                document.getElementById('products-container').innerHTML = '';
+                invoiceProducts = [];
+                addInvoiceProduct();
+                calculateInvoiceTotals();
+                
+                // Redirect to history
+                window.location.hash = '#invoice-history';
+            } else {
+                alert('❌ Eroare: ' + (data.message || 'Nu s-a putut genera factura'));
+            }
+        } catch (err) {
+            console.error('[Invoice Generator] Error:', err);
+            alert('❌ Eroare la generarea facturii');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = oldHtml;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    }
+}
+
+// ========== PROFORMA GENERATOR ==========
+let proformaProducts = [];
+
+function initProformaGenerator() {
+    console.log('[Proforma Generator] Initializing...');
+    
+    const form = document.getElementById('proforma-form');
+    const addProductBtn = document.getElementById('add-proforma-product');
+    const clientTypeSelect = document.getElementById('proforma-client-type');
+    const autocompleteClientBtn = document.getElementById('autocomplete-proforma-client-btn');
+    
+    if (!form) {
+        console.log('[Proforma Generator] Form not found');
+        return;
+    }
+    
+    // Client type toggle
+    if (clientTypeSelect) {
+        clientTypeSelect.addEventListener('change', () => {
+            const type = clientTypeSelect.value;
+            const companyFields = document.getElementById('proforma-company-fields');
+            const individualFields = document.getElementById('proforma-individual-fields');
+            
+            if (type === 'company') {
+                companyFields.style.display = 'block';
+                individualFields.style.display = 'none';
+            } else {
+                companyFields.style.display = 'none';
+                individualFields.style.display = 'block';
+            }
+        });
+    }
+    
+    // Autocomplete client from ANAF
+    if (autocompleteClientBtn) {
+        autocompleteClientBtn.addEventListener('click', async () => {
+            const cuiInput = document.getElementById('proforma-client-cui');
+            const cui = cuiInput.value.trim().replace(/^RO/i, '');
+            
+            if (!cui) {
+                alert('Introduceți mai întâi CUI-ul');
+                return;
+            }
+            
+            autocompleteClientBtn.disabled = true;
+            const oldHtml = autocompleteClientBtn.innerHTML;
+            autocompleteClientBtn.innerHTML = '<i data-lucide="loader-2"></i>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            
+            try {
+                const resp = await fetch(`${API_URL}/api/settings/autocomplete/${cui}`, { 
+                    headers: getAuthHeaders() 
+                });
+                const data = await resp.json();
+                
+                if (data.success && data.settings) {
+                    document.getElementById('proforma-client-name').value = data.settings.name || '';
+                    document.getElementById('proforma-client-cui').value = data.settings.cui || '';
+                    document.getElementById('proforma-client-regCom').value = data.settings.regCom || '';
+                    document.getElementById('proforma-client-address').value = data.settings.address || '';
+                    document.getElementById('proforma-client-city').value = data.settings.city || '';
+                    document.getElementById('proforma-client-county').value = data.settings.county || '';
+                    alert('✅ Date completate automat din ANAF');
+                } else {
+                    alert('❌ Nu s-au găsit informații pentru acest CUI');
+                }
+            } catch (err) {
+                console.error('Eroare autocomplete:', err);
+                alert('❌ Eroare la căutarea datelor');
+            } finally {
+                autocompleteClientBtn.disabled = false;
+                autocompleteClientBtn.innerHTML = oldHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+    }
+    
+    // Add product
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', () => {
+            addProformaProduct();
+        });
+    }
+    
+    // Form submit
+    if (form && !form.dataset.proformaListenerAdded) {
+        form.dataset.proformaListenerAdded = 'true';
+        form.addEventListener('submit', handleProformaSubmit);
+    }
+    
+    // Add initial product
+    if (proformaProducts.length === 0) {
+        addProformaProduct();
+    }
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function addProformaProduct() {
+    const container = document.getElementById('proforma-products-container');
+    if (!container) return;
+    
+    const index = proformaProducts.length;
+    const productDiv = document.createElement('div');
+    productDiv.className = 'product-item';
+    productDiv.dataset.index = index;
+    
+    productDiv.innerHTML = `
+        <div class="product-row">
+            <div class="form-group">
+                <label>Denumire Produs/Serviciu</label>
+                <input type="text" class="proforma-product-name" required>
+            </div>
+            <div class="form-group">
+                <label>U.M.</label>
+                <input type="text" class="proforma-product-unit" value="buc" required>
+            </div>
+            <div class="form-group">
+                <label>Cantitate</label>
+                <input type="number" class="proforma-product-quantity" value="1" min="0.01" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Preț Unitar (fără TVA)</label>
+                <input type="number" class="proforma-product-price" value="0" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>TVA (%)</label>
+                <input type="number" class="proforma-product-vat" value="19" min="0" max="100" step="1" required>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-danger btn-icon remove-proforma-product" title="Șterge produs">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(productDiv);
+    
+    const inputs = productDiv.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('input', calculateProformaTotals);
+    });
+    
+    const removeBtn = productDiv.querySelector('.remove-proforma-product');
+    removeBtn.addEventListener('click', () => {
+        productDiv.remove();
+        proformaProducts.splice(index, 1);
+        calculateProformaTotals();
+    });
+    
+    proformaProducts.push({});
+    calculateProformaTotals();
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function calculateProformaTotals() {
+    const productItems = document.querySelectorAll('#proforma-products-container .product-item');
+    let subtotal = 0;
+    let totalVat = 0;
+    
+    productItems.forEach(item => {
+        const quantity = parseFloat(item.querySelector('.proforma-product-quantity').value) || 0;
+        const price = parseFloat(item.querySelector('.proforma-product-price').value) || 0;
+        const vatRate = parseFloat(item.querySelector('.proforma-product-vat').value) || 0;
+        
+        const lineSubtotal = quantity * price;
+        const lineVat = lineSubtotal * (vatRate / 100);
+        
+        subtotal += lineSubtotal;
+        totalVat += lineVat;
+    });
+    
+    const total = subtotal + totalVat;
+    
+    document.getElementById('proforma-summary-subtotal').textContent = subtotal.toFixed(2) + ' RON';
+    document.getElementById('proforma-summary-vat').textContent = totalVat.toFixed(2) + ' RON';
+    document.getElementById('proforma-summary-total').textContent = total.toFixed(2) + ' RON';
+}
+
+async function handleProformaSubmit(event) {
+    event.preventDefault();
+    console.log('[Proforma Generator] Form submitted');
+    
+    const products = [];
+    const productItems = document.querySelectorAll('#proforma-products-container .product-item');
+    
+    productItems.forEach(item => {
+        const name = item.querySelector('.proforma-product-name').value;
+        const unit = item.querySelector('.proforma-product-unit').value;
+        const quantity = parseFloat(item.querySelector('.proforma-product-quantity').value);
+        const price = parseFloat(item.querySelector('.proforma-product-price').value);
+        const vat = parseFloat(item.querySelector('.proforma-product-vat').value);
+        
+        if (name && quantity && price >= 0) {
+            products.push({ name, unit, quantity, price, vat });
+        }
+    });
+    
+    if (products.length === 0) {
+        alert('Adăugați cel puțin un produs/serviciu');
+        return;
+    }
+    
+    const clientType = document.getElementById('proforma-client-type').value;
+    const clientData = { type: clientType };
+    
+    if (clientType === 'company') {
+        clientData.name = document.getElementById('proforma-client-name').value;
+        clientData.cui = document.getElementById('proforma-client-cui').value.replace(/^RO/i, '');
+        clientData.regCom = document.getElementById('proforma-client-regCom').value;
+        clientData.address = document.getElementById('proforma-client-address').value;
+        clientData.city = document.getElementById('proforma-client-city').value;
+        clientData.county = document.getElementById('proforma-client-county').value;
+    } else {
+        clientData.firstName = document.getElementById('proforma-client-firstName').value;
+        clientData.lastName = document.getElementById('proforma-client-lastName').value;
+        clientData.cnp = document.getElementById('proforma-client-cnp').value;
+        clientData.address = document.getElementById('proforma-client-address').value;
+        clientData.city = document.getElementById('proforma-client-city').value;
+        clientData.county = document.getElementById('proforma-client-county').value;
+    }
+    
+    const proformaData = {
+        client: clientData,
+        products: products
+    };
+    
+    console.log('[Proforma Generator] Proforma data:', proformaData);
+    
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        const oldHtml = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i data-lucide="loader-2"></i> Generare...';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+        try {
+            const resp = await fetch(`${API_URL}/api/proformas`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(proformaData)
+            });
+            
+            const data = await resp.json();
+            console.log('[Proforma Generator] Response:', data);
+            
+            if (resp.ok && data.success) {
+                alert(`✅ Proforma ${data.proforma.proformaNumber} a fost generată cu succes!`);
+                
+                event.target.reset();
+                document.getElementById('proforma-products-container').innerHTML = '';
+                proformaProducts = [];
+                addProformaProduct();
+                calculateProformaTotals();
+                
+                window.location.hash = '#proformas';
+            } else {
+                alert('❌ Eroare: ' + (data.message || 'Nu s-a putut genera proforma'));
+            }
+        } catch (err) {
+            console.error('[Proforma Generator] Error:', err);
+            alert('❌ Eroare la generarea proformei');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = oldHtml;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    }
+}
+
+function previewProforma() {
+    alert('🔍 Funcționalitatea de preview va fi disponibilă în curând!');
+}
+
+// ========== OFFER GENERATOR ==========
+let offerProducts = [];
+
+function initOfferGenerator() {
+    console.log('[Offer Generator] Initializing...');
+    
+    const form = document.getElementById('offer-form');
+    const addProductBtn = document.getElementById('add-offer-product');
+    const clientTypeSelect = document.getElementById('offer-client-type');
+    const autocompleteClientBtn = document.getElementById('autocomplete-offer-client-btn');
+    
+    if (!form) {
+        console.log('[Offer Generator] Form not found');
+        return;
+    }
+    
+    // Client type toggle
+    if (clientTypeSelect) {
+        clientTypeSelect.addEventListener('change', () => {
+            const type = clientTypeSelect.value;
+            const companyFields = document.getElementById('offer-company-fields');
+            const individualFields = document.getElementById('offer-individual-fields');
+            
+            if (type === 'company') {
+                companyFields.style.display = 'block';
+                individualFields.style.display = 'none';
+            } else {
+                companyFields.style.display = 'none';
+                individualFields.style.display = 'block';
+            }
+        });
+    }
+    
+    // Autocomplete client from ANAF
+    if (autocompleteClientBtn) {
+        autocompleteClientBtn.addEventListener('click', async () => {
+            const cuiInput = document.getElementById('offer-client-cui');
+            const cui = cuiInput.value.trim().replace(/^RO/i, '');
+            
+            if (!cui) {
+                alert('Introduceți mai întâi CUI-ul');
+                return;
+            }
+            
+            autocompleteClientBtn.disabled = true;
+            const oldHtml = autocompleteClientBtn.innerHTML;
+            autocompleteClientBtn.innerHTML = '<i data-lucide="loader-2"></i>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            
+            try {
+                const resp = await fetch(`${API_URL}/api/settings/autocomplete/${cui}`, { 
+                    headers: getAuthHeaders() 
+                });
+                const data = await resp.json();
+                
+                if (data.success && data.settings) {
+                    document.getElementById('offer-client-name').value = data.settings.name || '';
+                    document.getElementById('offer-client-cui').value = data.settings.cui || '';
+                    alert('✅ Date completate automat din ANAF');
+                } else {
+                    alert('❌ Nu s-au găsit informații pentru acest CUI');
+                }
+            } catch (err) {
+                console.error('Eroare autocomplete:', err);
+                alert('❌ Eroare la căutarea datelor');
+            } finally {
+                autocompleteClientBtn.disabled = false;
+                autocompleteClientBtn.innerHTML = oldHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+    }
+    
+    // Add product
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', () => {
+            addOfferProduct();
+        });
+    }
+    
+    // Form submit
+    if (form && !form.dataset.offerListenerAdded) {
+        form.dataset.offerListenerAdded = 'true';
+        form.addEventListener('submit', handleOfferSubmit);
+    }
+    
+    // Add initial product
+    if (offerProducts.length === 0) {
+        addOfferProduct();
+    }
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function addOfferProduct() {
+    const container = document.getElementById('offer-products-container');
+    if (!container) return;
+    
+    const index = offerProducts.length;
+    const productDiv = document.createElement('div');
+    productDiv.className = 'product-item';
+    productDiv.dataset.index = index;
+    
+    productDiv.innerHTML = `
+        <div class="product-row">
+            <div class="form-group">
+                <label>Denumire Produs/Serviciu</label>
+                <input type="text" class="offer-product-name" required>
+            </div>
+            <div class="form-group">
+                <label>Cantitate</label>
+                <input type="number" class="offer-product-quantity" value="1" min="0.01" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Preț Unitar (fără TVA)</label>
+                <input type="number" class="offer-product-price" value="0" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>TVA (%)</label>
+                <input type="number" class="offer-product-vat" value="19" min="0" max="100" step="1" required>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-danger btn-icon remove-offer-product" title="Șterge produs">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(productDiv);
+    
+    const inputs = productDiv.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('input', calculateOfferTotals);
+    });
+    
+    const removeBtn = productDiv.querySelector('.remove-offer-product');
+    removeBtn.addEventListener('click', () => {
+        productDiv.remove();
+        offerProducts.splice(index, 1);
+        calculateOfferTotals();
+    });
+    
+    offerProducts.push({});
+    calculateOfferTotals();
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function calculateOfferTotals() {
+    const productItems = document.querySelectorAll('#offer-products-container .product-item');
+    let subtotal = 0;
+    let totalVat = 0;
+    
+    productItems.forEach(item => {
+        const quantity = parseFloat(item.querySelector('.offer-product-quantity').value) || 0;
+        const price = parseFloat(item.querySelector('.offer-product-price').value) || 0;
+        const vatRate = parseFloat(item.querySelector('.offer-product-vat').value) || 0;
+        
+        const lineSubtotal = quantity * price;
+        const lineVat = lineSubtotal * (vatRate / 100);
+        
+        subtotal += lineSubtotal;
+        totalVat += lineVat;
+    });
+    
+    const total = subtotal + totalVat;
+    
+    const subtotalEl = document.getElementById('offer-summary-subtotal');
+    const vatEl = document.getElementById('offer-summary-vat');
+    const totalEl = document.getElementById('offer-summary-total');
+    
+    if (subtotalEl) subtotalEl.textContent = subtotal.toFixed(2) + ' RON';
+    if (vatEl) vatEl.textContent = totalVat.toFixed(2) + ' RON';
+    if (totalEl) totalEl.textContent = total.toFixed(2) + ' RON';
+}
+
+async function handleOfferSubmit(event) {
+    event.preventDefault();
+    console.log('[Offer Generator] Form submitted');
+    
+    const products = [];
+    const productItems = document.querySelectorAll('#offer-products-container .product-item');
+    
+    productItems.forEach(item => {
+        const name = item.querySelector('.offer-product-name').value;
+        const quantity = parseFloat(item.querySelector('.offer-product-quantity').value);
+        const price = parseFloat(item.querySelector('.offer-product-price').value);
+        const vatRate = parseFloat(item.querySelector('.offer-product-vat').value);
+        
+        if (name && quantity && price >= 0) {
+            products.push({ name, quantity, price, vatRate });
+        }
+    });
+    
+    if (products.length === 0) {
+        alert('Adăugați cel puțin un produs/serviciu');
+        return;
+    }
+    
+    const formData = new FormData(event.target);
+    const clientType = formData.get('offer-client-type');
+    
+    const offerData = {
+        title: formData.get('offer-title'),
+        validity: parseInt(formData.get('offer-validity')),
+        paymentTerms: formData.get('offer-payment-terms'),
+        delivery: formData.get('offer-delivery'),
+        notes: formData.get('offer-notes'),
+        client: clientType === 'individual' ? {
+            type: 'individual',
+            firstName: formData.get('offer-client-firstName'),
+            lastName: formData.get('offer-client-lastName'),
+            email: formData.get('offer-client-email'),
+            phone: formData.get('offer-client-phone')
+        } : {
+            type: 'company',
+            name: formData.get('offer-client-name'),
+            cui: formData.get('offer-client-cui'),
+            email: formData.get('offer-client-email'),
+            phone: formData.get('offer-client-phone')
+        },
+        products: products
+    };
+    
+    console.log('[Offer Generator] Offer data:', offerData);
+    
+    alert('✅ Oferta a fost generată cu succes!\n\nÎn producție, aceasta va fi salvată în baza de date și va putea fi descărcată ca PDF.');
+    
+    event.target.reset();
+    document.getElementById('offer-products-container').innerHTML = '';
+    offerProducts = [];
+    addOfferProduct();
+    calculateOfferTotals();
+}
+
+function previewOffer() {
+    alert('🔍 Funcționalitatea de preview va fi disponibilă în curând!');
+}
+
+// ========== GLOBAL INITIALIZATION ==========
+// Re-initialize when hash changes
+window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#invoice-generator') {
+        initInvoiceGenerator();
+    }
+    if (window.location.hash === '#proforma-generator') {
+        initProformaGenerator();
+    }
+    if (window.location.hash === '#offer-generator') {
+        initOfferGenerator();
+    }
     if (window.location.hash === '#company-settings') {
         initCompanySettingsPage();
     }
+    if (window.location.hash === '#whatsapp-settings') {
+        initWhatsAppSettingsPage();
+    }
 });
+
+// ========== GLOBAL APP INITIALIZATION ==========
+async function initializeApp() {
+    console.log('🚀 Initializing ChatBill app...');
+    // Immediately hide auth loader to prevent UI blocking
+    try {
+        const loaderImmediate = document.getElementById('auth-loader');
+        if (loaderImmediate) loaderImmediate.style.display = 'none';
+    } catch (e) {}
+    // Fail-safe: hide auth loader after 5s even if something breaks
+    try {
+        const loader = document.getElementById('auth-loader');
+        if (loader) {
+            setTimeout(() => {
+                loader.style.display = 'none';
+                console.log('⏱️ Failsafe: auth loader hidden after timeout');
+            }, 5000);
+        }
+    } catch (e) {}
+    
+    // Call auth UI update - this is CRITICAL
+    if (typeof updateUIBasedOnAuth === 'function') {
+        await updateUIBasedOnAuth();
+    } else {
+        console.error('❌ updateUIBasedOnAuth function not found!');
+        // Hide loader even if function missing
+        const loader = document.getElementById('auth-loader');
+        if (loader) loader.style.display = 'none';
+    }
+    
+    // Initialize page-specific handlers based on current hash
+    const currentHash = window.location.hash;
+    
+    if (currentHash === '#company-settings') {
+        initCompanySettingsPage();
+    }
+    
+    if (currentHash === '#invoice-generator') {
+        initInvoiceGenerator();
+    }
+    
+    if (currentHash === '#proforma-generator') {
+        initProformaGenerator();
+    }
+    
+    if (currentHash === '#offer-generator') {
+        initOfferGenerator();
+    }
+    
+    if (currentHash === '#whatsapp-settings') {
+        initWhatsAppSettingsPage();
+    }
+    
+    console.log('✅ ChatBill app initialized');
+}
+
+// Initialize app when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
+
 
 window.addEventListener('hashchange', () => {
     if (window.location.hash === '#company-settings') {
@@ -811,13 +1723,6 @@ function bindWhatsAppHandlers() {
 
     whatsappHandlersBound = true;
 }
-
-// Initialize WhatsApp page on load if hash matches
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.hash === '#whatsapp-settings') {
-        initWhatsAppSettingsPage();
-    }
-});
 
 // ========== TEMPLATE SELECTOR ==========
 function initTemplateSelector() {
@@ -1648,18 +2553,6 @@ function displayChatMessage(role, message) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Handle Enter key in chat
-document.addEventListener('DOMContentLoaded', () => {
-    const chatInput = document.getElementById('chatInput');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendChatMessage();
-            }
-        });
-    }
-});
-
 // ========== ANAF e-FACTURA INTEGRATION ==========
 async function checkANAFStatus() {
     try {
@@ -1913,21 +2806,6 @@ async function clearGPTHistory() {
         alert('Eroare la ștergerea istoricului');
     }
 }
-
-// Enter key pentru GPT chat
-document.addEventListener('DOMContentLoaded', () => {
-    const chatInput = document.getElementById('chatInput');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendGPTMessage();
-            }
-        });
-    }
-    
-    // Initialize offer generator
-    initOfferGenerator();
-});
 
 // ========== INVOICE FILTERS ==========
 function filterInvoices(status) {
