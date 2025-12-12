@@ -20,8 +20,7 @@ function checkAuth() {
         const parts = token.split('.');
         if (parts.length !== 3) {
             console.log('❌ checkAuth: Token invalid (format greșit)');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            clearAuthData();
             return false;
         }
         
@@ -30,23 +29,60 @@ function checkAuth() {
         // Verifică dacă token-ul a expirat
         if (payload.exp && payload.exp * 1000 < Date.now()) {
             console.log('❌ checkAuth: Token expirat');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            clearAuthData();
             return false;
         }
         
-        console.log('✅ checkAuth: Token valid');
+        console.log('✅ checkAuth: Token valid local');
         return true;
     } catch (error) {
         console.error('❌ checkAuth: Eroare validare token:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        clearAuthData();
         return false;
     }
 }
 
+function clearAuthData() {
+    console.log('🧹 Curățare date autentificare...');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+}
+
 function isLoggedIn() {
     return checkAuth();
+}
+
+// Verificare token pe server - returnează true dacă e valid, false altfel
+async function verifyTokenOnServer() {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        console.log('❌ verifyTokenOnServer: Nu există token');
+        return false;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (response.status === 401 || response.status === 403) {
+            console.log('❌ verifyTokenOnServer: Token invalid pe server');
+            clearAuthData();
+            return false;
+        }
+        
+        if (!response.ok) {
+            console.log('⚠️ verifyTokenOnServer: Eroare server:', response.status);
+            return false;
+        }
+        
+        console.log('✅ verifyTokenOnServer: Token valid pe server');
+        return true;
+    } catch (error) {
+        console.error('❌ verifyTokenOnServer: Eroare request:', error);
+        return false;
+    }
 }
 
 async function updateChatBanners() {
@@ -274,8 +310,21 @@ function updateUserInfo(userData) {
     }
 }
 
-function updateUIBasedOnAuth() {
-    const loggedIn = isLoggedIn();
+async function updateUIBasedOnAuth() {
+    let loggedIn = isLoggedIn();
+    
+    // Dacă pare logat, verifică și pe server
+    if (loggedIn) {
+        const serverValid = await verifyTokenOnServer();
+        if (!serverValid) {
+            console.log('⚠️ Token invalid pe server - curățare și reload');
+            clearAuthData();
+            loggedIn = false;
+            // Forțează reload pentru a reseta UI-ul complet
+            window.location.reload();
+            return;
+        }
+    }
     
     console.log('🔐 updateUIBasedOnAuth - Status:', loggedIn ? 'LOGAT' : 'GUEST');
     
@@ -317,6 +366,9 @@ function updateUIBasedOnAuth() {
                         <i data-lucide="log-in"></i>
                         Autentificare
                     </a>
+                    <button onclick="clearAuthData(); window.location.reload();" style="width: 100%; padding: 0.5rem; background: transparent; border: 1px solid var(--border); border-radius: var(--radius); color: var(--foreground); cursor: pointer; font-size: 0.875rem;">
+                        🧹 Curăță cache
+                    </button>
                 </div>
             `;
             lucide.createIcons();
