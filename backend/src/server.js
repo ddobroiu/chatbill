@@ -18,6 +18,8 @@ const server = http.createServer(app);
 // CORS Configuration - Allow only specific origins
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'https://chatbill.ro',
+  'https://chatbill.ro', // Fără www
+  'https://www.chatbill.ro', // Cu www
   'http://localhost:3000', // Pentru development local
   'http://localhost:5173', // Pentru Vite dev server
 ];
