@@ -20,7 +20,8 @@
       "Bash(powershell -Command:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

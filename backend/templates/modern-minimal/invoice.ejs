@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factură <%= invoice.invoiceNumber %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        @page {
+            size: A4;
+            margin: 24mm 16mm;
+        }
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+        }
+        .status-paid {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status-unpaid {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <div class="max-w-4xl mx-auto p-8" style="min-height: 100vh;">
+
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-12">
+            <div>
+                <% if (company.logo) { %>
+                    <img src="<%= company.logo %>" alt="<%= company.name %>" class="h-12 mb-4">
+                <% } else { %>
+                    <div class="text-2xl font-bold text-gray-900 mb-1"><%= company.name %></div>
+                <% } %>
+                <div class="text-sm text-gray-500 space-y-1">
+                    <div><%= company.address %></div>
+                    <div><%= company.city %>, <%= company.county %></div>
+                    <% if (company.cui) { %><div>CUI: <%= company.cui %></div><% } %>
+                    <% if (company.regCom) { %><div>Reg. Com.: <%= company.regCom %></div><% } %>
+                </div>
+            </div>
+
+            <div class="text-right">
+                <div class="text-3xl font-bold text-gray-900 mb-2">FACTURĂ</div>
+                <div class="text-lg font-semibold text-gray-700 mb-4"><%= invoice.invoiceNumber %></div>
+                <% if (invoice.status) { %>
+                    <span class="status-badge <%= invoice.status === 'paid' ? 'status-paid' : 'status-unpaid' %>">
+                        <%= invoice.status === 'paid' ? 'PLĂTIT' : 'NEPLĂTIT' %>
+                    </span>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Invoice Info & Client -->
+        <div class="grid grid-cols-2 gap-8 mb-12">
+            <div>
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Furnizor</div>
+                <div class="text-sm text-gray-900 font-medium mb-1"><%= company.name %></div>
+                <div class="text-sm text-gray-600 space-y-1">
+                    <% if (company.cui) { %><div>CUI: <%= company.cui %></div><% } %>
+                    <% if (company.phone) { %><div>Tel: <%= company.phone %></div><% } %>
+                    <% if (company.email) { %><div><%= company.email %></div><% } %>
+                    <% if (company.iban) { %><div>IBAN: <%= company.iban %></div><% } %>
+                    <% if (company.bank) { %><div>Bancă: <%= company.bank %></div><% } %>
+                </div>
+            </div>
+
+            <div>
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Client</div>
+                <div class="text-sm text-gray-900 font-medium mb-1">
+                    <%= client.type === 'company' ? client.name : (client.firstName + ' ' + client.lastName) %>
+                </div>
+                <div class="text-sm text-gray-600 space-y-1">
+                    <% if (client.cui) { %><div>CUI: <%= client.cui %></div><% } %>
+                    <% if (client.cnp) { %><div>CNP: <%= client.cnp %></div><% } %>
+                    <% if (client.address) { %><div><%= client.address %></div><% } %>
+                    <% if (client.city) { %><div><%= client.city %><%= client.county ? ', ' + client.county : '' %></div><% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date -->
+        <div class="flex gap-8 mb-12 text-sm">
+            <div>
+                <div class="text-gray-500 mb-1">Data emiterii</div>
+                <div class="font-medium text-gray-900"><%= invoice.issueDate || new Date().toLocaleDateString('ro-RO') %></div>
+            </div>
+            <% if (invoice.dueDate) { %>
+            <div>
+                <div class="text-gray-500 mb-1">Scadență</div>
+                <div class="font-medium text-gray-900"><%= invoice.dueDate %></div>
+            </div>
+            <% } %>
+        </div>
+
+        <!-- Products Table -->
+        <div class="mb-12">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b-2 border-gray-200">
+                        <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-4 pr-4">Descriere</th>
+                        <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-4 px-4">U.M.</th>
+                        <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-4 px-4">Cant.</th>
+                        <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-4 px-4">Preț</th>
+                        <% if (invoice.isVatPayer) { %>
+                        <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-4 px-4">TVA</th>
+                        <% } %>
+                        <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-4 pl-4">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% products.forEach((product, index) => { %>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-5 pr-4 text-sm text-gray-900"><%= product.name %></td>
+                        <td class="py-5 px-4 text-sm text-gray-600 text-right"><%= product.unit || 'buc' %></td>
+                        <td class="py-5 px-4 text-sm text-gray-900 text-right"><%= product.quantity %></td>
+                        <td class="py-5 px-4 text-sm text-gray-900 text-right"><%= product.price.toFixed(2) %> RON</td>
+                        <% if (invoice.isVatPayer) { %>
+                        <td class="py-5 px-4 text-sm text-gray-600 text-right"><%= product.vat %>%</td>
+                        <% } %>
+                        <td class="py-5 pl-4 text-sm font-medium text-gray-900 text-right">
+                            <%= ((product.quantity * product.price) * (1 + (product.vat || 0) / 100)).toFixed(2) %> RON
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals -->
+        <div class="flex justify-end mb-12">
+            <div class="w-80">
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                    <div class="text-sm text-gray-600">Subtotal</div>
+                    <div class="text-sm font-medium text-gray-900"><%= invoice.subtotal.toFixed(2) %> RON</div>
+                </div>
+
+                <% if (invoice.isVatPayer && invoice.totalVat > 0) { %>
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                    <div class="text-sm text-gray-600">TVA</div>
+                    <div class="text-sm font-medium text-gray-900"><%= invoice.totalVat.toFixed(2) %> RON</div>
+                </div>
+                <% } %>
+
+                <div class="flex justify-between items-center py-4 mt-2">
+                    <div class="text-base font-semibold text-gray-900">Total de plată</div>
+                    <div class="text-2xl font-bold text-gray-900"><%= invoice.total.toFixed(2) %> RON</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-gray-200 pt-8 mt-16">
+            <div class="text-center text-sm text-gray-500">
+                <% if (company.email || company.phone) { %>
+                <div class="mb-2">
+                    <% if (company.email) { %><span><%= company.email %></span><% } %>
+                    <% if (company.email && company.phone) { %><span class="mx-2">•</span><% } %>
+                    <% if (company.phone) { %><span><%= company.phone %></span><% } %>
+                </div>
+                <% } %>
+                <div class="text-xs text-gray-400">
+                    Vă mulțumim pentru colaborare!
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
