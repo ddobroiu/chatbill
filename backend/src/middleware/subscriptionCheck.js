@@ -4,8 +4,9 @@ const prisma = require('../db/prismaWrapper');
  * Verifică dacă utilizatorul poate emite facturi
  * Condițiile:
  * 1. Utilizatorul trebuie să fie logat
- * 2. Trebuie să aibă datele companiei setate (CompanySettings)
- * 3. Trebuie să fie în perioada de probă (7 zile) SAU să aibă abonament activ
+ * 2. Trebuie să aibă telefonul verificat
+ * 3. Trebuie să aibă datele companiei setate (CompanySettings)
+ * 4. Trebuie să fie în perioada de probă (7 zile) SAU să aibă abonament activ
  */
 async function checkCanGenerateInvoice(userId) {
   try {
@@ -15,6 +16,7 @@ async function checkCanGenerateInvoice(userId) {
       select: {
         id: true,
         email: true,
+        phoneVerified: true,
         createdAt: true,
         subscriptionStatus: true,
         subscriptionExpiresAt: true
@@ -29,7 +31,17 @@ async function checkCanGenerateInvoice(userId) {
       };
     }
 
-    // 2. Verifică dacă are setările companiei
+    // 2. Verifică dacă telefonul este verificat
+    if (!user.phoneVerified) {
+      return {
+        canGenerate: false,
+        reason: 'phone_not_verified',
+        message: '📱 Pentru a emite facturi, trebuie să verifici numărul de telefon.\n\nVerifică codul primit pe WhatsApp sau solicită unul nou din Setări.',
+        requiresPhoneVerification: true
+      };
+    }
+
+    // 3. Verifică dacă are setările companiei
     const companySettings = await prisma.companySettings.findUnique({
       where: { userId: userId }
     });
@@ -53,13 +65,13 @@ async function checkCanGenerateInvoice(userId) {
       };
     }
 
-    // 3. Calculează perioada de probă (7 zile de la înregistrare)
+    // 4. Calculează perioada de probă (7 zile de la înregistrare)
     const accountAge = Date.now() - new Date(user.createdAt).getTime();
     const trialPeriodMs = 7 * 24 * 60 * 60 * 1000; // 7 zile în milisecunde
     const inTrialPeriod = accountAge < trialPeriodMs;
     const daysLeft = Math.ceil((trialPeriodMs - accountAge) / (24 * 60 * 60 * 1000));
 
-    // 4. Verifică abonament activ
+    // 5. Verifică abonament activ
     const hasActiveSubscription = user.subscriptionStatus === 'active' && 
       (!user.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
 

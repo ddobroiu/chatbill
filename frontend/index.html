@@ -1449,6 +1449,30 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Banner pentru verificare telefon -->
+            <div id="chat-phone-verification-banner" class="card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border: none; margin-bottom: 1rem; display: none;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i data-lucide="smartphone" style="width: 32px; height: 32px; flex-shrink: 0;"></i>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: white;">📱 Verifică numărul de telefon</h4>
+                        <p style="margin: 0; opacity: 0.95; font-size: 0.9rem;">
+                            Pentru a emite facturi, trebuie să verifici numărul de telefon. Introdu codul primit pe WhatsApp.
+                        </p>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="text" id="phone-verification-code" placeholder="Introdu codul (6 cifre)" maxlength="6" style="flex: 1; padding: 0.5rem; border-radius: 0.5rem; border: none; color: #333;">
+                            <button id="verify-phone-btn" class="btn" style="background: white; color: #43e97b;">
+                                <i data-lucide="check"></i>
+                                Verifică
+                            </button>
+                            <button id="resend-phone-code-btn" class="btn btn-secondary" style="border-color: white; color: white;">
+                                <i data-lucide="refresh-cw"></i>
+                                Retrimite
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="card" style="height: 600px; display: flex; flex-direction: column;">
                 <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; background: var(--background);">

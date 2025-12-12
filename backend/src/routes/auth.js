@@ -30,6 +30,8 @@ router.post('/resend-verification', authLimiter, validateBody(z.object({ email: 
 
 // Rute protejate (necesită autentificare)
 router.get('/me', authenticateToken, authController.getCurrentUser);
+router.post('/verify-phone', authenticateToken, authController.verifyPhone);
+router.post('/resend-phone-code', authenticateToken, authController.resendPhoneCode);
 router.put('/profile', authenticateToken, validateBody(z.object({
   email: emailSchema.optional(),
   name: z.string().min(1).optional()

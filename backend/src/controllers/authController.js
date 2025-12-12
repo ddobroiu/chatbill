@@ -585,6 +585,145 @@ async function verifyEmail(req, res) {
   }
 }
 
+// POST /api/auth/verify-phone - Verifică codul WhatsApp
+async function verifyPhone(req, res) {
+  try {
+    const { code } = req.body;
+    const userId = req.user.id;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        error: 'Codul de verificare este obligatoriu'
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Utilizator negăsit'
+      });
+    }
+
+    if (user.phoneVerified) {
+      return res.json({
+        success: true,
+        message: 'Telefonul este deja verificat'
+      });
+    }
+
+    // Verifică dacă codul a expirat
+    if (user.phoneVerificationExpiry && new Date() > user.phoneVerificationExpiry) {
+      return res.status(400).json({
+        success: false,
+        error: 'Codul de verificare a expirat. Solicită unul nou.'
+      });
+    }
+
+    // Verifică codul
+    if (user.phoneVerificationCode !== code) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cod de verificare incorect'
+      });
+    }
+
+    // Marchează telefonul ca verificat
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        phoneVerified: true,
+        phoneVerificationCode: null,
+        phoneVerificationExpiry: null
+      }
+    });
+
+    console.log('✅ Telefon verificat pentru:', user.email);
+
+    res.json({
+      success: true,
+      message: 'Telefon verificat cu succes! Poți emite facturi acum.'
+    });
+
+  } catch (error) {
+    console.error('❌ Eroare verificare telefon:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Eroare la verificarea telefonului'
+    });
+  }
+}
+
+// POST /api/auth/resend-phone-code - Retrimite codul WhatsApp
+async function resendPhoneCode(req, res) {
+  try {
+    const userId = req.user.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Utilizator negăsit'
+      });
+    }
+
+    if (user.phoneVerified) {
+      return res.json({
+        success: true,
+        message: 'Telefonul este deja verificat'
+      });
+    }
+
+    if (!user.phone) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nu există număr de telefon asociat contului'
+      });
+    }
+
+    // Generează cod nou
+    const phoneVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const phoneVerificationExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minute
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        phoneVerificationCode,
+        phoneVerificationExpiry
+      }
+    });
+
+    // Trimite cod pe WhatsApp
+    try {
+      const whatsappService = require('../services/whatsappService');
+      await whatsappService.sendVerificationCode(user.phone, phoneVerificationCode);
+      console.log('📱 Cod verificare WhatsApp retrimis');
+    } catch (whatsappError) {
+      console.error('⚠️ Eroare trimitere WhatsApp:', whatsappError);
+      throw new Error('Eroare la trimiterea codului WhatsApp');
+    }
+
+    res.json({
+      success: true,
+      message: 'Cod de verificare trimis pe WhatsApp'
+    });
+
+  } catch (error) {
+    console.error('❌ Eroare retrimitere cod:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Eroare la trimiterea codului'
+    });
+  }
+}
+
 // POST /api/auth/resend-verification - Retrimite email de verificare
 async function resendVerification(req, res) {
   try {
@@ -658,5 +797,7 @@ module.exports = {
   updateProfile,
   changePassword,
   verifyEmail,
-  resendVerification
+  resendVerification,
+  verifyPhone,
+  resendPhoneCode
 };

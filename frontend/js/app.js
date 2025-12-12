@@ -22,24 +22,46 @@ async function updateChatBanners() {
     const guestBanner = document.getElementById('chat-guest-banner');
     const noSettingsBanner = document.getElementById('chat-no-settings-banner');
     const trialBanner = document.getElementById('chat-trial-banner');
+    const phoneVerificationBanner = document.getElementById('chat-phone-verification-banner');
     
     // Reset toate bannerele
     if (guestBanner) guestBanner.style.display = 'none';
     if (noSettingsBanner) noSettingsBanner.style.display = 'none';
     if (trialBanner) trialBanner.style.display = 'none';
+    if (phoneVerificationBanner) phoneVerificationBanner.style.display = 'none';
     
     if (!loggedIn) {
         // Afișează banner pentru guest
         if (guestBanner) {
             guestBanner.style.display = 'block';
-            // Re-inițializează iconurile
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
         }
     } else {
-        // Utilizator logat - verifică setări și abonament
+        // Utilizator logat - verifică telefon, setări și abonament
         try {
+            // Verifică user info pentru telefon verificat
+            const meResponse = await fetch(`${API_URL}/api/auth/me`, {
+                headers: getAuthHeaders()
+            });
+            
+            if (meResponse.ok) {
+                const meData = await meResponse.json();
+                
+                // Verifică dacă telefonul e verificat
+                if (!meData.user.phoneVerified) {
+                    if (phoneVerificationBanner) {
+                        phoneVerificationBanner.style.display = 'block';
+                        setupPhoneVerification(); // Adaugă event listeners
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    }
+                    return; // Nu afișa alte bannere dacă telefonul nu e verificat
+                }
+            }
+            
             // Verifică setările companiei
             const settingsResponse = await fetch(`${API_URL}/api/settings`, {
                 headers: getAuthHeaders()
@@ -64,6 +86,87 @@ async function updateChatBanners() {
         } catch (error) {
             console.error('Eroare verificare setări:', error);
         }
+    }
+}
+
+function setupPhoneVerification() {
+    const verifyBtn = document.getElementById('verify-phone-btn');
+    const resendBtn = document.getElementById('resend-phone-code-btn');
+    const codeInput = document.getElementById('phone-verification-code');
+    
+    if (verifyBtn && !verifyBtn.dataset.listenerAdded) {
+        verifyBtn.dataset.listenerAdded = 'true';
+        verifyBtn.addEventListener('click', async () => {
+            const code = codeInput.value.trim();
+            
+            if (!code || code.length !== 6) {
+                alert('Introdu un cod valid de 6 cifre');
+                return;
+            }
+            
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<i data-lucide="loader-2"></i> Verificare...';
+            lucide.createIcons();
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/verify-phone`, {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeaders(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    updateChatBanners(); // Refresh banners
+                    codeInput.value = '';
+                } else {
+                    alert('❌ ' + (data.error || 'Cod invalid'));
+                }
+            } catch (error) {
+                console.error('Eroare verificare:', error);
+                alert('❌ Eroare la verificare');
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = '<i data-lucide="check"></i> Verifică';
+                lucide.createIcons();
+            }
+        });
+    }
+    
+    if (resendBtn && !resendBtn.dataset.listenerAdded) {
+        resendBtn.dataset.listenerAdded = 'true';
+        resendBtn.addEventListener('click', async () => {
+            resendBtn.disabled = true;
+            resendBtn.innerHTML = '<i data-lucide="loader-2"></i>';
+            lucide.createIcons();
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/resend-phone-code`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                } else {
+                    alert('❌ ' + (data.error || 'Eroare la retrimitere'));
+                }
+            } catch (error) {
+                console.error('Eroare retrimitere:', error);
+                alert('❌ Eroare la retrimitere');
+            } finally {
+                resendBtn.disabled = false;
+                resendBtn.innerHTML = '<i data-lucide="refresh-cw"></i> Retrimite';
+                lucide.createIcons();
+            }
+        });
     }
 }
 
