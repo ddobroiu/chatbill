@@ -2,7 +2,7 @@ const { z } = require('zod');
 
 // Common schemas
 const emailSchema = z.string().email('Email invalid');
-const passwordSchema = z.string().min(8, 'Parola trebuie să aibă minimum 8 caractere');
+const passwordSchema = z.string().min(6, 'Parola trebuie să aibă minimum 6 caractere');
 const cuiSchema = z.string().regex(/^[0-9]{2,10}$/, 'CUI invalid (doar cifre, 2-10 caractere)');
 const ibanSchema = z.string().regex(/^[A-Z]{2}[0-9]{2}[A-Z0-9]+$/, 'IBAN invalid').optional();
 const phoneSchema = z.string().regex(/^[0-9+\s()-]{6,20}$/, 'Număr de telefon invalid').optional();
@@ -11,7 +11,9 @@ const phoneSchema = z.string().regex(/^[0-9+\s()-]{6,20}$/, 'Număr de telefon i
 const registerSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
-  confirmPassword: z.string()
+  confirmPassword: z.string(),
+  cui: cuiSchema,
+  company: z.string().min(1, 'Numele firmei este obligatoriu').optional()
 }).refine(data => data.password === data.confirmPassword, {
   message: 'Parolele nu se potrivesc',
   path: ['confirmPassword']

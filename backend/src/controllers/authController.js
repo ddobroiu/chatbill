@@ -113,10 +113,13 @@ async function register(req, res) {
       console.error('⚠️ Eroare trimitere email:', emailError);
     }
 
+    // În development, expune codul pentru debug (nu în producție)
+    const devDebug = process.env.NODE_ENV === 'development' ? { emailVerificationCode } : {};
+
     res.status(201).json({
       success: true,
       message: 'Cont creat cu succes! Verifică email-ul pentru codul de confirmare.',
-      token,
+      ...devDebug,
       user: {
         id: user.id,
         name: user.name,
