@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatBill - Facturare InteligentÄƒ</title>
+    <title>ChatBill - Facturare Inteligentă</title>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -498,7 +498,7 @@
             flex: 1;
         }
         
-        /* Stiluri pentru starea de Ã®ncÄƒrcare */
+        /* Stiluri pentru starea de încărcare */
         #auth-loader {
             position: fixed;
             top: 0;
@@ -838,7 +838,7 @@
         </div>
         <nav class="sidebar-nav">
             <ul class="nav-menu">
-                <!-- Chat GPT - Prima paginÄƒ -->
+                <!-- Chat GPT - Prima pagină -->
                 <li class="nav-item">
                     <a href="#chat" class="nav-link active">
                         <i data-lucide="message-circle"></i>
@@ -864,17 +864,17 @@
                     <ul class="nav-submenu" id="submenu-generator">
                         <li class="nav-item">
                             <a href="#invoice-generator" class="nav-link">
-                                <span>FacturÄƒ</span>
+                                <span>Factură</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="#proforma-generator" class="nav-link">
-                                <span>ProformÄƒ</span>
+                                <span>Proformă</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="#offer-generator" class="nav-link">
-                                <span>OfertÄƒ</span>
+                                <span>Ofertă</span>
                             </a>
                         </li>
                     </ul>
@@ -895,22 +895,22 @@
                         </li>
                         <li class="nav-item">
                             <a href="#proformas" class="nav-link">
-                                <span>ProformÄƒ</span>
+                                <span>Proformă</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="#offers" class="nav-link">
-                                <span>OfertÄƒ</span>
+                                <span>Ofertă</span>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- SetÄƒri -->
+                <!-- Setări -->
                 <li class="nav-item" style="display: none;" data-auth-required="true">
                     <a href="#" class="nav-link" id="settings-toggle">
                         <i data-lucide="settings"></i>
-                        <span>SetÄƒri</span>
+                        <span>Setări</span>
                         <i data-lucide="chevron-down" class="submenu-icon" style="margin-left: auto; width: 16px; height: 16px;"></i>
                     </a>
                     <ul class="nav-submenu" id="settings-submenu">
@@ -921,7 +921,7 @@
                         </li>
                         <li class="nav-item">
                             <a href="#vat-settings" class="nav-link">
-                                <span>SetÄƒri TVA</span>
+                                <span>Setări TVA</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -962,7 +962,7 @@
         <div id="dashboard" class="page">
             <div class="page-header">
                 <h2>Dashboard</h2>
-                <p>Vizualizare generalÄƒ È™i statistici despre activitatea dumneavoastrÄƒ.</p>
+                <p>Vizualizare generală și statistici despre activitatea dumneavoastră.</p>
             </div>
 
             <!-- Summary Cards -->
@@ -1000,7 +1000,7 @@
                 <div class="card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border: none;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div>
-                            <p style="opacity: 0.9; margin-bottom: 0.5rem;">Medie/FacturÄƒ</p>
+                            <p style="opacity: 0.9; margin-bottom: 0.5rem;">Medie/Factură</p>
                             <h2 id="stat-avg-invoice" style="font-size: 2rem; margin: 0; color: white;">0 RON</h2>
                         </div>
                         <i data-lucide="bar-chart" style="width: 48px; height: 48px; opacity: 0.8;"></i>
@@ -1010,17 +1010,17 @@
 
             <!-- Recent Activity -->
             <div class="card">
-                <h3 style="margin-bottom: 1rem;">Activitate RecentÄƒ</h3>
+                <h3 style="margin-bottom: 1rem;">Activitate Recentă</h3>
                 <div id="recent-activity">
-                    <p style="text-align: center; color: #666; padding: 40px;">Se Ã®ncarcÄƒ...</p>
+                    <p style="text-align: center; color: #666; padding: 40px;">Se încarcă...</p>
                 </div>
             </div>
 
             <!-- Top Clients -->
             <div class="card">
-                <h3 style="margin-bottom: 1rem;">Top 5 ClienÈ›i</h3>
+                <h3 style="margin-bottom: 1rem;">Top 5 Clienți</h3>
                 <div id="top-clients">
-                    <p style="text-align: center; color: #666; padding: 40px;">Se Ã®ncarcÄƒ...</p>
+                    <p style="text-align: center; color: #666; padding: 40px;">Se încarcă...</p>
                 </div>
             </div>
         </div>
@@ -1028,8 +1028,8 @@
         <!-- Invoice Generator Page -->
         <div id="invoice-generator" class="page">
             <div class="page-header">
-                <h2>GenereazÄƒ o NouÄƒ FacturÄƒ</h2>
-                <p>CompletaÈ›i detaliile de mai jos pentru a emite o nouÄƒ facturÄƒ.</p>
+                <h2>Generează o Nouă Factură</h2>
+                <p>Completați detaliile de mai jos pentru a emite o nouă factură.</p>
             </div>
             <form id="invoice-form">
                 <div class="card">
@@ -1038,8 +1038,8 @@
                         <div class="form-group">
                             <label for="client-type">Tip Client</label>
                             <select id="client-type" name="client-type">
-                                <option value="company">PersoanÄƒ JuridicÄƒ</option>
-                                <option value="individual">PersoanÄƒ FizicÄƒ</option>
+                                <option value="company">Persoană Juridică</option>
+                                <option value="individual">Persoană Fizică</option>
                             </select>
                         </div>
                         <div class="form-group" id="company-fields">
@@ -1064,15 +1064,15 @@
                             <input type="text" id="client-cnp" name="client-cnp">
                         </div>
                         <div class="form-group">
-                            <label for="client-address">AdresÄƒ</label>
+                            <label for="client-address">Adresă</label>
                             <input type="text" id="client-address" name="client-address">
                         </div>
                         <div class="form-group">
-                            <label for="client-city">OraÈ™</label>
+                            <label for="client-city">Oraș</label>
                             <input type="text" id="client-city" name="client-city">
                         </div>
                         <div class="form-group">
-                            <label for="client-county">JudeÈ›</label>
+                            <label for="client-county">Județ</label>
                             <input type="text" id="client-county" name="client-county">
                         </div>
                     </div>
@@ -1081,12 +1081,12 @@
                 <div class="card">
                     <h3>Produse / Servicii</h3>
                     <div id="products-container">
-                        <!-- Produsele vor fi adÄƒugate aici de JS -->
+                        <!-- Produsele vor fi adăugate aici de JS -->
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
                         <button type="button" id="add-product" class="btn btn-secondary">
                             <i data-lucide="plus"></i>
-                            AdaugÄƒ Produs
+                            Adaugă Produs
                         </button>
                     </div>
                 </div>
@@ -1119,7 +1119,7 @@
                     </button>
                     <button type="submit" class="btn btn-primary">
                         <i data-lucide="save"></i>
-                        GenereazÄƒ È™i SalveazÄƒ Factura
+                        Generează și Salvează Factura
                     </button>
                 </div>
             </form>
@@ -1132,14 +1132,14 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <h2>Istoric Facturi</h2>
-                        <p>VizualizaÈ›i È™i gestionaÈ›i facturile emise anterior.</p>
+                        <p>Vizualizați și gestionați facturile emise anterior.</p>
                     </div>
                     <div style="display: flex; gap: 1rem; align-items: center;">
-                        <input type="text" id="searchInvoices" placeholder="CautÄƒ facturi..." 
+                        <input type="text" id="searchInvoices" placeholder="Caută facturi..." 
                                style="padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); width: 250px;">
                         <button onclick="loadInvoices()" class="btn btn-secondary">
                             <i data-lucide="refresh-cw"></i>
-                            ReÃ®ncarcÄƒ
+                            Reîncarcă
                         </button>
                     </div>
                 </div>
@@ -1161,14 +1161,14 @@
                     </button>
                     <button onclick="filterInvoices('paid')" class="btn btn-filter" data-filter="paid">
                         <i data-lucide="dollar-sign"></i>
-                        PlÄƒtite
+                        Plătite
                     </button>
                 </div>
                 
                 <div id="invoicesList">
                     <p style="text-align: center; color: #666; padding: 40px;">
                         <i data-lucide="loader" class="animate-spin"></i>
-                        Se Ã®ncarcÄƒ facturile...
+                        Se încarcă facturile...
                     </p>
                 </div>
             </div>
@@ -1177,8 +1177,8 @@
         <!-- Offer Generator Page -->
         <div id="offer-generator" class="page">
             <div class="page-header">
-                <h2>GenereazÄƒ OfertÄƒ de PreÈ›</h2>
-                <p>CreaÈ›i o ofertÄƒ personalizatÄƒ pentru clienÈ›ii dumneavoastrÄƒ.</p>
+                <h2>Generează Ofertă de Preț</h2>
+                <p>Creați o ofertă personalizată pentru clienții dumneavoastră.</p>
             </div>
             <form id="offer-form">
                 <div class="card">
@@ -1187,8 +1187,8 @@
                         <div class="form-group">
                             <label for="offer-client-type">Tip Client</label>
                             <select id="offer-client-type" name="offer-client-type">
-                                <option value="company">PersoanÄƒ JuridicÄƒ</option>
-                                <option value="individual">PersoanÄƒ FizicÄƒ</option>
+                                <option value="company">Persoană Juridică</option>
+                                <option value="individual">Persoană Fizică</option>
                             </select>
                         </div>
                         <div class="form-group" id="offer-company-fields">
@@ -1209,31 +1209,31 @@
                             <input type="text" id="offer-client-lastName" name="offer-client-lastName">
                         </div>
                         <div class="form-group">
-                            <label for="offer-client-email">Email (OpÈ›ional)</label>
+                            <label for="offer-client-email">Email (Opțional)</label>
                             <input type="email" id="offer-client-email" name="offer-client-email" placeholder="client@email.ro">
                         </div>
                         <div class="form-group">
-                            <label for="offer-client-phone">Telefon (OpÈ›ional)</label>
+                            <label for="offer-client-phone">Telefon (Opțional)</label>
                             <input type="tel" id="offer-client-phone" name="offer-client-phone" placeholder="+40 XXX XXX XXX">
                         </div>
                     </div>
                 </div>
                 
                 <div class="card">
-                    <h3>Detalii OfertÄƒ</h3>
+                    <h3>Detalii Ofertă</h3>
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="offer-title">Titlu OfertÄƒ</label>
-                            <input type="text" id="offer-title" name="offer-title" placeholder="ex: OfertÄƒ Servicii Web Design" required>
+                            <label for="offer-title">Titlu Ofertă</label>
+                            <input type="text" id="offer-title" name="offer-title" placeholder="ex: Ofertă Servicii Web Design" required>
                         </div>
                         <div class="form-group">
                             <label for="offer-validity">Valabilitate (zile)</label>
                             <input type="number" id="offer-validity" name="offer-validity" value="30" min="1" max="365">
                         </div>
                         <div class="form-group">
-                            <label for="offer-payment-terms">Termeni de platÄƒ</label>
+                            <label for="offer-payment-terms">Termeni de plată</label>
                             <select id="offer-payment-terms" name="offer-payment-terms">
-                                <option value="immediate">PlatÄƒ imediatÄƒ</option>
+                                <option value="immediate">Plată imediată</option>
                                 <option value="15days">15 zile</option>
                                 <option value="30days" selected>30 de zile</option>
                                 <option value="45days">45 de zile</option>
@@ -1242,7 +1242,7 @@
                         </div>
                         <div class="form-group">
                             <label for="offer-delivery">Termen livrare</label>
-                            <input type="text" id="offer-delivery" name="offer-delivery" placeholder="ex: 2-4 sÄƒptÄƒmÃ¢ni">
+                            <input type="text" id="offer-delivery" name="offer-delivery" placeholder="ex: 2-4 săptămâni">
                         </div>
                     </div>
                 </div>
@@ -1250,21 +1250,21 @@
                 <div class="card">
                     <h3>Produse / Servicii</h3>
                     <div id="offer-products-container">
-                        <!-- Produsele vor fi adÄƒugate aici de JS -->
+                        <!-- Produsele vor fi adăugate aici de JS -->
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
                         <button type="button" id="add-offer-product" class="btn btn-secondary">
                             <i data-lucide="plus"></i>
-                            AdaugÄƒ Produs/Serviciu
+                            Adaugă Produs/Serviciu
                         </button>
                     </div>
                 </div>
                 
                 <div class="card">
-                    <h3>ObservaÈ›ii (OpÈ›ional)</h3>
+                    <h3>Observații (Opțional)</h3>
                     <textarea id="offer-notes" name="offer-notes" rows="4" 
                               style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit;"
-                              placeholder="AdÄƒugaÈ›i detalii suplimentare, condiÈ›ii speciale, reduceri, etc."></textarea>
+                              placeholder="Adăugați detalii suplimentare, condiții speciale, reduceri, etc."></textarea>
                 </div>
 
                 <div class="card">
@@ -1295,7 +1295,7 @@
                     </button>
                     <button type="submit" class="btn btn-primary">
                         <i data-lucide="send"></i>
-                        GenereazÄƒ Oferta
+                        Generează Oferta
                     </button>
                 </div>
             </form>
@@ -1304,8 +1304,8 @@
         <!-- Proforma Generator Page -->
         <div id="proforma-generator" class="page">
             <div class="page-header">
-                <h2>GenereazÄƒ o NouÄƒ ProformÄƒ</h2>
-                <p>CompletaÈ›i detaliile de mai jos pentru a emite o nouÄƒ proformÄƒ.</p>
+                <h2>Generează o Nouă Proformă</h2>
+                <p>Completați detaliile de mai jos pentru a emite o nouă proformă.</p>
             </div>
             <form id="proforma-form">
                 <div class="card">
@@ -1314,8 +1314,8 @@
                         <div class="form-group">
                             <label for="proforma-client-type">Tip Client</label>
                             <select id="proforma-client-type" name="proforma-client-type">
-                                <option value="company">PersoanÄƒ JuridicÄƒ</option>
-                                <option value="individual">PersoanÄƒ FizicÄƒ</option>
+                                <option value="company">Persoană Juridică</option>
+                                <option value="individual">Persoană Fizică</option>
                             </select>
                         </div>
                         <div class="form-group" id="proforma-company-fields">
@@ -1340,15 +1340,15 @@
                             <input type="text" id="proforma-client-cnp" name="proforma-client-cnp">
                         </div>
                         <div class="form-group">
-                            <label for="proforma-client-address">AdresÄƒ</label>
+                            <label for="proforma-client-address">Adresă</label>
                             <input type="text" id="proforma-client-address" name="proforma-client-address">
                         </div>
                         <div class="form-group">
-                            <label for="proforma-client-city">OraÈ™</label>
+                            <label for="proforma-client-city">Oraș</label>
                             <input type="text" id="proforma-client-city" name="proforma-client-city">
                         </div>
                         <div class="form-group">
-                            <label for="proforma-client-county">JudeÈ›</label>
+                            <label for="proforma-client-county">Județ</label>
                             <input type="text" id="proforma-client-county" name="proforma-client-county">
                         </div>
                     </div>
@@ -1356,12 +1356,12 @@
                 <div class="card">
                     <h3>Produse / Servicii</h3>
                     <div id="proforma-products-container">
-                        <!-- Produsele vor fi adÄƒugate aici de JS -->
+                        <!-- Produsele vor fi adăugate aici de JS -->
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
                         <button type="button" id="add-proforma-product" class="btn btn-secondary">
                             <i data-lucide="plus"></i>
-                            AdaugÄƒ Produs
+                            Adaugă Produs
                         </button>
                     </div>
                 </div>
@@ -1392,7 +1392,7 @@
                     </button>
                     <button type="submit" class="btn btn-primary">
                         <i data-lucide="save"></i>
-                        GenereazÄƒ È™i SalveazÄƒ Proforma
+                        Generează și Salvează Proforma
                     </button>
                 </div>
             </form>
@@ -1402,11 +1402,11 @@
         <div id="proformas" class="page">
             <div class="page-header">
                 <h2>Istoric Proforme</h2>
-                <p>VizualizaÈ›i È™i gestionaÈ›i proformele emise anterior.</p>
+                <p>Vizualizați și gestionați proformele emise anterior.</p>
             </div>
             <div class="card">
                 <div id="proformasList">
-                    <p style="text-align: center; color: #666; padding: 40px;">Se Ã®ncarcÄƒ proformele...</p>
+                    <p style="text-align: center; color: #666; padding: 40px;">Se încarcă proformele...</p>
                 </div>
             </div>
         </div>
@@ -1415,12 +1415,12 @@
         <div id="offers" class="page">
             <div class="page-header">
                 <h2>Istoric Oferte</h2>
-                <p>VizualizaÈ›i È™i gestionaÈ›i ofertele emise anterior.</p>
+                <p>Vizualizați și gestionați ofertele emise anterior.</p>
             </div>
             <div class="card">
-                <h3>ðŸš§ ÃŽn Curs de Dezvoltare</h3>
+                <h3>ðŸš§ În Curs de Dezvoltare</h3>
                 <p style="margin-top: 1rem; color: var(--secondary-foreground);">
-                    FuncÈ›ionalitatea de istoric oferte va fi disponibilÄƒ Ã®n curÃ¢nd.
+                    Funcționalitatea de istoric oferte va fi disponibilă în curând.
                 </p>
             </div>
         </div>
@@ -1429,39 +1429,39 @@
         <div id="chat" class="page active">
             <div class="page-header">
                 <h2>Chat GPT Asistent</h2>
-                <p>DiscutaÈ›i cu asistentul AI pentru ajutor È™i recomandÄƒri.</p>
+                <p>Discutați cu asistentul AI pentru ajutor și recomandări.</p>
             </div>
             
-            <!-- Banner informativ pentru utilizatori nelogaÈ›i -->
+            <!-- Banner informativ pentru utilizatori nelogați -->
             <div id="chat-guest-banner" class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; margin-bottom: 1rem; display: none;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <i data-lucide="info" style="width: 32px; height: 32px; flex-shrink: 0;"></i>
                     <div style="flex: 1;">
-                        <h4 style="margin: 0 0 0.5rem 0; color: white;">âœ¨ CreazÄƒ cont gratuit È™i Ã®ncepe sÄƒ emiti facturi!</h4>
+                        <h4 style="margin: 0 0 0.5rem 0; color: white;">âœ¨ Crează cont gratuit și începe să emiti facturi!</h4>
                         <p style="margin: 0; opacity: 0.95; font-size: 0.9rem;">
-                            Ai 7 zile de probÄƒ gratuitÄƒ. PoÈ›i pune Ã®ntrebÄƒri aici, dar pentru a genera facturi trebuie sÄƒ ai un cont.
+                            Ai 7 zile de probă gratuită. Poți pune întrebări aici, dar pentru a genera facturi trebuie să ai un cont.
                         </p>
                     </div>
                     <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
-                        <a href="register.html" class="btn" style="background: white; color: #667eea; text-decoration: none;">ÃŽnregistreazÄƒ-te</a>
+                        <a href="register.html" class="btn" style="background: white; color: #667eea; text-decoration: none;">Înregistrează-te</a>
                         <a href="login.html" class="btn btn-secondary" style="border-color: white; color: white; text-decoration: none;">Logare</a>
                     </div>
                 </div>
             </div>
             
-            <!-- Banner pentru utilizatori logaÈ›i fÄƒrÄƒ date companie -->
+            <!-- Banner pentru utilizatori logați fără date companie -->
             <div id="chat-no-settings-banner" class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; margin-bottom: 1rem; display: none;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <i data-lucide="alert-circle" style="width: 32px; height: 32px; flex-shrink: 0;"></i>
                     <div style="flex: 1;">
-                        <h4 style="margin: 0 0 0.5rem 0; color: white;">ðŸ“‹ CompleteazÄƒ datele companiei</h4>
+                        <h4 style="margin: 0 0 0.5rem 0; color: white;">ðŸ“‹ Completează datele companiei</h4>
                         <p style="margin: 0; opacity: 0.95; font-size: 0.9rem;">
-                            Pentru a genera facturi, trebuie sÄƒ completezi datele companiei tale Ã®n secÈ›iunea SetÄƒri.
+                            Pentru a genera facturi, trebuie să completezi datele companiei tale în secțiunea Setări.
                         </p>
                     </div>
                     <a href="#company-settings" class="btn" style="background: white; color: #f5576c; text-decoration: none;">
                         <i data-lucide="settings"></i>
-                        SetÄƒri
+                        Setări
                     </a>
                 </div>
             </div>
@@ -1471,9 +1471,9 @@
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <i data-lucide="clock" style="width: 32px; height: 32px; flex-shrink: 0;"></i>
                     <div style="flex: 1;">
-                        <h4 style="margin: 0 0 0.5rem 0; color: white;" id="trial-banner-title">â° Perioada de probÄƒ</h4>
+                        <h4 style="margin: 0 0 0.5rem 0; color: white;" id="trial-banner-title">â° Perioada de probă</h4>
                         <p style="margin: 0; opacity: 0.95; font-size: 0.9rem;" id="trial-banner-message">
-                            ÃŽncÄƒ 7 zile rÄƒmase Ã®n perioada de probÄƒ gratuitÄƒ.
+                            Încă 7 zile rămase în perioada de probă gratuită.
                         </p>
                     </div>
                     <a href="#subscription" class="btn" style="background: white; color: #19547b; text-decoration: none;">
@@ -1488,15 +1488,15 @@
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <i data-lucide="smartphone" style="width: 32px; height: 32px; flex-shrink: 0;"></i>
                     <div style="flex: 1;">
-                        <h4 style="margin: 0 0 0.5rem 0; color: white;">ðŸ“± VerificÄƒ numÄƒrul de telefon</h4>
+                        <h4 style="margin: 0 0 0.5rem 0; color: white;">ðŸ“± Verifică numărul de telefon</h4>
                         <p style="margin: 0; opacity: 0.95; font-size: 0.9rem;">
-                            Pentru a emite facturi, trebuie sÄƒ verifici numÄƒrul de telefon. Introdu codul primit pe WhatsApp.
+                            Pentru a emite facturi, trebuie să verifici numărul de telefon. Introdu codul primit pe WhatsApp.
                         </p>
                         <div style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: center;">
                             <input type="text" id="phone-verification-code" placeholder="Introdu codul (6 cifre)" maxlength="6" style="flex: 1; padding: 0.5rem; border-radius: 0.5rem; border: none; color: #333;">
                             <button id="verify-phone-btn" class="btn" style="background: white; color: #43e97b;">
                                 <i data-lucide="check"></i>
-                                VerificÄƒ
+                                Verifică
                             </button>
                             <button id="resend-phone-code-btn" class="btn btn-secondary" style="border-color: white; color: white;">
                                 <i data-lucide="refresh-cw"></i>
@@ -1515,7 +1515,7 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
-                    <input type="text" id="chat-input" placeholder="ScrieÈ›i mesajul dvs. aici..." style="flex: 1; padding: 0.75rem; border: 1px solid var(--input); border-radius: var(--radius);">
+                    <input type="text" id="chat-input" placeholder="Scrieți mesajul dvs. aici..." style="flex: 1; padding: 0.75rem; border: 1px solid var(--input); border-radius: var(--radius);">
                     <button type="button" id="chat-send-btn" class="btn btn-primary">
                         <i data-lucide="send"></i>
                         Trimite
@@ -1528,11 +1528,11 @@
         <div id="company-settings" class="page">
             <div class="page-header">
                 <h2>Date Companie</h2>
-                <p>ConfiguraÈ›i informaÈ›iile companiei dumneavoastrÄƒ.</p>
+                <p>Configurați informațiile companiei dumneavoastră.</p>
             </div>
             <form id="company-settings-form" class="settings-form">
                 <div class="card">
-                    <h3>Date Companie EmitentÄƒ</h3>
+                    <h3>Date Companie Emitentă</h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="company-name">Nume Companie</label>
@@ -1552,15 +1552,15 @@
                             <input type="text" id="company-regCom" name="regCom">
                         </div>
                         <div class="form-group">
-                            <label for="company-address">AdresÄƒ Sediu Social</label>
+                            <label for="company-address">Adresă Sediu Social</label>
                             <input type="text" id="company-address" name="address">
                         </div>
                         <div class="form-group">
-                            <label for="company-city">OraÈ™</label>
+                            <label for="company-city">Oraș</label>
                             <input type="text" id="company-city" name="city">
                         </div>
                         <div class="form-group">
-                            <label for="company-county">JudeÈ›</label>
+                            <label for="company-county">Județ</label>
                             <input type="text" id="company-county" name="county">
                         </div>
                         <div class="form-group">
@@ -1568,7 +1568,7 @@
                             <input type="text" id="company-iban" name="iban">
                         </div>
                         <div class="form-group">
-                            <label for="company-bank">BancÄƒ</label>
+                            <label for="company-bank">Bancă</label>
                             <input type="text" id="company-bank" name="bank">
                         </div>
                          <div class="form-group">
@@ -1591,26 +1591,26 @@
         <!-- VAT Settings Page -->
         <div id="vat-settings" class="page">
             <div class="page-header">
-                <h2>SetÄƒri TVA</h2>
-                <p>ConfiguraÈ›i plÄƒtitorul de TVA È™i cota aplicatÄƒ.</p>
+                <h2>Setări TVA</h2>
+                <p>Configurați plătitorul de TVA și cota aplicată.</p>
             </div>
             <form id="vat-settings-form" class="settings-form">
                 <div class="card">
-                    <h3>SetÄƒri TVA</h3>
-                    <p>ConfiguraÈ›i dacÄƒ compania este plÄƒtitoare de TVA È™i cota aplicatÄƒ.</p>
+                    <h3>Setări TVA</h3>
+                    <p>Configurați dacă compania este plătitoare de TVA și cota aplicată.</p>
                     <br>
                     <div class="form-grid">
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                                 <input type="checkbox" id="is-vat-payer-2" name="isVatPayer" style="width: auto; margin: 0;">
-                                <span>Compania este plÄƒtitoare de TVA</span>
+                                <span>Compania este plătitoare de TVA</span>
                             </label>
-                            <p style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">DacÄƒ compania NU este plÄƒtitoare de TVA, nu se va aplica È™i afiÈ™a TVA pe facturi È™i proforme.</p>
+                            <p style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">Dacă compania NU este plătitoare de TVA, nu se va aplica și afișa TVA pe facturi și proforme.</p>
                         </div>
                         <div class="form-group" id="vat-rate-group-2">
-                            <label for="vat-rate-2">CotÄƒ TVA (%)</label>
+                            <label for="vat-rate-2">Cotă TVA (%)</label>
                             <input type="number" id="vat-rate-2" name="vatRate" value="19" min="0" max="100" step="0.01">
-                            <p style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">Cota standard Ã®n RomÃ¢nia: 19%</p>
+                            <p style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">Cota standard în România: 19%</p>
                         </div>
                     </div>
                 </div>
@@ -1626,7 +1626,7 @@
                     </div>
                     <div>
                         <h2 style="margin: 0; font-size: 1.75rem;">Numerotare Documente</h2>
-                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">ConfiguraÈ›i serii È™i numerotare personalizate pentru fiecare tip de document</p>
+                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Configurați serii și numerotare personalizate pentru fiecare tip de document</p>
                     </div>
                 </div>
             </div>
@@ -1636,9 +1636,9 @@
                 <div style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); border-left: 4px solid #0284c7; padding: 1.25rem; border-radius: 8px; margin-bottom: 2rem; display: flex; align-items: start; gap: 1rem;">
                     <i data-lucide="info" style="color: #0284c7; flex-shrink: 0; margin-top: 2px;"></i>
                     <div style="flex: 1;">
-                        <h4 style="margin: 0 0 0.5rem 0; color: #0c4a6e; font-size: 1rem;">Cum funcÈ›ioneazÄƒ numerotarea?</h4>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #0c4a6e; font-size: 1rem;">Cum funcționează numerotarea?</h4>
                         <p style="margin: 0; color: #075985; font-size: 0.9rem; line-height: 1.6;">
-                            Fiecare document va avea un numÄƒr format din <strong>seria + numÄƒr secvenÈ›ial</strong>.
+                            Fiecare document va avea un număr format din <strong>seria + număr secvențial</strong>.
                             Exemplu: <code style="background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px;">FAC000001</code>,
                             <code style="background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px;">PRO000001</code>
                         </p>
@@ -1669,7 +1669,7 @@
                         <div class="form-group">
                             <label for="invoiceStartNumber" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
                                 <i data-lucide="hash" style="width: 16px; height: 16px;"></i>
-                                NumÄƒr Ã®nceput
+                                Număr început
                             </label>
                             <input type="number" id="invoiceStartNumber" name="invoiceStartNumber" placeholder="1" min="1"
                                    style="border: 2px solid #bfdbfe; border-radius: 8px; padding: 0.75rem; font-size: 1rem; font-weight: 500;">
@@ -1690,7 +1690,7 @@
                             </div>
                             <div>
                                 <h4 style="margin: 0; color: #047857; font-size: 1.1rem;">Proforma</h4>
-                                <p style="margin: 0; color: #64748b; font-size: 0.85rem;">Facturi proformÄƒ</p>
+                                <p style="margin: 0; color: #64748b; font-size: 0.85rem;">Facturi proformă</p>
                             </div>
                         </div>
                         <div class="form-group" style="margin-bottom: 1rem;">
@@ -1704,7 +1704,7 @@
                         <div class="form-group">
                             <label for="proformaStartNumber" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
                                 <i data-lucide="hash" style="width: 16px; height: 16px;"></i>
-                                NumÄƒr Ã®nceput
+                                Număr început
                             </label>
                             <input type="number" id="proformaStartNumber" name="proformaStartNumber" placeholder="1" min="1"
                                    style="border: 2px solid #a7f3d0; border-radius: 8px; padding: 0.75rem; font-size: 1rem; font-weight: 500;">
@@ -1739,7 +1739,7 @@
                         <div class="form-group">
                             <label for="quoteStartNumber" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
                                 <i data-lucide="hash" style="width: 16px; height: 16px;"></i>
-                                NumÄƒr Ã®nceput
+                                Număr început
                             </label>
                             <input type="number" id="quoteStartNumber" name="quoteStartNumber" placeholder="1" min="1"
                                    style="border: 2px solid #fed7aa; border-radius: 8px; padding: 0.75rem; font-size: 1rem; font-weight: 500;">
@@ -1764,7 +1764,7 @@
                                 <div style="width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; margin-top: 6px;"></div>
                             </div>
                             <div>
-                                <strong style="color: #1e293b;">Seriile</strong> pot conÈ›ine litere È™i cifre (ex: FAC, FAC2024)
+                                <strong style="color: #1e293b;">Seriile</strong> pot conține litere și cifre (ex: FAC, FAC2024)
                             </div>
                         </div>
                         <div style="display: flex; gap: 0.75rem;">
@@ -1780,7 +1780,7 @@
                                 <div style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; margin-top: 6px;"></div>
                             </div>
                             <div>
-                                <strong style="color: #1e293b;">Resetare</strong> numerotare se face manual la Ã®nceputul anului
+                                <strong style="color: #1e293b;">Resetare</strong> numerotare se face manual la începutul anului
                             </div>
                         </div>
                     </div>
@@ -1817,12 +1817,12 @@
         <div id="template-settings" class="page">
             <div class="page-header">
                 <h2>Template-uri Documente</h2>
-                <p>SelectaÈ›i stilurile vizuale pentru documentele generate.</p>
+                <p>Selectați stilurile vizuale pentru documentele generate.</p>
             </div>
             <form id="template-settings-form" class="settings-form">
                 <div class="card">
                     <h3>Template-uri Documente</h3>
-                    <p>SelectaÈ›i stilurile vizuale pentru documentele generate.</p>
+                    <p>Selectați stilurile vizuale pentru documentele generate.</p>
                     <br>
                     
                     <!-- Template Facturi -->
@@ -1878,18 +1878,18 @@
 
             <!-- Current Subscription Status -->
             <div id="current-subscription-card" class="card" style="margin-bottom: 1.5rem; display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-                <h3 style="color: white; font-size: 1.25rem;">ðŸŽ‰ Abonamentul TÄƒu Activ</h3>
+                <h3 style="color: white; font-size: 1.25rem;">ðŸŽ‰ Abonamentul Tău Activ</h3>
                 <div id="subscription-details" style="margin: 1rem 0;">
                     <!-- Populated by JavaScript -->
                 </div>
                 <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
                     <button id="manage-subscription-btn" class="btn" style="background: white; color: var(--primary); border: none; padding: 0.5rem 1rem;">
                         <i data-lucide="settings"></i>
-                        GestioneazÄƒ
+                        Gestionează
                     </button>
                     <button id="cancel-subscription-btn" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.5rem 1rem;">
                         <i data-lucide="x-circle"></i>
-                        AnuleazÄƒ
+                        Anulează
                     </button>
                 </div>
             </div>
@@ -1903,12 +1903,12 @@
                         <i data-lucide="zap" style="color: white; width: 24px; height: 24px;"></i>
                     </div>
                     <h3 style="margin-bottom: 0.25rem; font-size: 1.25rem;">Lunar</h3>
-                    <p style="color: var(--secondary-foreground); font-size: 0.875rem; margin-bottom: 1rem;">Perfect pentru Ã®nceput</p>
+                    <p style="color: var(--secondary-foreground); font-size: 0.875rem; margin-bottom: 1rem;">Perfect pentru început</p>
                     <div style="margin: 1rem 0;">
                         <div style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                             â‚¬4.99
                         </div>
-                        <div style="font-size: 0.75rem; color: var(--secondary-foreground);">pe lunÄƒ</div>
+                        <div style="font-size: 0.75rem; color: var(--secondary-foreground);">pe lună</div>
                     </div>
                     <ul style="list-style: none; padding: 0; margin: 1.5rem 0; text-align: left; font-size: 0.875rem;">
                         <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
@@ -1921,7 +1921,7 @@
                         </li>
                         <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>Toate È™abloanele PDF</span>
+                            <span>Toate șabloanele PDF</span>
                         </li>
                         <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
@@ -1942,12 +1942,12 @@
                         <i data-lucide="crown" style="color: white; width: 24px; height: 24px;"></i>
                     </div>
                     <h3 style="margin-bottom: 0.25rem; font-size: 1.25rem;">Anual</h3>
-                    <p style="color: var(--secondary-foreground); font-size: 0.875rem; margin-bottom: 1rem;">Cea mai bunÄƒ ofertÄƒ</p>
+                    <p style="color: var(--secondary-foreground); font-size: 0.875rem; margin-bottom: 1rem;">Cea mai bună ofertă</p>
                     <div style="margin: 1rem 0;">
                         <div style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                             â‚¬3.99
                         </div>
-                        <div style="font-size: 0.75rem; color: var(--secondary-foreground);">pe lunÄƒ</div>
+                        <div style="font-size: 0.75rem; color: var(--secondary-foreground);">pe lună</div>
                         <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-top: 0.25rem;">
                             Facturat anual â‚¬47.88
                         </div>
@@ -1959,7 +1959,7 @@
                         </li>
                         <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span><strong>EconomiseÈ™ti â‚¬11.88/an</strong></span>
+                            <span><strong>Economisești â‚¬11.88/an</strong></span>
                         </li>
                         <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
@@ -1967,7 +1967,7 @@
                         </li>
                         <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="check" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>FuncÈ›ii noi Ã®n avans</span>
+                            <span>Funcții noi în avans</span>
                         </li>
                     </ul>
                     <button class="btn btn-primary subscribe-btn" data-plan="annual" style="width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.9rem;">
@@ -1978,20 +1978,20 @@
 
             <!-- FAQ Section -->
             <div class="card" style="padding: 1.5rem;">
-                <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">â“ ÃŽntrebÄƒri Frecvente</h3>
+                <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">â“ Întrebări Frecvente</h3>
                 <div style="display: grid; gap: 1rem;">
                     <div style="padding: 1rem; background: var(--background); border-radius: 8px;">
-                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Pot anula abonamentul oricÃ¢nd?</p>
-                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Da, poÈ›i anula oricÃ¢nd. FÄƒrÄƒ costuri ascunse sau penalitÄƒÈ›i.</p>
+                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Pot anula abonamentul oricând?</p>
+                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Da, poți anula oricând. Fără costuri ascunse sau penalități.</p>
                     </div>
 
                     <div style="padding: 1rem; background: var(--background); border-radius: 8px;">
-                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Ce se Ã®ntÃ¢mplÄƒ dacÄƒ anulez?</p>
-                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Vei avea acces pÃ¢nÄƒ la sfÃ¢rÈ™itul perioadei plÄƒtite.</p>
+                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Ce se întâmplă dacă anulez?</p>
+                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Vei avea acces până la sfârșitul perioadei plătite.</p>
                     </div>
 
                     <div style="padding: 1rem; background: var(--background); border-radius: 8px;">
-                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Ce metode de platÄƒ acceptaÈ›i?</p>
+                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Ce metode de plată acceptați?</p>
                         <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Toate cardurile majore (Visa, Mastercard, Amex) prin Stripe.</p>
                     </div>
                 </div>
@@ -1999,7 +1999,7 @@
 
             <!-- Trust Badges -->
             <div style="margin-top: 1.5rem; text-align: center; padding: 1rem; background: var(--background); border-radius: 8px;">
-                <p style="font-size: 0.75rem; color: var(--secondary-foreground); margin-bottom: 0.75rem;">PlÄƒÈ›ile procesate securizat prin</p>
+                <p style="font-size: 0.75rem; color: var(--secondary-foreground); margin-bottom: 0.75rem;">Plățile procesate securizat prin</p>
                 <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
                     <div style="font-size: 1.25rem; font-weight: 700; color: #635bff;">Stripe</div>
                     <div style="display: flex; gap: 0.5rem;">
@@ -2017,7 +2017,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 style="color: white; margin: 0;">Preview PDF</h2>
                 <button onclick="closePreviewModal()" class="btn" style="background: white; color: #333;">
-                    <i data-lucide="x"></i> ÃŽnchide
+                    <i data-lucide="x"></i> Închide
                 </button>
             </div>
             <div style="flex: 1; background: white; border-radius: 16px; overflow: hidden;">
@@ -2030,7 +2030,7 @@
 
     <div id="auth-loader">
         <div class="loader-spinner"></div>
-        <p>Se verificÄƒ autentificarea...</p>
+        <p>Se verifică autentificarea...</p>
     </div>
 
         <script src="js/app.js"></script>
