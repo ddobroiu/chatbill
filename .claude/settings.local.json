@@ -14,7 +14,8 @@
       "Bash(tasklist:*)",
       "Bash(timeout 5 npm start)",
       "Bash(powershell -Command \"Get-Process | Where-Object {$_ProcessName -eq ''node''} | Stop-Process -Force\")",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(powershell -Command \"(Get-Content ''e:\\chatbill\\frontend\\index.html'' | Measure-Object -Line).Lines\")"
     ]
   }
 }
