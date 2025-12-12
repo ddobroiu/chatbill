@@ -413,20 +413,13 @@ async function updateUIBasedOnAuth() {
     } else {
         console.log('👤👤👤 ENTERING LOGGED MODE - Setting up UI...');
         
-        // Afișează tot pentru utilizatori logați
-        const showElements = [
-            document.querySelector('a[href="#dashboard"]')?.closest('.nav-item'),
-            document.querySelector('.nav-item-parent[data-submenu="generator"]'),
-            document.querySelector('.nav-item-parent[data-submenu="istoric"]'),
-            document.querySelector('#settings-toggle')?.closest('.nav-item-parent')
-        ];
+        // Afișează tot pentru utilizatori logați - caută după data-auth-required
+        const authRequiredElements = document.querySelectorAll('[data-auth-required="true"]');
         
-        console.log('📍 Showing menu items:', showElements.filter(el => el).length, 'items found');
-        showElements.forEach((el, idx) => {
-            if (el) {
-                el.style.display = '';
-                console.log(`  ✅ Shown item ${idx + 1}`);
-            }
+        console.log('📍 Found auth-required elements:', authRequiredElements.length);
+        authRequiredElements.forEach((el, idx) => {
+            el.style.display = '';
+            console.log(`  ✅ Shown auth element ${idx + 1}:`, el.tagName, el.className);
         });
         
         // Restaurează footer-ul original cu user info pentru utilizatori logați
