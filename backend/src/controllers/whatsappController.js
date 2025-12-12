@@ -2,6 +2,7 @@ const prisma = require('../db/prismaWrapper');
 const axios = require('axios');
 const aiChatController = require('./aiChatController');
 const { generateVerificationCode, getCodeExpiry, isCodeValid } = require('../utils/phoneVerification');
+const { startWhatsAppRegistration, processRegistrationStep, createWhatsAppAccount } = require('../utils/whatsappRegistration');
 
 // WhatsApp API Configuration
 const WHATSAPP_API_VERSION = process.env.WHATSAPP_API_VERSION || 'v24.0';
@@ -155,6 +156,87 @@ async function receiveMessage(req, res) {
                     include: { chatMessages: { orderBy: { createdAt: 'asc' } } },
                     orderBy: { createdAt: 'desc' }
                   });
+
+                  // Creează sesiune nouă dacă nu există
+                  if (!chatSession) {
+                    chatSession = await prisma.chatSession.create({
+                      data: {
+                        phoneNumber: from,
+                        source: 'whatsapp',
+                        currentStep: 'greeting'
+                      },
+                      include: { chatMessages: true }
+                    });
+                  }
+
+                  // Verifică dacă este în proces de înregistrare
+                  const metadata = chatSession.metadata ? JSON.parse(chatSession.metadata) : {};
+                  const isRegistering = metadata.registrationInProgress;
+
+                  // Procesează comanda "cont nou" sau "register"
+                  const lowerMessage = messageBody.toLowerCase().trim();
+                  if (!user && !isRegistering && (lowerMessage.includes('cont nou') || lowerMessage.includes('register') || lowerMessage.includes('inregistrare'))) {
+                    console.log(`📝 Începere proces de înregistrare pentru ${from}`);
+
+                    const result = await startWhatsAppRegistration(from, chatSession.id);
+
+                    if (result.success) {
+                      const welcomeMsg = `🎉 Bine ai venit la ChatBill!\n\nHai să-ți creăm contul. Am nevoie de câteva informații:\n\n📧 Care este adresa ta de email?`;
+                      await sendWhatsAppMessageToPhone(from, welcomeMsg);
+                      console.log(`✅ Proces de înregistrare inițiat pentru ${from}`);
+                      continue; // Skip procesarea normală
+                    } else {
+                      await sendWhatsAppMessageToPhone(from, result.error);
+                      continue;
+                    }
+                  }
+
+                  // Procesează pașii de înregistrare dacă este în curs
+                  if (isRegistering) {
+                    console.log(`📝 Procesare pas înregistrare: ${metadata.registrationStep} pentru ${from}`);
+
+                    const result = await processRegistrationStep(chatSession, messageBody);
+
+                    if (result.success) {
+                      // Actualizează sesiunea cu noul pas
+                      if (result.nextStep === 'create_account') {
+                        // Creează contul
+                        const accountResult = await createWhatsAppAccount(result.registrationData);
+
+                        if (accountResult.success) {
+                          // Șterge metadata de înregistrare
+                          await prisma.chatSession.update({
+                            where: { id: chatSession.id },
+                            data: { metadata: null }
+                          });
+
+                          const successMsg = `✅ Contul tău a fost creat cu succes!\n\n👤 Nume: ${accountResult.user.name}\n📧 Email: ${accountResult.user.email}\n📱 Telefon: ${accountResult.user.phone}\n\nAcum mă poți folosi pentru a genera facturi! 🎉\n\nScrie "ajutor" pentru a vedea ce pot face.`;
+                          await sendWhatsAppMessageToPhone(from, successMsg);
+                          console.log(`✅ Cont creat cu succes pentru ${from}`);
+                        } else {
+                          await sendWhatsAppMessageToPhone(from, accountResult.error);
+                        }
+                      } else {
+                        // Actualizează și trimite următoarea întrebare
+                        await prisma.chatSession.update({
+                          where: { id: chatSession.id },
+                          data: {
+                            metadata: JSON.stringify({
+                              registrationInProgress: true,
+                              registrationStep: result.nextStep,
+                              registrationData: result.registrationData
+                            })
+                          }
+                        });
+
+                        await sendWhatsAppMessageToPhone(from, result.message);
+                      }
+                    } else {
+                      await sendWhatsAppMessageToPhone(from, result.message);
+                    }
+
+                    continue; // Skip procesarea AI normală
+                  }
 
                   // Creează mock request/response pentru a apela aiChatController
                   const mockReq = {

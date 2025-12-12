@@ -175,13 +175,15 @@ Utilizatorul NU are cont creat în sistem.
 
 IMPORTANT LA PRIMA INTERACȚIUNE:
 După salut, menționează:
-"💡 Sfat: Dacă îți creezi un cont gratuit pe chatbill.ro, vei putea:
+"💡 Sfat: Dacă îți creezi un cont, vei putea:
 - Salva și gestiona toate facturile tale
 - Accesa istoricul complet
 - Configura datele companiei tale
 - Genera facturi mai rapid
 
-Între timp, te pot ajuta să generezi o factură aici pe WhatsApp!"
+Scrie 'cont nou' pentru a crea un cont GRATUIT în 2 minute! 🎉
+
+Sau, între timp, te pot ajuta să generezi o factură aici pe WhatsApp!"
 
 Apoi continuă conversația normal pentru generarea facturii.
 `;
