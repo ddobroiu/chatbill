@@ -345,22 +345,28 @@ async function updateUIBasedOnAuth() {
     console.log('🚀 updateUIBasedOnAuth START');
     console.log('🚀 ========================================');
 
-    let loggedIn = isLoggedIn();
-    console.log('📍 STEP 1: Check local token result:', loggedIn ? '✅ TOKEN EXISTS' : '❌ NO TOKEN');
+    const loader = document.getElementById('auth-loader');
+    if (loader) loader.style.display = 'flex';
 
-    // Dacă pare logat, VERIFICĂ OBLIGATORIU pe server ÎNAINTE de orice
-    if (loggedIn) {
-        console.log('📍 STEP 2: Token exists locally, checking with server...');
+    const hasLocalToken = !!localStorage.getItem('token');
+    let loggedIn = false;
+
+    console.log('📍 STEP 1: Check local token existence:', hasLocalToken ? '✅ TOKEN EXISTS' : '❌ NO TOKEN');
+
+    if (hasLocalToken) {
+        console.log('📍 STEP 2: Token exists locally, verifying with server...');
         const serverValid = await verifyTokenOnServer();
         console.log('📍 STEP 3: Server validation result:', serverValid ? '✅ VALID' : '❌ INVALID');
-
-        if (!serverValid) {
+        
+        if (serverValid) {
+            loggedIn = true;
+        } else {
             console.error('❌❌❌ TOKEN INVALID ON SERVER - Clearing all auth data...');
             clearAuthData();
             loggedIn = false;
         }
     } else {
-        console.log('📍 STEP 2: SKIPPED (no local token)');
+        console.log('📍 STEP 2 & 3: SKIPPED (no local token)');
     }
 
     console.log('\n🎯 ======================================');
@@ -471,6 +477,8 @@ async function updateUIBasedOnAuth() {
         }
     }
     
+    if (loader) loader.style.display = 'none';
+
     console.log('\n🏁 ========================================');
     console.log('🏁 updateUIBasedOnAuth COMPLETED');
     console.log('🏁 ========================================\n');
