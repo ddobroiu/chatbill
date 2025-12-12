@@ -29,13 +29,13 @@ function generateToken(user) {
 // POST /api/auth/register - Înregistrare utilizator nou
 async function register(req, res) {
   try {
-    const { name, email, password, company, cui, phone } = req.body;
-    
+    const { email, password, company, cui } = req.body;
+
     // Validare
-    if (!name || !email || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Nume, email și parolă sunt obligatorii'
+        error: 'Email și parolă sunt obligatorii'
       });
     }
 
@@ -46,107 +46,76 @@ async function register(req, res) {
       });
     }
 
-    if (!phone) {
-      return res.status(400).json({
-        success: false,
-        error: 'Numărul de telefon este obligatoriu'
-      });
-    }
-    
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
         error: 'Parola trebuie să aibă minim 6 caractere'
       });
     }
-    
+
     // Verifică dacă emailul există deja
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() }
     });
-    
+
     if (existingUser) {
       return res.status(400).json({
         success: false,
         error: 'Emailul este deja înregistrat'
       });
     }
-    
+
     // Hash parolă
     const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Generează token verificare email
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    
-    // Generează cod verificare WhatsApp (6 cifre)
-    const phoneVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const phoneVerificationExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minute
-    
-    // Creează utilizator
+
+    // Generează cod verificare email (6 cifre)
+    const emailVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const emailVerificationExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minute
+
+    // Creează utilizator (email neverificat)
     const user = await prisma.user.create({
       data: {
-        name,
+        name: company || 'Utilizator',
         email: email.toLowerCase(),
         password: hashedPassword,
         company: company || null,
         cui: cui || null,
-        phone: phone || null,
-        phoneVerificationCode,
-        phoneVerificationExpiry,
+        phone: null,
         phoneVerified: false,
-        verificationToken,
+        emailVerificationCode,
+        emailVerificationExpiry,
         emailVerified: false
       }
     });
 
     // Creează setări companie cu datele de bază
     try {
-      await prisma.companySettings.upsert({
-        where: { userId: user.id },
-        create: {
+      await prisma.companySettings.create({
+        data: {
           userId: user.id,
           cui: cui,
-          name: company || '',
-          phone: phone
-        },
-        update: {
-          cui: cui,
-          name: company || '',
-          phone: phone
+          name: company || ''
         }
       });
       console.log('✅ Setări companie create automat');
     } catch (settingsError) {
       console.error('⚠️ Eroare creare setări:', settingsError);
     }
-    
-    // Trimite cod verificare WhatsApp
-    try {
-      const whatsappService = require('../services/whatsappService');
-      await whatsappService.sendVerificationCode(phone, phoneVerificationCode);
-      console.log('📱 Cod verificare WhatsApp trimis');
-    } catch (whatsappError) {
-      console.error('⚠️ Eroare trimitere WhatsApp:', whatsappError);
-      // Nu oprim înregistrarea dacă WhatsApp dă eroare
-    }
-    
-    // Generează JWT token
-    const token = generateToken(user);
-    
+
     console.log('✅ Utilizator nou înregistrat:', user.email);
-    
-    // Trimite email de bun venit și verificare
+
+    // Trimite email cu cod de verificare
     try {
-      await sendWelcomeEmail(user.email, user.name);
-      await sendVerificationEmail(user.email, user.name, verificationToken);
-      console.log('📧 Emailuri de bun venit și verificare trimise');
+      const { sendEmailVerificationCode } = require('../services/emailService');
+      await sendEmailVerificationCode(user.email, company || 'Utilizator', emailVerificationCode);
+      console.log('📧 Cod de verificare email trimis:', emailVerificationCode);
     } catch (emailError) {
-      console.error('⚠️ Eroare trimitere emailuri:', emailError);
+      console.error('⚠️ Eroare trimitere email:', emailError);
     }
-    
+
     res.status(201).json({
       success: true,
-      message: 'Cont creat cu succes! Verifică WhatsApp pentru codul de confirmare.',
+      message: 'Cont creat cu succes! Verifică email-ul pentru codul de confirmare.',
       token,
       user: {
         id: user.id,
@@ -789,6 +758,160 @@ async function resendVerification(req, res) {
   }
 }
 
+// POST /api/auth/verify-email-code - Verificare cod email
+async function verifyEmailCode(req, res) {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email și cod sunt obligatorii'
+      });
+    }
+
+    // Caută utilizatorul
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Utilizator negăsit'
+      });
+    }
+
+    // Verifică dacă emailul este deja verificat
+    if (user.emailVerified) {
+      return res.status(400).json({
+        success: false,
+        error: 'Emailul este deja verificat'
+      });
+    }
+
+    // Verifică dacă codul a expirat
+    if (user.emailVerificationExpiry && new Date() > user.emailVerificationExpiry) {
+      return res.status(400).json({
+        success: false,
+        error: 'Codul a expirat. Te rugăm să soliciți un cod nou.'
+      });
+    }
+
+    // Verifică codul
+    if (user.emailVerificationCode !== code) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cod incorect'
+      });
+    }
+
+    // Marchează emailul ca verificat
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        emailVerificationCode: null,
+        emailVerificationExpiry: null
+      }
+    });
+
+    // Generează token JWT
+    const token = generateToken(user);
+
+    console.log('✅ Email verificat pentru:', user.email);
+
+    res.json({
+      success: true,
+      message: 'Email verificat cu succes!',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        company: user.company,
+        cui: user.cui,
+        emailVerified: true
+      }
+    });
+  } catch (error) {
+    console.error('Eroare verificare email:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Eroare la verificarea emailului'
+    });
+  }
+}
+
+// POST /api/auth/resend-verification-code - Retrimitenews cod verificare email
+async function resendEmailVerificationCode(req, res) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email este obligatoriu'
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Utilizator negăsit'
+      });
+    }
+
+    if (user.emailVerified) {
+      return res.status(400).json({
+        success: false,
+        error: 'Emailul este deja verificat'
+      });
+    }
+
+    // Generează cod nou
+    const emailVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const emailVerificationExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+    // Actualizează utilizatorul
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationCode,
+        emailVerificationExpiry
+      }
+    });
+
+    // Trimite email
+    try {
+      const { sendEmailVerificationCode } = require('../services/emailService');
+      await sendEmailVerificationCode(user.email, user.name, emailVerificationCode);
+      console.log('📧 Cod de verificare retrimis:', emailVerificationCode);
+    } catch (emailError) {
+      console.error('⚠️ Eroare trimitere email:', emailError);
+      return res.status(500).json({
+        success: false,
+        error: 'Eroare la trimiterea emailului'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Cod de verificare retrimis pe email'
+    });
+  } catch (error) {
+    console.error('Eroare retriimitere cod:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Eroare la retriimiterea codului'
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -800,5 +923,7 @@ module.exports = {
   verifyEmail,
   resendVerification,
   verifyPhone,
-  resendPhoneCode
+  resendPhoneCode,
+  verifyEmailCode,
+  resendEmailVerificationCode
 };
