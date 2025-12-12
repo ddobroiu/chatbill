@@ -48,21 +48,34 @@ async function searchCompanyByCUI(cui) {
 const INVOICE_SYSTEM_PROMPT = `Ești un asistent AI specializat în generarea facturilor pentru ChatBill.
 
 ROLUL TĂU:
-Ghidezi utilizatorul pas cu pas pentru a colecta toate informațiile necesare pentru o factură:
+Ghidezi utilizatorul pas cu pas pentru a colecta toate informațiile necesare pentru o factură.
 
-1. DATE CLIENT:
-   - Tip: persoană juridică (companie, SRL, SA, etc.) sau persoană fizică
-   - Pentru companii: CUI (cod unic înregistrare), nume, adresă, oraș, județ
+LA ÎNCEPUT:
+Când utilizatorul spune că vrea să emită ceva, întreabă ce tip de document:
+"📄 Ce document vrei să emiți?
+1️⃣ Factură
+2️⃣ Proformă  
+3️⃣ Ofertă
+
+Scrie numărul sau numele documentului."
+
+DATELE NECESARE:
+
+1. TIP DOCUMENT: Factură, Proformă sau Ofertă
+
+2. DATE CLIENT:
+   - Tip: persoană juridică (companie) SAU persoană fizică
+   - Pentru companii: CUI (cod unic înregistrare) - apoi CAUTĂ AUTOMAT la ANAF
    - Pentru persoane fizice: nume complet, CNP (opțional), adresă
    
-2. PRODUSE/SERVICII:
+3. PRODUSE/SERVICII:
    - Nume produs/serviciu
    - Preț unitar (în RON)
    - Cantitate
    - (poți adăuga multiple produse)
 
 TERMINOLOGIE ROMÂNĂ - Recunoști:
-- "juridice", "juridică", "PJ", "companie", "firma", "SRL", "SA" = persoană juridică
+- "juridice", "juridică", "PJ", "companie", "firma", "SRL", "SA", "srl" = persoană juridică
 - "fizice", "fizică", "PF", "persoană" = persoană fizică
 - "CUI" = Cod Unic Înregistrare (pentru companii)
 - "CNP" = Cod Numeric Personal (pentru persoane fizice)
@@ -71,8 +84,6 @@ INFORMAȚII FISCALE ROMÂNIA (Decembrie 2025):
 - TVA standard: 21% (majorat de la 19% în 2025)
 - TVA redus: 9% (alimente, medicamente, cărți, hoteluri)
 - TVA super-redus: 5% (locuințe sociale, anumite servicii)
-- Impozit dividend: 8%
-- Impozit pe profit: 16%
 
 IMPORTANT - DACĂ NU ȘTII CEVA:
 - Datele tale sunt limitate până în aprilie 2024
@@ -124,6 +135,34 @@ async function generateAIResponseWithGPT(session, userMessage, user = null) {
   }
 
   try {
+    // Obține datele companiei utilizatorului pentru emitent
+    let companyContext = '';
+    if (user && user.id) {
+      try {
+        const companySettings = await prisma.companySettings.findUnique({
+          where: { userId: user.id }
+        });
+
+        if (companySettings) {
+          companyContext = `\n\n📊 DATE EMITENT (automat din setări):
+Companie: ${companySettings.name}
+CUI: ${companySettings.cui}
+Reg. Com: ${companySettings.regCom}
+Adresă: ${companySettings.address}, ${companySettings.city}, ${companySettings.county}
+IBAN: ${companySettings.iban}
+Banca: ${companySettings.bank}
+
+⚠️ IMPORTANT: Folosești AUTOMAT aceste date ca EMITENT pentru toate facturile.
+NU mai întreba utilizatorul despre datele emitentului - sunt deja salvate!`;
+        } else {
+          companyContext = `\n\n⚠️ ATENȚIE: Utilizatorul nu are datele companiei completate.
+Înainte de a genera facturi, trebuie să-l îndrumi să completeze Setări > Date Companie.`;
+        }
+      } catch (err) {
+        console.error('Eroare obținere setări companie:', err);
+      }
+    }
+
     // Construiește istoricul conversației din baza de date
     const messages = await prisma.chatMessage.findMany({
       where: { sessionId: session.id },
@@ -189,7 +228,7 @@ Apoi continuă conversația normal pentru generarea facturii.
 `;
     }
 
-    const systemPrompt = INVOICE_SYSTEM_PROMPT.replace('{{SESSION_STATE}}', sessionState) + userContext;
+    const systemPrompt = INVOICE_SYSTEM_PROMPT.replace('{{SESSION_STATE}}', sessionState) + userContext + companyContext;
 
     // Apel GPT-4
     console.log(`🤖 Apel GPT-4 pentru sesiunea ${session.id}`);

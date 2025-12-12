@@ -159,7 +159,10 @@ async function receiveMessage(req, res) {
                   // Găsește sesiunea AI existentă pentru acest număr de telefon
                   let chatSession = await prisma.chatSession.findFirst({
                     where: {
-                      phoneNumber: from,
+                      OR: [
+                        { phoneNumber: from },
+                        { phoneNumber: normalizedPhone }
+                      ],
                       source: 'whatsapp'
                     },
                     include: { chatMessages: { orderBy: { createdAt: 'asc' } } },
@@ -170,7 +173,7 @@ async function receiveMessage(req, res) {
                   if (!chatSession) {
                     chatSession = await prisma.chatSession.create({
                       data: {
-                        phoneNumber: from,
+                        phoneNumber: normalizedPhone,
                         source: 'whatsapp',
                         currentStep: 'greeting'
                       },

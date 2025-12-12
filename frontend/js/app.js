@@ -1525,11 +1525,38 @@ async function sendChatMessage() {
     displayChatMessage('user', message);
     input.value = '';
     
-    // Start session if needed
+    // Start AI chat session if needed (pentru facturare)
     if (!currentChatSessionId) {
-        await startChatSession();
-        return;
+        try {
+            const response = await fetch(`${API_URL}/api/ai-chat/start`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ source: 'web' })
+            });
+            
+            const data = await response.json();
+            if (data.success && data.sessionId) {
+                currentChatSessionId = data.sessionId;
+            }
+        } catch (error) {
+            console.error('Eroare start sesiune AI:', error);
+        }
     }
+    
+    // Show typing indicator
+    const messagesContainer = document.getElementById('chat-messages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message assistant';
+    typingDiv.id = 'typing-indicator';
+    typingDiv.innerHTML = `
+        <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+    messagesContainer.appendChild(typingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
     try {
         // Get current user info if logged in
@@ -1574,6 +1601,10 @@ async function sendChatMessage() {
             body: JSON.stringify(requestBody)
         });
         
+        // Remove typing indicator
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+        
         const data = await response.json();
         
         if (data.success) {
@@ -1581,12 +1612,16 @@ async function sendChatMessage() {
             
             // If invoice generated, show download link
             if (data.invoice) {
-                const downloadMsg = `\n\n<a href="${API_URL}/api/invoices/${data.invoice.id}/download" target="_blank" style="color: #667eea; text-decoration: underline;">📥 Click aici pentru download PDF</a>`;
+                const downloadMsg = `\n\n<a href="${API_URL}/api/invoices/${data.invoice.id}/download" target="_blank" style="color: #667eea; text-decoration: underline;">📥 Descarcă factura PDF</a>`;
                 displayChatMessage('assistant', downloadMsg);
             }
+        } else {
+            displayChatMessage('assistant', '❌ ' + (data.error || 'A apărut o eroare. Te rog încearcă din nou.'));
         }
     } catch (error) {
         console.error('Eroare trimitere mesaj:', error);
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
         displayChatMessage('assistant', '❌ A apărut o eroare. Te rog încearcă din nou.');
     }
 }

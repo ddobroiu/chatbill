@@ -104,9 +104,49 @@ async function sendMessage(req, res) {
       });
     }
 
+    // Obține informații despre utilizatorul logat
+    let userContext = '';
+    if (userId) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            name: true,
+            email: true,
+            company: true,
+            cui: true
+          }
+        });
+
+        if (user) {
+          userContext = `\n\n🔐 CONTEXT UTILIZATOR:
+Utilizatorul este AUTENTIFICAT în sistem:
+- Nume: ${user.name}
+- Email: ${user.email}
+${user.company ? `- Companie: ${user.company}` : ''}
+${user.cui ? `- CUI companie: ${user.cui}` : ''}
+
+IMPORTANT:
+- Salută utilizatorul pe NUME la prima interacțiune: "Bună ${user.name}! Cu ce te pot ajuta astăzi?"
+- Oferă experiență personalizată și profesionistă
+- Dacă vrea să genereze o factură, îndrumă-l către Generator > Factură (nu poți genera factura din chat)`;
+        }
+      } catch (err) {
+        console.error('Eroare obținere info user:', err);
+      }
+    } else {
+      userContext = `\n\n👤 CONTEXT UTILIZATOR:
+Utilizatorul NU este autentificat în sistem.
+
+IMPORTANT LA PRIMA INTERACȚIUNE:
+- Oferă un salut prietenos general
+- Dacă vrea să genereze facturi, menționează că trebuie să creeze un cont (7 zile gratuite)`;
+    }
+
     // Verifică dacă mesajul conține intenție de a genera o factură
     const invoiceKeywords = ['genereaza factura', 'creeaza factura', 'factura noua', 'vreau o factura', 
-                             'fac o factura', 'emite factura', 'factura pentru', 'sa fac o factura'];
+                             'fac o factura', 'emite factura', 'factura pentru', 'sa fac o factura', 
+                             'vreu sa emitem', 'emitem o factura'];
     const wantsToGenerateInvoice = invoiceKeywords.some(keyword => 
       message.toLowerCase().includes(keyword)
     );
@@ -143,7 +183,7 @@ async function sendMessage(req, res) {
 
     // Construiește istoricul conversației pentru context
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPT + additionalContext },
+      { role: 'system', content: SYSTEM_PROMPT + userContext + additionalContext },
       ...conversationHistory.map(msg => ({
         role: msg.role,
         content: msg.content
