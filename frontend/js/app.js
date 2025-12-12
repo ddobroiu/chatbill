@@ -331,16 +331,16 @@ async function updateUIBasedOnAuth() {
     console.log('\n\n🚀 ========================================');
     console.log('🚀 updateUIBasedOnAuth START');
     console.log('🚀 ========================================');
-    
+
     let loggedIn = isLoggedIn();
     console.log('📍 STEP 1: Check local token result:', loggedIn ? '✅ TOKEN EXISTS' : '❌ NO TOKEN');
-    
+
     // Dacă pare logat, VERIFICĂ OBLIGATORIU pe server ÎNAINTE de orice
     if (loggedIn) {
         console.log('📍 STEP 2: Token exists locally, checking with server...');
         const serverValid = await verifyTokenOnServer();
         console.log('📍 STEP 3: Server validation result:', serverValid ? '✅ VALID' : '❌ INVALID');
-        
+
         if (!serverValid) {
             console.error('❌❌❌ TOKEN INVALID ON SERVER - Clearing all auth data...');
             clearAuthData();
@@ -349,14 +349,14 @@ async function updateUIBasedOnAuth() {
     } else {
         console.log('📍 STEP 2: SKIPPED (no local token)');
     }
-    
+
     console.log('\n🎯 ======================================');
     console.log('🎯 FINAL AUTH STATUS:', loggedIn ? '✅✅✅ LOGGED IN' : '❌❌❌ GUEST MODE');
     console.log('🎯 ======================================\n');
-    
+
     if (!loggedIn) {
         console.log('👤👤👤 ENTERING GUEST MODE - Setting up UI...');
-        
+
         // Ascunde tot în afară de chat
         const hideElements = [
             document.querySelector('a[href="#dashboard"]')?.closest('.nav-item'),
@@ -364,7 +364,7 @@ async function updateUIBasedOnAuth() {
             document.querySelector('.nav-item-parent[data-submenu="istoric"]'),
             document.querySelector('#settings-toggle')?.closest('.nav-item-parent')
         ];
-        
+
         console.log('📍 Hiding menu items:', hideElements.filter(el => el).length, 'items found');
         hideElements.forEach((el, idx) => {
             if (el) {
@@ -372,7 +372,7 @@ async function updateUIBasedOnAuth() {
                 console.log(`  ✅ Hidden item ${idx + 1}`);
             }
         });
-        
+
         // Asigură-te că chat-ul e vizibil
         const chatLink = document.querySelector('a[href="#chat"]');
         if (chatLink) {
@@ -382,46 +382,47 @@ async function updateUIBasedOnAuth() {
                 console.log('✅ Chat vizibil pentru GUEST');
             }
         }
-        
+
         // Actualizează FOOTER-ul cu butoane de autentificare
         const sidebarFooter = document.querySelector('.sidebar-footer');
         if (sidebarFooter) {
             sidebarFooter.innerHTML = `
                 <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                    <a href="register.html" class="btn btn-primary" style="width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                        <i data-lucide="user-plus"></i>
-                        Creează cont
-                    </a>
-                    <a href="login.html" class="btn btn-secondary" style="width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <p style="text-align: center; color: var(--muted-foreground); margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        Pentru a emite facturi, autentifică-te:
+                    </p>
+                    <a href="login.html" class="btn btn-primary" style="width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                         <i data-lucide="log-in"></i>
                         Autentificare
                     </a>
-                    <button onclick="clearAuthData(); window.location.reload();" style="width: 100%; padding: 0.5rem; background: transparent; border: 1px solid var(--border); border-radius: var(--radius); color: var(--foreground); cursor: pointer; font-size: 0.875rem;">
-                        🧹 Curăță cache
-                    </button>
+                    <a href="register.html" class="btn btn-secondary" style="width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i data-lucide="user-plus"></i>
+                        Creează cont
+                    </a>
                 </div>
             `;
             lucide.createIcons();
             console.log('✅ Footer actualizat cu butoane Register/Login');
         }
-        
-        // Du-te automat pe chat
-        if (window.location.hash !== '#chat') {
-            console.log('⚡ Redirect automat către #chat');
+
+        // Du-te automat pe chat DOAR dacă nu ești deja pe o pagină validă pentru guest
+        const currentHash = window.location.hash;
+        if (!currentHash || currentHash === '#' || currentHash === '#dashboard' || currentHash.includes('#generator') || currentHash.includes('#istoric') || currentHash.includes('#settings')) {
+            console.log('⚡ Redirect automat către #chat (hash invalid pentru guest:', currentHash, ')');
             window.location.hash = '#chat';
+        } else {
+            console.log('✅ Hash valid pentru guest:', currentHash);
         }
     } else {
         console.log('👤👤👤 ENTERING LOGGED MODE - Setting up UI...');
-        
-        // Afișează tot pentru utilizatori logați - caută după data-auth-required
-        const authRequiredElements = document.querySelectorAll('[data-auth-required="true"]');
-        
-        console.log('📍 Found auth-required elements:', authRequiredElements.length);
-        authRequiredElements.forEach((el, idx) => {
+
+        // Afișează tot pentru utilizatori logați
+        const allNavItems = document.querySelectorAll('.nav-item, .nav-item-parent');
+        allNavItems.forEach((el) => {
             el.style.display = '';
-            console.log(`  ✅ Shown auth element ${idx + 1}:`, el.tagName, el.className);
         });
-        
+        console.log('✅ Toate elementele de meniu afișate pentru utilizator logat');
+
         // Restaurează footer-ul original cu user info pentru utilizatori logați
         const sidebarFooter = document.querySelector('.sidebar-footer');
         if (sidebarFooter) {
@@ -437,19 +438,22 @@ async function updateUIBasedOnAuth() {
                     <i data-lucide="credit-card"></i>
                     Abonament
                 </a>
-                <button id="logout-btn" class="btn btn-secondary" style="width: 100%;">
+                <button id="logout-btn" class="btn btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                     <i data-lucide="log-out"></i>
                     Deconectare
                 </button>
             `;
             lucide.createIcons();
-            
+
             // Re-attach logout handler
             const logoutBtn = document.getElementById('logout-btn');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', logout);
+                console.log('✅ Logout button event listener attached');
+            } else {
+                console.error('❌ Logout button NOT FOUND after creation!');
             }
-            
+
             console.log('✅ Footer restaurat pentru utilizator logat');
         }
     }

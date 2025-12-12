@@ -2068,32 +2068,12 @@
             lucide.createIcons();
             
             console.log('🚀 INIT: Verificare autentificare...');
-            
-            // IMPORTANT: Clear any invalid tokens FIRST
-            console.log('🧹 Pre-check: Verificare token invalid...');
-            const tokenCheck = localStorage.getItem('token');
-            if (tokenCheck) {
-                console.log('📍 Token găsit în localStorage, verificare validitate...');
-                try {
-                    const parts = tokenCheck.split('.');
-                    if (parts.length !== 3) {
-                        console.error('❌ Token INVALID (format greșit) - ȘTERG');
-                        localStorage.clear();
-                    }
-                } catch(e) {
-                    console.error('❌ Token CORRUPT - ȘTERG');
-                    localStorage.clear();
-                }
-            } else {
-                console.log('📍 NU există token în localStorage');
-            }
-            
+
             // Update UI based on authentication status
             if (typeof updateUIBasedOnAuth === 'function') {
-                console.log('🔧 Apelare updateUIBasedOnAuth...');
                 updateUIBasedOnAuth();
             } else {
-                console.error('❌❌❌ updateUIBasedOnAuth NU EXISTĂ!!!');
+                console.error('❌ updateUIBasedOnAuth function not found!');
             }
             
             // Load user data if logged in
