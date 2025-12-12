@@ -2001,13 +2001,6 @@
 
     <script src="/js/app.js"></script>
     <script>
-        lucide.createIcons();
-        
-        // Update UI based on authentication status
-        if (typeof updateUIBasedOnAuth === 'function') {
-            updateUIBasedOnAuth();
-        }
-
         // Live preview for document numbering
         function updatePreview(seriesId, numberId, previewId) {
             const series = document.getElementById(seriesId)?.value || '';
@@ -2044,6 +2037,120 @@
             if (quoteSeries && quoteStartNumber) {
                 quoteSeries.addEventListener('input', () => updatePreview('quoteSeries', 'quoteStartNumber', 'quote-preview'));
                 quoteStartNumber.addEventListener('input', () => updatePreview('quoteSeries', 'quoteStartNumber', 'quote-preview'));
+            }
+            
+            // === IMPORTANT: Initialize UI based on auth FIRST ===
+            // Initialize Lucide icons
+            lucide.createIcons();
+            
+            // Update UI based on authentication status
+            if (typeof updateUIBasedOnAuth === 'function') {
+                updateUIBasedOnAuth();
+            }
+            
+            // Load user data if logged in
+            if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+                if (typeof loadUserData === 'function') {
+                    loadUserData().then(userData => {
+                        if (userData && typeof updateUserInfo === 'function') {
+                            updateUserInfo(userData);
+                        }
+                    });
+                }
+            }
+            
+            // Update chat banners
+            if (typeof updateChatBanners === 'function') {
+                updateChatBanners();
+            }
+            
+            // Initialize template selector
+            if (typeof initTemplateSelector === 'function') {
+                initTemplateSelector();
+            }
+            
+            // Load settings
+            if (typeof loadSettings === 'function') {
+                loadSettings();
+            }
+            
+            // Check ANAF status if logged in
+            if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+                if (typeof checkANAFStatus === 'function') {
+                    checkANAFStatus();
+                }
+            }
+            
+            // Check for ANAF callback
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('anaf_connected') === 'true') {
+                if (typeof showMessage === 'function') {
+                    showMessage('settingsMessage', '✅ Conectat cu succes la ANAF e-Factura!', 'success');
+                    if (typeof checkANAFStatus === 'function') checkANAFStatus();
+                }
+                window.history.replaceState({}, document.title, '/');
+            } else if (urlParams.get('anaf_error')) {
+                if (typeof showMessage === 'function') {
+                    showMessage('settingsMessage', `❌ Eroare conectare ANAF: ${urlParams.get('anaf_error')}`, 'error');
+                }
+                window.history.replaceState({}, document.title, '/');
+            }
+            
+            // Re-initialize icons after UI updates
+            lucide.createIcons();
+            
+            // === ATTACH EVENT LISTENERS AFTER UI IS UPDATED ===
+            
+            // Logout functionality
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    if (confirm('Sigur doriți să vă deconectați?')) {
+                        if (typeof logout === 'function') {
+                            logout();
+                        } else {
+                            localStorage.removeItem('token');
+                            localStorage.removeItem('user');
+                            window.location.href = '/login.html';
+                        }
+                    }
+                });
+            }
+            
+            // Auto-complete functionality for company settings
+            const autocompleteBtn = document.getElementById('autocomplete-company-btn');
+            if (autocompleteBtn) {
+                autocompleteBtn.addEventListener('click', async () => {
+                    const cuiInput = document.getElementById('company-cui');
+                    const cui = cuiInput.value.trim();
+
+                    if (!cui) {
+                        alert('Te rog introdu CUI-ul companiei');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`http://localhost:3000/api/settings/autocomplete/${cui}`);
+                        const data = await response.json();
+
+                        if (data.success && data.company) {
+                            // Fill in the form fields
+                            if (data.company.name) document.getElementById('company-name').value = data.company.name;
+                            if (data.company.cui) document.getElementById('company-cui').value = data.company.cui;
+                            if (data.company.regCom) document.getElementById('company-regCom').value = data.company.regCom;
+                            if (data.company.address) document.getElementById('company-address').value = data.company.address;
+                            if (data.company.city) document.getElementById('company-city').value = data.company.city;
+                            if (data.company.county) document.getElementById('company-county').value = data.company.county;
+
+                            alert('✅ Date completate automat din ANAF!');
+                        } else {
+                            alert('❌ Nu s-au găsit date pentru CUI-ul specificat');
+                        }
+                    } catch (error) {
+                        console.error('Eroare autocomplete:', error);
+                        alert('❌ Eroare la încărcarea datelor ANAF');
+                    }
+                });
             }
         });
 
@@ -2707,114 +2814,6 @@
                 lucide.createIcons();
             }
         }
-        
-        // Logout functionality
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                if (confirm('Sigur doriți să vă deconectați?')) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    window.location.href = '/login.html';
-                }
-            });
-        }
-
-        // Auto-complete functionality for company settings
-        // Helper function to get auth headers
-        function getAuthHeaders() {
-            const token = localStorage.getItem('token');
-            return {
-                'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : ''
-            };
-        }
-
-        document.getElementById('autocomplete-company-btn').addEventListener('click', async () => {
-            const cuiInput = document.getElementById('company-cui');
-            const cui = cuiInput.value.trim();
-
-            if (!cui) {
-                showToast('Introduceți un CUI valid', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('autocomplete-company-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>';
-            lucide.createIcons();
-
-            try {
-                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`, {
-                    headers: getAuthHeaders()
-                });
-                const result = await response.json();
-
-                if (result.success && result.settings) {
-                    const data = result.settings;
-                    if (data.name) document.getElementById('company-name').value = data.name;
-                    if (data.address) document.getElementById('company-address').value = data.address;
-                    if (data.city) document.getElementById('company-city').value = data.city;
-                    if (data.county) document.getElementById('company-county').value = data.county;
-                    if (data.regCom) document.getElementById('company-regCom').value = data.regCom;
-                    if (data.phone) document.getElementById('company-phone').value = data.phone;
-                    if (data.iban) document.getElementById('company-iban').value = data.iban;
-                    if (data.bank) document.getElementById('company-bank').value = data.bank;
-
-                    showToast('Date completate automat cu succes din ANAF!', 'success');
-                } else {
-                    throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
-                }
-            } catch (error) {
-                showToast(error.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i data-lucide="sparkles"></i>';
-                lucide.createIcons();
-            }
-        });
-        
-        // Auto-complete functionality for client in invoice
-        document.getElementById('autocomplete-client-btn').addEventListener('click', async () => {
-            const cuiInput = document.getElementById('client-cui');
-            const cui = cuiInput.value.trim();
-
-            if (!cui) {
-                showToast('Introduceți un CUI valid pentru client', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('autocomplete-client-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>';
-            lucide.createIcons();
-
-            try {
-                const response = await fetch(`/api/settings/autocomplete/${encodeURIComponent(cui)}`, {
-                    headers: getAuthHeaders()
-                });
-                const result = await response.json();
-
-                if (result.success && result.settings) {
-                    const data = result.settings;
-                    if (data.name) document.getElementById('client-name').value = data.name;
-                    if (data.address) document.getElementById('client-address').value = data.address;
-                    if (data.city) document.getElementById('client-city').value = data.city;
-                    if (data.county) document.getElementById('client-county').value = data.county;
-                    if (data.regCom) document.getElementById('client-regCom').value = data.regCom;
-
-                    showToast('Date client completate automat din ANAF!', 'success');
-                } else {
-                    throw new Error(result.error || 'Nu s-au găsit date pentru acest CUI');
-                }
-            } catch (error) {
-                showToast(error.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i data-lucide="sparkles"></i>';
-                lucide.createIcons();
-            }
-        });
 
         // Chat GPT functionality
         const chatMessages = document.getElementById('chat-messages');
@@ -2833,14 +2832,6 @@
                 }
             });
         }
-        }
-        
-        chatSendBtn.addEventListener('click', sendChatMessage);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendChatMessage();
-            }
-        });
 
         // ========== PROFORMA FUNCTIONALITY ==========
         

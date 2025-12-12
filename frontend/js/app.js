@@ -213,43 +213,8 @@ function switchTab(tabName) {
 }
 
 // ========== SETTINGS TAB ==========
-window.addEventListener('DOMContentLoaded', async () => {
-    // Update UI based on authentication status
-    updateUIBasedOnAuth();
-    
-    // Load and display user data if logged in
-    if (isLoggedIn()) {
-        const userData = await loadUserData();
-        if (userData) {
-            updateUserInfo(userData);
-        }
-    }
-    
-    // Update chat banners based on auth status
-    updateChatBanners();
-    
-    // Initialize template selector
-    initTemplateSelector();
-    
-    loadSettings();
-    
-    // Only check ANAF status if logged in
-    if (isLoggedIn()) {
-        checkANAFStatus();
-    }
-    
-    // Check for ANAF callback
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('anaf_connected') === 'true') {
-        showMessage('settingsMessage', '✅ Conectat cu succes la ANAF e-Factura!', 'success');
-        checkANAFStatus();
-        // Clean URL
-        window.history.replaceState({}, document.title, '/');
-    } else if (urlParams.get('anaf_error')) {
-        showMessage('settingsMessage', `❌ Eroare conectare ANAF: ${urlParams.get('anaf_error')}`, 'error');
-        window.history.replaceState({}, document.title, '/');
-    }
-});
+// IMPORTANT: Nu mai folosim DOMContentLoaded aici - inițializarea se face în index.html
+// pentru a controla ordinea exactă de execuție
 
 // Helper pentru colectarea datelor companiei emitente
 function getProviderData() {
