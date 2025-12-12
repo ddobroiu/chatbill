@@ -66,38 +66,49 @@ function isLoggedIn() {
 async function verifyTokenOnServer() {
     console.log('🌐 ========== verifyTokenOnServer START ==========');
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
         console.log('❌ verifyTokenOnServer RESULT: Nu există token');
         return false;
     }
-    
+
     try {
         console.log('📍 Calling API:', `${API_URL}/api/auth/me`);
         const response = await fetch(`${API_URL}/api/auth/me`, {
             headers: getAuthHeaders()
         });
-        
+
         console.log('📍 Response status:', response.status);
-        
-        if (response.status === 401 || response.status === 403) {
-            console.log('❌ verifyTokenOnServer RESULT: Token INVALID pe server (401/403)');
+
+        // Token invalid SAU utilizator șters/inexistent
+        if (response.status === 401 || response.status === 403 || response.status === 404) {
+            console.log('❌ verifyTokenOnServer RESULT: Token INVALID pe server (401/403/404 - user deleted)');
             clearAuthData();
             return false;
         }
-        
+
         if (!response.ok) {
             console.log('⚠️ verifyTokenOnServer RESULT: Eroare server:', response.status);
+            clearAuthData(); // Clear auth pentru orice eroare, pentru siguranță
             return false;
         }
-        
+
         const data = await response.json();
         console.log('📍 Server response data:', data);
+
+        // Verifică dacă răspunsul conține date user valide
+        if (!data.success || !data.user) {
+            console.log('❌ verifyTokenOnServer RESULT: Răspuns invalid (fără user data)');
+            clearAuthData();
+            return false;
+        }
+
         console.log('✅ verifyTokenOnServer RESULT: Token VALID pe server');
         console.log('🌐 ========== verifyTokenOnServer END ==========');
         return true;
     } catch (error) {
         console.error('❌ verifyTokenOnServer RESULT: Eroare request:', error);
+        clearAuthData(); // Clear auth și în caz de eroare de rețea
         return false;
     }
 }
