@@ -1,10 +1,12 @@
 // ========== API CONFIGURATION ==========
+// Version: 2025-12-12-20:15 - FIXED USER DELETION DETECTION
 // Detectează automat URL-ul API-ului
-const API_URL = window.location.hostname === 'localhost' 
+const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000'
   : window.location.origin;
 
 console.log('🌐 API URL:', API_URL);
+console.log('📦 App.js version: 2025-12-12-20:15');
 
 // ========== AUTHENTICATION ==========
 function checkAuth() {
