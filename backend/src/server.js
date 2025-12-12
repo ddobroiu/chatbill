@@ -23,6 +23,7 @@ const allowedOrigins = [
   'https://www.chatbill.ro', // Cu www
   'http://localhost:3000', // Pentru development local
   'http://localhost:5173', // Pentru Vite dev server
+  'http://127.0.0.1:5500', // Pentru VS Code Live Server
 ];
 
 const corsOptions = {
@@ -154,7 +155,7 @@ app.use((req, res, next) => {
 const { errorHandler } = require('./middleware/errorHandler');
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server-ul rulează pe portul ${PORT}`);
