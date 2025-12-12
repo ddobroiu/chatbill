@@ -846,12 +846,17 @@ async function loadCompanySettingsForInvoice() {
 function addInvoiceProduct() {
     const container = document.getElementById('products-container');
     if (!container) return;
-    
+
     const index = invoiceProducts.length;
     const productDiv = document.createElement('div');
     productDiv.className = 'product-item';
     productDiv.dataset.index = index;
-    
+
+    // Obține setările TVA
+    const vatSettings = getVATSettings();
+    const defaultVAT = vatSettings.isVatPayer ? vatSettings.vatRate : 0;
+    const vatFieldDisplay = vatSettings.isVatPayer ? 'block' : 'none';
+
     productDiv.innerHTML = `
         <div class="product-row">
             <div class="form-group">
@@ -870,9 +875,9 @@ function addInvoiceProduct() {
                 <label>Preț Unitar (fără TVA)</label>
                 <input type="number" class="product-price" value="0" min="0" step="0.01" required>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="display: ${vatFieldDisplay};">
                 <label>TVA (%)</label>
-                <input type="number" class="product-vat" value="19" min="0" max="100" step="1" required>
+                <input type="number" class="product-vat" value="${defaultVAT}" min="0" max="100" step="1" required>
             </div>
             <div class="form-group">
                 <button type="button" class="btn btn-danger btn-icon remove-product" title="Șterge produs">
@@ -881,25 +886,25 @@ function addInvoiceProduct() {
             </div>
         </div>
     `;
-    
+
     container.appendChild(productDiv);
-    
+
     // Add event listeners
     const inputs = productDiv.querySelectorAll('input');
     inputs.forEach(input => {
         input.addEventListener('input', calculateInvoiceTotals);
     });
-    
+
     const removeBtn = productDiv.querySelector('.remove-product');
     removeBtn.addEventListener('click', () => {
         productDiv.remove();
         invoiceProducts.splice(index, 1);
         calculateInvoiceTotals();
     });
-    
+
     invoiceProducts.push({});
     calculateInvoiceTotals();
-    
+
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
@@ -1127,12 +1132,17 @@ function initProformaGenerator() {
 function addProformaProduct() {
     const container = document.getElementById('proforma-products-container');
     if (!container) return;
-    
+
     const index = proformaProducts.length;
     const productDiv = document.createElement('div');
     productDiv.className = 'product-item';
     productDiv.dataset.index = index;
-    
+
+    // Obține setările TVA
+    const vatSettings = getVATSettings();
+    const defaultVAT = vatSettings.isVatPayer ? vatSettings.vatRate : 0;
+    const vatFieldDisplay = vatSettings.isVatPayer ? 'block' : 'none';
+
     productDiv.innerHTML = `
         <div class="product-row">
             <div class="form-group">
@@ -1151,9 +1161,9 @@ function addProformaProduct() {
                 <label>Preț Unitar (fără TVA)</label>
                 <input type="number" class="proforma-product-price" value="0" min="0" step="0.01" required>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="display: ${vatFieldDisplay};">
                 <label>TVA (%)</label>
-                <input type="number" class="proforma-product-vat" value="19" min="0" max="100" step="1" required>
+                <input type="number" class="proforma-product-vat" value="${defaultVAT}" min="0" max="100" step="1" required>
             </div>
             <div class="form-group">
                 <button type="button" class="btn btn-danger btn-icon remove-proforma-product" title="Șterge produs">
@@ -1399,12 +1409,17 @@ function initOfferGenerator() {
 function addOfferProduct() {
     const container = document.getElementById('offer-products-container');
     if (!container) return;
-    
+
     const index = offerProducts.length;
     const productDiv = document.createElement('div');
     productDiv.className = 'product-item';
     productDiv.dataset.index = index;
-    
+
+    // Obține setările TVA
+    const vatSettings = getVATSettings();
+    const defaultVAT = vatSettings.isVatPayer ? vatSettings.vatRate : 0;
+    const vatFieldDisplay = vatSettings.isVatPayer ? 'block' : 'none';
+
     productDiv.innerHTML = `
         <div class="product-row">
             <div class="form-group">
@@ -1419,9 +1434,9 @@ function addOfferProduct() {
                 <label>Preț Unitar (fără TVA)</label>
                 <input type="number" class="offer-product-price" value="0" min="0" step="0.01" required>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="display: ${vatFieldDisplay};">
                 <label>TVA (%)</label>
-                <input type="number" class="offer-product-vat" value="19" min="0" max="100" step="1" required>
+                <input type="number" class="offer-product-vat" value="${defaultVAT}" min="0" max="100" step="1" required>
             </div>
             <div class="form-group">
                 <button type="button" class="btn btn-danger btn-icon remove-offer-product" title="Șterge produs">
@@ -1557,6 +1572,9 @@ window.addEventListener('hashchange', () => {
     if (window.location.hash === '#company-settings') {
         initCompanySettingsPage();
     }
+    if (window.location.hash === '#vat-settings') {
+        initVATSettingsPage();
+    }
     if (window.location.hash === '#whatsapp-settings') {
         initWhatsAppSettingsPage();
     }
@@ -1593,23 +1611,27 @@ async function initializeApp() {
     
     // Initialize page-specific handlers based on current hash
     const currentHash = window.location.hash;
-    
+
     if (currentHash === '#company-settings') {
         initCompanySettingsPage();
     }
-    
+
     if (currentHash === '#invoice-generator') {
         initInvoiceGenerator();
     }
-    
+
     if (currentHash === '#proforma-generator') {
         initProformaGenerator();
     }
-    
+
     if (currentHash === '#offer-generator') {
         initOfferGenerator();
     }
-    
+
+    if (currentHash === '#vat-settings') {
+        initVATSettingsPage();
+    }
+
     if (currentHash === '#whatsapp-settings') {
         initWhatsAppSettingsPage();
     }
@@ -2839,232 +2861,123 @@ function filterInvoices(status) {
         }
     });
 }
+// ========== VAT SETTINGS MANAGEMENT ==========
+// Funcții pentru gestionarea setărilor TVA și sincronizare cu generatoarele
 
-// ========== OFFER GENERATOR ==========
-let offerProducts = [];
-
-function initOfferGenerator() {
-    // Add initial product row for offer
-    addOfferProduct();
-    
-    // Handle offer form submission
-    const offerForm = document.getElementById('offer-form');
-    if (offerForm) {
-        offerForm.addEventListener('submit', handleOfferSubmit);
-    }
-    
-    // Add product button
-    const addBtn = document.getElementById('add-offer-product');
-    if (addBtn) {
-        addBtn.addEventListener('click', addOfferProduct);
-    }
-    
-    // Client type toggle
-    const clientTypeSelect = document.getElementById('offer-client-type');
-    if (clientTypeSelect) {
-        clientTypeSelect.addEventListener('change', toggleOfferClientFields);
-    }
-    
-    // Auto-complete button
-    const autocompleteBtn = document.getElementById('autocomplete-offer-client-btn');
-    if (autocompleteBtn) {
-        autocompleteBtn.addEventListener('click', autocompleteOfferClient);
-    }
-}
-
-function addOfferProduct() {
-    const container = document.getElementById('offer-products-container');
-    const index = offerProducts.length;
-    
-    const productDiv = document.createElement('div');
-    productDiv.className = 'product-item';
-    productDiv.innerHTML = `
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Denumire Produs/Serviciu</label>
-                <input type="text" class="offer-product-name" placeholder="ex: Dezvoltare Website" required>
-            </div>
-            <div class="form-group">
-                <label>Cantitate</label>
-                <input type="number" class="offer-product-quantity" value="1" min="0.01" step="0.01" required>
-            </div>
-            <div class="form-group">
-                <label>Preț Unitar (RON)</label>
-                <input type="number" class="offer-product-price" placeholder="0.00" min="0" step="0.01" required>
-            </div>
-            <div class="form-group">
-                <label>TVA %</label>
-                <select class="offer-product-vat">
-                    <option value="21">21%</option>
-                    <option value="9">9%</option>
-                    <option value="5">5%</option>
-                    <option value="0">0%</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Total</label>
-                <input type="text" class="offer-product-total" readonly placeholder="0.00 RON">
-            </div>
-            <div style="display: flex; align-items: flex-end;">
-                <button type="button" class="btn btn-danger" onclick="removeOfferProduct(this)">
-                    <i data-lucide="trash-2"></i>
-                </button>
-            </div>
-        </div>
-    `;
-    
-    container.appendChild(productDiv);
-    offerProducts.push({});
-    
-    // Add event listeners for calculation
-    const inputs = productDiv.querySelectorAll('input, select');
-    inputs.forEach(input => {
-        input.addEventListener('input', calculateOfferTotals);
-        input.addEventListener('change', calculateOfferTotals);
-    });
-    
-    // Initialize Lucide icons
-    if (window.lucide) {
-        lucide.createIcons();
-    }
-}
-
-function removeOfferProduct(button) {
-    const productItem = button.closest('.product-item');
-    const index = Array.from(productItem.parentElement.children).indexOf(productItem);
-    offerProducts.splice(index, 1);
-    productItem.remove();
-    calculateOfferTotals();
-}
-
-function calculateOfferTotals() {
-    let subtotal = 0;
-    let totalVAT = 0;
-    
-    const productItems = document.querySelectorAll('#offer-products-container .product-item');
-    productItems.forEach((item, index) => {
-        const quantity = parseFloat(item.querySelector('.offer-product-quantity').value) || 0;
-        const price = parseFloat(item.querySelector('.offer-product-price').value) || 0;
-        const vatRate = parseFloat(item.querySelector('.offer-product-vat').value) || 0;
-        
-        const productTotal = quantity * price;
-        const productVAT = productTotal * (vatRate / 100);
-        
-        subtotal += productTotal;
-        totalVAT += productVAT;
-        
-        item.querySelector('.offer-product-total').value = (productTotal + productVAT).toFixed(2) + ' RON';
-    });
-    
-    const grandTotal = subtotal + totalVAT;
-    
-    document.getElementById('offer-summary-subtotal').textContent = subtotal.toFixed(2) + ' RON';
-    document.getElementById('offer-summary-vat').textContent = totalVAT.toFixed(2) + ' RON';
-    document.getElementById('offer-summary-total').textContent = grandTotal.toFixed(2) + ' RON';
-}
-
-function toggleOfferClientFields() {
-    const clientType = document.getElementById('offer-client-type').value;
-    const companyFields = document.getElementById('offer-company-fields');
-    const individualFields = document.getElementById('offer-individual-fields');
-    
-    if (clientType === 'company') {
-        companyFields.style.display = 'block';
-        individualFields.style.display = 'none';
-    } else {
-        companyFields.style.display = 'none';
-        individualFields.style.display = 'block';
-    }
-}
-
-async function autocompleteOfferClient() {
-    const cuiInput = document.getElementById('offer-client-cui');
-    const cui = cuiInput.value.trim().replace(/[^0-9]/g, '');
-    
-    if (!cui) {
-        alert('Vă rugăm să introduceți un CUI');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/api/settings/autocomplete/${cui}`);
-        const data = await response.json();
-        
-        if (data.success && data.company) {
-            document.getElementById('offer-client-name').value = data.company.name || '';
-            document.getElementById('offer-client-cui').value = data.company.cui || '';
-            alert('✅ Date completate automat din ANAF');
-        } else {
-            alert('❌ Nu s-au găsit informații pentru acest CUI');
+function getVATSettings() {
+    // Încearcă să obții setările din localStorage
+    const settings = localStorage.getItem('vatSettings');
+    if (settings) {
+        try {
+            return JSON.parse(settings);
+        } catch (e) {
+            console.error('Eroare parsare VAT settings:', e);
         }
-    } catch (error) {
-        console.error('Eroare autocomplete:', error);
-        alert('❌ Eroare la căutarea datelor');
-    }
-}
-
-async function handleOfferSubmit(event) {
-    event.preventDefault();
-    
-    const products = [];
-    const productItems = document.querySelectorAll('#offer-products-container .product-item');
-    
-    productItems.forEach(item => {
-        const name = item.querySelector('.offer-product-name').value;
-        const quantity = parseFloat(item.querySelector('.offer-product-quantity').value);
-        const price = parseFloat(item.querySelector('.offer-product-price').value);
-        const vatRate = parseFloat(item.querySelector('.offer-product-vat').value);
-        
-        if (name && quantity && price) {
-            products.push({ name, quantity, price, vatRate });
-        }
-    });
-    
-    if (products.length === 0) {
-        alert('Vă rugăm să adăugați cel puțin un produs/serviciu');
-        return;
     }
     
-    const formData = new FormData(event.target);
-    const clientType = formData.get('offer-client-type');
-    
-    const offerData = {
-        title: formData.get('offer-title'),
-        validity: parseInt(formData.get('offer-validity')),
-        paymentTerms: formData.get('offer-payment-terms'),
-        delivery: formData.get('offer-delivery'),
-        notes: formData.get('offer-notes'),
-        client: clientType === 'individual' ? {
-            type: 'individual',
-            firstName: formData.get('offer-client-firstName'),
-            lastName: formData.get('offer-client-lastName'),
-            email: formData.get('offer-client-email'),
-            phone: formData.get('offer-client-phone')
-        } : {
-            type: 'company',
-            name: formData.get('offer-client-name'),
-            cui: formData.get('offer-client-cui'),
-            email: formData.get('offer-client-email'),
-            phone: formData.get('offer-client-phone')
-        },
-        products: products
+    // Default: plătitor TVA cu 21%
+    return {
+        isVatPayer: true,
+        vatRate: 21
     };
-    
-    console.log('Offer data:', offerData);
-    
-    // For now, just show success message
-    // In production, you would send this to the backend
-    alert('✅ Oferta a fost generată cu succes!\n\nÎn producție, aceasta va fi salvată în baza de date și va putea fi descărcată ca PDF.');
-    
-    // Reset form
-    event.target.reset();
-    document.getElementById('offer-products-container').innerHTML = '';
-    offerProducts = [];
-    addOfferProduct();
-    calculateOfferTotals();
 }
 
-function previewOffer() {
-    alert('🔍 Funcționalitatea de preview va fi disponibilă în curând!');
+function saveVATSettings(isVatPayer, vatRate) {
+    const settings = {
+        isVatPayer: isVatPayer,
+        vatRate: parseFloat(vatRate) || 21
+    };
+    localStorage.setItem('vatSettings', JSON.stringify(settings));
+    console.log('✅ VAT Settings salvate:', settings);
+    return settings;
+}
+
+// Inițializare pagină VAT Settings
+function initVATSettingsPage() {
+    console.log('[VAT Settings] Initializing...');
+    
+    const form = document.getElementById('vat-settings-form');
+    const isVatPayerCheckbox = document.getElementById('is-vat-payer-2');
+    const vatRateInput = document.getElementById('vat-rate-2');
+    const vatRateGroup = document.getElementById('vat-rate-group-2');
+    
+    if (!form) {
+        console.log('[VAT Settings] Form not found');
+        return;
+    }
+    
+    // Încarcă setările salvate
+    const settings = getVATSettings();
+    if (isVatPayerCheckbox) {
+        isVatPayerCheckbox.checked = settings.isVatPayer;
+    }
+    if (vatRateInput) {
+        vatRateInput.value = settings.vatRate;
+    }
+    
+    // Toggle vizibilitate câmp VAT rate
+    function toggleVATRateField() {
+        if (vatRateGroup) {
+            vatRateGroup.style.display = isVatPayerCheckbox.checked ? 'block' : 'none';
+        }
+    }
+    
+    // Event listener pentru checkbox
+    if (isVatPayerCheckbox && !isVatPayerCheckbox.dataset.listenerAdded) {
+        isVatPayerCheckbox.dataset.listenerAdded = 'true';
+        isVatPayerCheckbox.addEventListener('change', () => {
+            toggleVATRateField();
+            // Auto-save când se schimbă
+            const vatRate = vatRateInput ? vatRateInput.value : 21;
+            saveVATSettings(isVatPayerCheckbox.checked, vatRate);
+        });
+    }
+    
+    // Event listener pentru VAT rate input
+    if (vatRateInput && !vatRateInput.dataset.listenerAdded) {
+        vatRateInput.dataset.listenerAdded = 'true';
+        vatRateInput.addEventListener('change', () => {
+            const isVatPayer = isVatPayerCheckbox ? isVatPayerCheckbox.checked : true;
+            saveVATSettings(isVatPayer, vatRateInput.value);
+        });
+    }
+    
+    // Setează vizibilitatea inițială
+    toggleVATRateField();
+    
+    console.log('[VAT Settings] Initialized with settings:', settings);
+}
+
+// Aplică setările TVA în generatoarele de documente
+function applyVATSettingsToGenerator(containerSelector, productClass) {
+    const settings = getVATSettings();
+    
+    if (!settings.isVatPayer) {
+        // Ascunde toate câmpurile TVA
+        const vatFields = document.querySelectorAll(`${containerSelector} .form-group:has(.${productClass}-vat)`);
+        vatFields.forEach(field => {
+            field.style.display = 'none';
+        });
+        
+        // Setează TVA la 0 pentru toate produsele
+        const vatInputs = document.querySelectorAll(`${containerSelector} .${productClass}-vat`);
+        vatInputs.forEach(input => {
+            input.value = 0;
+        });
+    } else {
+        // Afișează câmpurile TVA
+        const vatFields = document.querySelectorAll(`${containerSelector} .form-group:has(.${productClass}-vat)`);
+        vatFields.forEach(field => {
+            field.style.display = 'block';
+        });
+        
+        // Setează rata TVA default
+        const vatInputs = document.querySelectorAll(`${containerSelector} .${productClass}-vat`);
+        vatInputs.forEach(input => {
+            if (!input.value || input.value == 0 || input.value == 19) {
+                input.value = settings.vatRate;
+            }
+        });
+    }
 }
 
