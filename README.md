@@ -2,14 +2,27 @@
 
 O aplicație web modernă de chat care permite generarea automată de facturi pe baza conversațiilor.
 
+## 🎉 **NOU: Funcționează și fără cont!**
+
+ChatBill poate fi folosit **fără înregistrare**! Generează facturi, proforma și oferte instant, fără obligații.
+
+👉 **[Citește ghidul complet pentru acces public](./PUBLIC_ACCESS_GUIDE.md)**
+
 ## 📋 Caracteristici
 
+- **🚀 Acces Public** - Folosește aplicația fără cont (setări salvate local)
+- **👤 Conturi Opționale** - Istoric, backup cloud, și funcții avansate
 - **Chat în timp real** folosind Socket.IO
-- **Generare automată de facturi** în format PDF
+- **Generare automată de facturi** în format PDF (4 template-uri)
+- **Proforma și Oferte** de preț profesionale
+- **ANAF e-Factura** - Integrare completă (necesită cont)
+- **Chat AI** cu OpenAI GPT (necesită cont)
+- **WhatsApp Business** integration (necesită cont)
+- **Stripe Subscriptions** pentru funcții premium
 - **Interfață modernă și responsivă**
 - **Gestiune conversații** multiple
-- **Istoric facturi** cu descărcare PDF
-- **Calcul automat TVA** (19%)
+- **Istoric documente** complet (cu cont)
+- **Calcul automat TVA** (19% sau personalizabil)
 
 ## 🚀 Tehnologii Folosite
 
