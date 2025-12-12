@@ -1,16 +1,18 @@
 /**
  * WhatsApp Service - Trimitere mesaje și coduri de verificare
- * Folosește API-ul WhatsApp Business (sau provider ca Twilio/MessageBird)
+ * Folosește Meta WhatsApp Business API (același ca pentru conversații)
  */
 
 const axios = require('axios');
 
-const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || '';
-const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN || '';
-const WHATSAPP_FROM_NUMBER = process.env.WHATSAPP_FROM_NUMBER || '';
+// Meta WhatsApp Business API Configuration (same as whatsappController)
+const WHATSAPP_API_VERSION = process.env.WHATSAPP_API_VERSION || 'v24.0';
+const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || `https://graph.facebook.com/${WHATSAPP_API_VERSION}`;
+const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.WHATSAPP_PHONE_ID;
+const WHATSAPP_TOKEN = process.env.META_API_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN || process.env.WHATSAPP_TOKEN;
 
 /**
- * Trimite cod de verificare pe WhatsApp
+ * Trimite cod de verificare pe WhatsApp folosind Meta Business API
  * @param {string} phoneNumber - Număr telefon destinatar (format: +40721234567)
  * @param {string} code - Codul de verificare de 6 cifre
  */
@@ -33,7 +35,7 @@ async function sendVerificationCode(phoneNumber, code) {
     console.log(`📱 Trimitere cod WhatsApp către ${formattedPhone}`);
 
     // În development, doar logăm codul (nu trimitem pe WhatsApp)
-    if (process.env.NODE_ENV === 'development' || !WHATSAPP_API_URL) {
+    if (process.env.NODE_ENV === 'development' && !WHATSAPP_PHONE_ID) {
       console.log('⚠️ DEVELOPMENT MODE - Cod WhatsApp:', code);
       console.log('📱 Număr destinatar:', formattedPhone);
       console.log('💬 Mesaj:', message);
@@ -44,57 +46,38 @@ async function sendVerificationCode(phoneNumber, code) {
       };
     }
 
-    // În production, trimitem prin API WhatsApp
-    // Exemplu cu Twilio WhatsApp API
-    if (WHATSAPP_API_URL.includes('twilio')) {
-      const response = await axios.post(
-        WHATSAPP_API_URL,
-        {
-          From: `whatsapp:${WHATSAPP_FROM_NUMBER}`,
-          To: `whatsapp:${formattedPhone}`,
-          Body: message
-        },
-        {
-          auth: {
-            username: process.env.TWILIO_ACCOUNT_SID || '',
-            password: WHATSAPP_API_TOKEN
-          },
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
-
-      console.log('✅ Cod WhatsApp trimis cu succes');
-      return {
-        success: true,
-        messageId: response.data.sid
-      };
+    // Verificăm dacă avem configurarea Meta WhatsApp
+    if (!WHATSAPP_PHONE_ID || !WHATSAPP_TOKEN) {
+      throw new Error('WhatsApp API nu este configurat (lipsesc WHATSAPP_PHONE_ID sau META_API_TOKEN)');
     }
 
-    // Exemplu generic pentru alte providere
+    // Trimite prin Meta WhatsApp Business API
     const response = await axios.post(
-      WHATSAPP_API_URL,
+      `${WHATSAPP_API_URL}/${WHATSAPP_PHONE_ID}/messages`,
       {
+        messaging_product: 'whatsapp',
         to: formattedPhone,
-        message: message
+        type: 'text',
+        text: {
+          body: message
+        }
       },
       {
         headers: {
-          'Authorization': `Bearer ${WHATSAPP_API_TOKEN}`,
+          'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
           'Content-Type': 'application/json'
         }
       }
     );
 
-    console.log('✅ Cod WhatsApp trimis cu succes');
+    console.log('✅ Cod WhatsApp trimis cu succes prin Meta API');
     return {
       success: true,
-      messageId: response.data.id || response.data.messageId
+      messageId: response.data.messages[0].id
     };
 
   } catch (error) {
-    console.error('❌ Eroare trimitere WhatsApp:', error.message);
+    console.error('❌ Eroare trimitere WhatsApp:', error.response?.data || error.message);
     
     // În development, nu aruncăm eroare
     if (process.env.NODE_ENV === 'development') {
