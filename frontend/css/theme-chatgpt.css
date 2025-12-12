@@ -93,15 +93,34 @@ th, td { border-color: var(--border) !important; }
 .conversation-item.active { background: #343541 !important; color: var(--foreground) !important; }
 
 .chat-header { background: #202123 !important; border-bottom: 1px solid var(--border) !important; }
-.messages-container { background: #343541 !important; }
-.message { color: var(--foreground) !important; border: 1px solid transparent; }
+
+/* Generic messages container */
+.messages-container, #chat-messages { background: #343541 !important; }
+.message, .chat-message { color: var(--foreground) !important; }
+.message-time { color: #A6A7AE !important; font-size: 0.75rem; margin-top: 6px; }
+
+/* Classic bubbles (style.css pages) */
+.message { border: 1px solid transparent; border-radius: 16px; padding: 12px 14px; }
 .message.sent { background: #2A2B32 !important; border-color: #3f414a !important; }
 .message.received { background: #444654 !important; border-color: #565869 !important; }
-.message-time { color: #A6A7AE !important; }
+
+/* GPT bubbles (index.html with app.js) */
+#chat-messages { border-color: var(--border) !important; background: #343541 !important; }
+.chat-message { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.chat-message.user .message-bubble { background: #2A2B32; color: var(--foreground); border: 1px solid #3f414a; border-radius: 14px; padding: 12px 14px; max-width: 80%; margin-left: auto; }
+.chat-message.assistant .message-bubble { background: #444654; color: var(--foreground); border: 1px solid #565869; border-radius: 14px; padding: 12px 14px; max-width: 80%; margin-right: auto; }
+.chat-message code { background: #2A2B32; border: 1px solid #3f414a; padding: 2px 6px; border-radius: 6px; }
+
+/* Typing indicator */
+.typing-indicator { display: inline-flex; gap: 6px; padding: 10px 12px; background: #444654; border: 1px solid #565869; border-radius: 12px; }
+.typing-indicator span { width: 6px; height: 6px; background: #A6A7AE; border-radius: 50%; display: inline-block; animation: typingBlink 1s infinite ease-in-out; }
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBlink { 0%, 80%, 100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
 
 .message-input-area { background: #202123 !important; border-top: 1px solid var(--border) !important; }
-#messageInput { background: #444654 !important; border: 1px solid #565869 !important; color: var(--foreground) !important; }
-#messageInput:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.25) !important; }
+#messageInput, #chat-input { background: #444654 !important; border: 1px solid #565869 !important; color: var(--foreground) !important; }
+#messageInput:focus, #chat-input:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.25) !important; }
 
 /* Settings page overrides */
 .settings-container { background: var(--card-background) !important; color: var(--foreground) !important; box-shadow: none !important; border: 1px solid var(--border) !important; }
@@ -119,6 +138,8 @@ th, td { border-color: var(--border) !important; }
 .page, .login-container, .register-container { background: var(--card-background) !important; border: 1px solid var(--border) !important; color: var(--foreground) !important; }
 .logo h1 { color: var(--foreground) !important; }
 .logo-icon { background: var(--primary) !important; }
+ .page-header h2 { color: var(--foreground) !important; }
+ .page-header p { color: var(--secondary-foreground) !important; }
 
 /* Utility */
 hr { border-color: var(--border) !important; }
