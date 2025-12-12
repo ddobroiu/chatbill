@@ -259,9 +259,16 @@ function logout() {
 
 // Helper to get authorization header
 function getAuthHeaders() {
-    return {
+    const token = localStorage.getItem('token');
+    const headers = {
         'Content-Type': 'application/json'
     };
+    
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return headers;
 }
 
 // ========== TEMPLATE SELECTOR ==========
