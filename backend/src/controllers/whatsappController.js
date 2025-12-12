@@ -133,10 +133,7 @@ async function receiveMessage(req, res) {
                 try {
                   // Verifică dacă numărul de telefon aparține unui utilizator înregistrat
                   const user = await prisma.user.findFirst({
-                    where: { phone: from },
-                    include: {
-                      settings: true
-                    }
+                    where: { phone: from }
                   });
 
                   if (user) {
@@ -167,8 +164,8 @@ async function receiveMessage(req, res) {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        company: user.company || user.settings?.companyName,
-                        cui: user.cui || user.settings?.cui,
+                        company: user.company,
+                        cui: user.cui,
                         hasAccount: true
                       } : {
                         hasAccount: false
