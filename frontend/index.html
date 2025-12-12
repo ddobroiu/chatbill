@@ -2779,23 +2779,35 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
         
+        // Session ID pentru chat (stocat în localStorage)
+        let chatSessionId = localStorage.getItem('chatSessionId');
+
         async function sendChatMessage() {
             const message = chatInput.value.trim();
             if (!message) return;
-            
+
             addChatMessage(message, true);
             chatInput.value = '';
             chatSendBtn.disabled = true;
-            
+
             try {
-                const response = await fetch('/api/gpt-chat/message', {
+                const response = await fetch('/api/ai-chat/message', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({
+                        message,
+                        sessionId: chatSessionId,
+                        source: 'web'
+                    })
                 });
                 const result = await response.json();
-                
+
                 if (result.success && result.response) {
+                    // Salvează session ID pentru continuitate
+                    if (result.sessionId && !chatSessionId) {
+                        chatSessionId = result.sessionId;
+                        localStorage.setItem('chatSessionId', chatSessionId);
+                    }
                     addChatMessage(result.response, false);
                 } else {
                     throw new Error(result.error || 'Eroare la trimiterea mesajului');

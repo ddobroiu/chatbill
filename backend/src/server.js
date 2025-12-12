@@ -9,8 +9,9 @@ require('dotenv').config();
 const app = express();
 
 // Trust proxy - IMPORTANT for Railway deployment (behind reverse proxy)
-// This allows Express to properly read X-Forwarded-For headers
-app.set('trust proxy', true);
+// Railway uses 1 proxy layer, so we trust only the first proxy
+// This allows Express to properly read X-Forwarded-For headers while preventing IP spoofing
+app.set('trust proxy', 1);
 
 const server = http.createServer(app);
 

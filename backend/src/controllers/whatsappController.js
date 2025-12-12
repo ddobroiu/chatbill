@@ -2,9 +2,10 @@ const prisma = require('../db/prismaWrapper');
 const axios = require('axios');
 
 // WhatsApp API Configuration
-const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || 'https://graph.facebook.com/v18.0';
-const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
+const WHATSAPP_API_VERSION = process.env.WHATSAPP_API_VERSION || 'v24.0';
+const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || `https://graph.facebook.com/${WHATSAPP_API_VERSION}`;
+const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.WHATSAPP_PHONE_ID;
+const WHATSAPP_TOKEN = process.env.META_API_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN || process.env.WHATSAPP_TOKEN;
 const WEBHOOK_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || process.env.WEBHOOK_VERIFY_TOKEN || 'chatbill-webhook-token';
 
 // Funcție internă pentru trimitere mesaj WhatsApp (fără response HTTP)
