@@ -44,7 +44,7 @@ async function checkCanGenerateInvoice(userId) {
     }
 
     // Verifică dacă datele esențiale sunt completate
-    if (!companySettings.companyName || !companySettings.cui) {
+    if (!companySettings.name || !companySettings.cui) {
       return {
         canGenerate: false,
         reason: 'incomplete_company_settings',

@@ -148,3 +148,53 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server-ul rulează pe portul ${PORT}`);
 });
+
+// Graceful shutdown
+const gracefulShutdown = (signal) => {
+  console.log(`\n${signal} primit. Închidere gracioasă...`);
+  
+  server.close(() => {
+    console.log('✅ HTTP server închis');
+    
+    // Închide conexiunea Socket.IO
+    io.close(() => {
+      console.log('✅ Socket.IO închis');
+      
+      // Închide conexiunea Prisma
+      if (prisma) {
+        prisma.$disconnect()
+          .then(() => {
+            console.log('✅ Prisma deconectat');
+            process.exit(0);
+          })
+          .catch((err) => {
+            console.error('❌ Eroare deconectare Prisma:', err);
+            process.exit(1);
+          });
+      } else {
+        process.exit(0);
+      }
+    });
+  });
+  
+  // Forțează oprirea după 10 secunde dacă nu se închide
+  setTimeout(() => {
+    console.error('❌ Timeout - forțez oprirea');
+    process.exit(1);
+  }, 10000);
+};
+
+// Captează semnalele de oprire
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Captează erori neprevăzute
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  gracefulShutdown('UNCAUGHT_EXCEPTION');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection la:', promise, 'motiv:', reason);
+  gracefulShutdown('UNHANDLED_REJECTION');
+});

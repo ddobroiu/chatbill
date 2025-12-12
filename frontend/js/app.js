@@ -40,7 +40,7 @@ async function updateChatBanners() {
             if (settingsResponse.ok) {
                 const settingsData = await settingsResponse.json();
                 
-                if (!settingsData.settings || !settingsData.settings.companyName || !settingsData.settings.cui) {
+                if (!settingsData.settings || !settingsData.settings.name || !settingsData.settings.cui) {
                     // Nu are setări complete
                     if (noSettingsBanner) {
                         noSettingsBanner.style.display = 'block';
