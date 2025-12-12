@@ -169,31 +169,37 @@ model Conversation {
   userId        String?
   user          User?          @relation(fields: [userId], references: [id])
   status        String         @default("active") // active, archived
+  type          String         @default("web") // web, whatsapp
+  phoneNumber   String?        // Pentru WhatsApp
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  
+
   messages      Message[]
   invoices      Invoice[]
   proformas     Proforma[]
   offers        Offer[]
-  
+
   @@index([companyId])
   @@index([userId])
+  @@index([phoneNumber])
+  @@index([type])
 }
 
 // Model pentru mesaje
 model Message {
-  id              String       @id @default(uuid())
-  conversationId  String
-  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  userId          String?
-  user            User?        @relation(fields: [userId], references: [id])
-  text            String       @db.Text
-  sender          String       // 'user', 'system', 'ai'
-  timestamp       DateTime     @default(now())
-  
+  id                String       @id @default(uuid())
+  conversationId    String
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId            String?
+  user              User?        @relation(fields: [userId], references: [id])
+  text              String       @db.Text
+  sender            String       // 'user', 'system', 'ai', 'assistant'
+  whatsappMessageId String?      // ID mesaj WhatsApp pentru tracking
+  timestamp         DateTime     @default(now())
+
   @@index([conversationId])
   @@index([userId])
+  @@index([whatsappMessageId])
 }
 
 // Model pentru facturi

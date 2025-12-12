@@ -89,6 +89,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Import routes
 const chatRoutes = require('./routes/chatRoutes');
+const whatsappRoutes = require('./routes/whatsappRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const proformaRoutes = require('./routes/proformaRoutes');
 const offerRoutes = require('./routes/offerRoutes');
@@ -108,6 +109,7 @@ app.use('/api/webhooks', webhookRoutes);
 
 app.use('/api/auth', authRoutes); // Rute autentificare
 app.use('/api/chat', chatRoutes);
+app.use('/api/whatsapp', whatsappRoutes); // Rute WhatsApp
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/proformas', proformaRoutes); // Rute proforma
 app.use('/api/offers', offerRoutes); // Rute oferte
