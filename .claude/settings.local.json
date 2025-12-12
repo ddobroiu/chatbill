@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(node -e:*)",
-      "Bash(dir e:chatbillbackend /b)"
+      "Bash(dir e:chatbillbackend /b)",
+      "Bash(dir:*)"
     ]
   }
 }
