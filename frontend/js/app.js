@@ -172,37 +172,30 @@ function setupPhoneVerification() {
 
 async function loadUserData() {
     const token = localStorage.getItem('token');
-    if (!token) return null;
+    if (!token) {
+        console.log('❌ Nu există token - user nelogat');
+        return null;
+    }
     
     try {
-        // Încearcă să obții datele reale de la server
-        const response = await fetch(`${API_URL}/api/auth/me`, {
-            headers: getAuthHeaders()
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.user) {
-                return {
-                    id: data.user.id,
-                    email: data.user.email,
-                    name: data.user.name || data.user.email
-                };
-            }
-        }
-        
-        // Fallback: încearcă să decodezi token-ul
+        // Fallback RAPID: decodează token-ul direct
         const tokenParts = token.split('.');
         if (tokenParts.length === 3) {
             const payload = JSON.parse(atob(tokenParts[1]));
-            return {
+            const userData = {
                 id: payload.id,
                 email: payload.email,
                 name: payload.name || payload.email
             };
+            
+            console.log('✅ Date user din token:', userData);
+            return userData;
         }
     } catch (error) {
-        console.error('Eroare încărcare date utilizator:', error);
+        console.error('❌ Eroare decodare token:', error);
+        // Token invalid - șterge-l
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
     }
     
     return null;
@@ -241,7 +234,7 @@ function updateUserInfo(userData) {
 function updateUIBasedOnAuth() {
     const loggedIn = isLoggedIn();
     
-    console.log('🔐 Status autentificare:', loggedIn ? 'LOGAT' : 'NELOGAT');
+    console.log('🔐 updateUIBasedOnAuth - Status:', loggedIn ? 'LOGAT' : 'GUEST');
     
     // Elemente care trebuie ascunse pentru utilizatori nelogați
     const authOnlyElements = [
@@ -249,24 +242,35 @@ function updateUIBasedOnAuth() {
         document.querySelector('.nav-item-parent[data-submenu="generator"]'),
         document.querySelector('.nav-item-parent[data-submenu="istoric"]'),
         document.querySelector('#settings-toggle')?.closest('.nav-item-parent'),
-        document.querySelector('.sidebar-footer .user-info')
+        document.querySelector('.sidebar-footer')
     ];
     
     authOnlyElements.forEach(element => {
         if (element) {
-            element.style.display = loggedIn ? '' : 'none';
+            if (loggedIn) {
+                element.style.display = '';
+            } else {
+                element.style.display = 'none';
+            }
         }
     });
     
-    // Dacă nu e logat, mergi direct pe chat
+    // Afișează doar linkul de chat pentru guest
+    const chatLink = document.querySelector('a[href="#chat"]');
+    if (chatLink) {
+        chatLink.closest('.nav-item').style.display = '';
+    }
+    
+    // Dacă nu e logat și nu e pe chat, redirectează
     if (!loggedIn) {
         const currentHash = window.location.hash;
-        if (!currentHash || currentHash !== '#chat') {
+        if (!currentHash || currentHash === '' || currentHash === '#') {
+            console.log('⚡ Redirect către #chat pentru guest');
             window.location.hash = '#chat';
         }
     }
     
-    console.log('✅ UI actualizat bazat pe autentificare');
+    console.log('✅ UI actualizat');
 }
 
 function logout() {
