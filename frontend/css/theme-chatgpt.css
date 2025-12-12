@@ -1,0 +1,125 @@
+/* ChatGPT-inspired dark theme overrides */
+:root {
+  --background: #343541;
+  --foreground: #ECECF1;
+  --card-background: #444654;
+  --primary: #10a37f;
+  --primary-foreground: #ffffff;
+  --secondary: #202123;
+  --secondary-foreground: #C0C0D1;
+  --border: #565869;
+  --input: #565869;
+  --success: #16a34a;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --radius: 0.75rem;
+}
+
+/* Base */
+html, body {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+a { color: #9ae6b4; }
+a:hover { color: #86efac; }
+
+/* Layouts used by index.html */
+.sidebar {
+  background-color: var(--secondary) !important;
+  border-right: 1px solid var(--border) !important;
+}
+.sidebar-header h1 { color: var(--foreground) !important; }
+.nav-link {
+  color: var(--secondary-foreground) !important;
+}
+.nav-link:hover { background-color: #2A2B32 !important; color: var(--foreground) !important; }
+.nav-link.active { background-color: #343541 !important; color: var(--foreground) !important; }
+
+.main-content {
+  background: linear-gradient(180deg, #343541 0%, #2a2b32 100%) !important;
+}
+
+.card {
+  background-color: var(--card-background) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--foreground) !important;
+  box-shadow: none !important;
+}
+
+/* Buttons */
+.btn { border: 1px solid transparent; }
+.btn-primary { background-color: var(--primary) !important; color: var(--primary-foreground) !important; }
+.btn-primary:hover { background-color: #0e8f72 !important; }
+.btn-secondary { background-color: #2A2B32 !important; color: var(--foreground) !important; border-color: var(--border) !important; }
+.btn-secondary:hover { background-color: #2f3136 !important; }
+.btn-danger { background-color: var(--danger) !important; color: #fff !important; }
+
+/* Forms */
+.form-group label { color: var(--secondary-foreground) !important; }
+.form-group input,
+.form-group select,
+.form-group textarea,
+input,
+select,
+textarea {
+  background-color: #343541 !important;
+  border: 1px solid var(--border) !important;
+  color: var(--foreground) !important;
+}
+.form-group input::placeholder,
+.form-group textarea::placeholder,
+input::placeholder,
+textarea::placeholder { color: #A6A7AE !important; }
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.35) !important;
+}
+
+/* Tables */
+.table, table { color: var(--foreground); }
+th, td { border-color: var(--border) !important; }
+
+/* Chat area used by style.css pages */
+.conversations-sidebar { background: var(--secondary) !important; border-right: 1px solid var(--border) !important; }
+.conversation-item { background: transparent !important; color: var(--secondary-foreground) !important; border-color: transparent !important; }
+.conversation-item:hover { background: #2A2B32 !important; border-color: var(--border) !important; }
+.conversation-item.active { background: #343541 !important; color: var(--foreground) !important; }
+
+.chat-header { background: #202123 !important; border-bottom: 1px solid var(--border) !important; }
+.messages-container { background: #343541 !important; }
+.message { color: var(--foreground) !important; border: 1px solid transparent; }
+.message.sent { background: #2A2B32 !important; border-color: #3f414a !important; }
+.message.received { background: #444654 !important; border-color: #565869 !important; }
+.message-time { color: #A6A7AE !important; }
+
+.message-input-area { background: #202123 !important; border-top: 1px solid var(--border) !important; }
+#messageInput { background: #444654 !important; border: 1px solid #565869 !important; color: var(--foreground) !important; }
+#messageInput:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.25) !important; }
+
+/* Settings page overrides */
+.settings-container { background: var(--card-background) !important; color: var(--foreground) !important; box-shadow: none !important; border: 1px solid var(--border) !important; }
+.autocomplete-section { background: #2A2B32 !important; }
+.message.success { background: rgba(22,163,74,0.15) !important; border: 1px solid rgba(22,163,74,0.4) !important; color: #bbf7d0 !important; }
+.message.error { background: rgba(239,68,68,0.15) !important; border: 1px solid rgba(239,68,68,0.4) !important; color: #fecaca !important; }
+
+/* Scrollbar */
+*::-webkit-scrollbar { width: 10px; }
+*::-webkit-scrollbar-track { background: #202123; }
+*::-webkit-scrollbar-thumb { background: #565869; border-radius: 8px; }
+*::-webkit-scrollbar-thumb:hover { background: #6b6f7b; }
+
+/* Legal/static pages containers */
+.page, .login-container, .register-container { background: var(--card-background) !important; border: 1px solid var(--border) !important; color: var(--foreground) !important; }
+.logo h1 { color: var(--foreground) !important; }
+.logo-icon { background: var(--primary) !important; }
+
+/* Utility */
+hr { border-color: var(--border) !important; }
+input:disabled, button:disabled, select:disabled { opacity: 0.6; }
