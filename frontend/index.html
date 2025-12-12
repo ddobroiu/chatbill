@@ -2802,13 +2802,13 @@
                 });
                 const result = await response.json();
 
-                if (result.success && result.response) {
+                if (result.success && result.message) {
                     // Salvează session ID pentru continuitate
                     if (result.sessionId && !chatSessionId) {
                         chatSessionId = result.sessionId;
                         localStorage.setItem('chatSessionId', chatSessionId);
                     }
-                    addChatMessage(result.response, false);
+                    addChatMessage(result.message, false);
                 } else {
                     throw new Error(result.error || 'Eroare la trimiterea mesajului');
                 }
