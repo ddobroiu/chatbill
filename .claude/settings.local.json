@@ -3,7 +3,9 @@
     "allow": [
       "Bash(node -e:*)",
       "Bash(dir e:chatbillbackend /b)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git push)"
     ]
   }
 }
