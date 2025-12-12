@@ -807,8 +807,6 @@ function bindWhatsAppHandlers() {
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         });
-            }
-        });
     }
 
     whatsappHandlersBound = true;
