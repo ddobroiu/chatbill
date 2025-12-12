@@ -175,18 +175,34 @@ async function loadUserData() {
     if (!token) return null;
     
     try {
-        // Încearcă să obții datele utilizatorului din token
+        // Încearcă să obții datele reale de la server
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.user) {
+                return {
+                    id: data.user.id,
+                    email: data.user.email,
+                    name: data.user.name || data.user.email
+                };
+            }
+        }
+        
+        // Fallback: încearcă să decodezi token-ul
         const tokenParts = token.split('.');
         if (tokenParts.length === 3) {
             const payload = JSON.parse(atob(tokenParts[1]));
             return {
                 id: payload.id,
                 email: payload.email,
-                name: payload.name || 'Utilizator'
+                name: payload.name || payload.email
             };
         }
     } catch (error) {
-        console.error('Eroare decodare token:', error);
+        console.error('Eroare încărcare date utilizator:', error);
     }
     
     return null;
@@ -197,14 +213,27 @@ function updateUserInfo(userData) {
     const userName = document.getElementById('userName');
     const userEmail = document.getElementById('userEmail');
     
-    if (userData && userName && userEmail && userAvatar) {
-        userName.textContent = userData.name || 'Utilizator';
+    if (!userData) {
+        console.warn('Nu există date utilizator pentru afișare');
+        return;
+    }
+    
+    console.log('📊 Afișare date utilizator:', userData);
+    
+    if (userName) {
+        userName.textContent = userData.name || userData.email || 'Utilizator';
+    }
+    
+    if (userEmail) {
         userEmail.textContent = userData.email || '';
-        
+    }
+    
+    if (userAvatar) {
         // Initiale pentru avatar
-        const initials = userData.name
-            ? userData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
-            : userData.email[0].toUpperCase();
+        const nameForInitials = userData.name || userData.email;
+        const initials = nameForInitials
+            ? nameForInitials.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+            : 'U';
         userAvatar.textContent = initials;
     }
 }
