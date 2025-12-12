@@ -717,7 +717,7 @@ async function initWhatsAppSettingsPage() {
     const page = document.getElementById('whatsapp-settings');
     if (!page) return;
 
-    // Check if user already has verified phone
+    // Load user's current WhatsApp number
     if (isLoggedIn()) {
         try {
             const res = await fetch(`${API_URL}/api/auth/me`, { headers: getAuthHeaders() });
@@ -725,24 +725,20 @@ async function initWhatsAppSettingsPage() {
                 const data = await res.json();
                 if (data.success && data.user) {
                     const phoneInput = document.getElementById('whatsapp-phone');
-                    const verifiedSection = document.getElementById('whatsapp-verified-section');
-                    const verifiedNumber = document.getElementById('whatsapp-verified-number');
-                    const verificationSection = document.getElementById('whatsapp-verification-section');
+                    const savedSection = document.getElementById('whatsapp-saved-section');
+                    const savedNumber = document.getElementById('whatsapp-saved-number');
 
                     if (phoneInput && data.user.phone) {
                         phoneInput.value = data.user.phone;
                     }
 
-                    if (data.user.phoneVerified && data.user.phone) {
-                        // Show verified state
-                        if (verifiedSection) {
-                            verifiedSection.style.display = 'block';
-                            if (verifiedNumber) {
-                                verifiedNumber.textContent = data.user.phone;
+                    if (data.user.phone) {
+                        // Show saved state
+                        if (savedSection) {
+                            savedSection.style.display = 'block';
+                            if (savedNumber) {
+                                savedNumber.textContent = data.user.phone;
                             }
-                        }
-                        if (verificationSection) {
-                            verificationSection.style.display = 'none';
                         }
                         if (typeof lucide !== 'undefined') lucide.createIcons();
                     }
@@ -759,144 +755,58 @@ async function initWhatsAppSettingsPage() {
 function bindWhatsAppHandlers() {
     if (whatsappHandlersBound) return;
 
-    const sendBtn = document.getElementById('send-whatsapp-code-btn');
-    const verifyBtn = document.getElementById('verify-whatsapp-code-btn');
-    const resendBtn = document.getElementById('resend-whatsapp-code-btn');
+    const saveBtn = document.getElementById('save-whatsapp-phone-btn');
     const phoneInput = document.getElementById('whatsapp-phone');
-    const codeInput = document.getElementById('whatsapp-verification-code');
 
-    if (sendBtn && !sendBtn.dataset.listenerAdded) {
-        sendBtn.dataset.listenerAdded = 'true';
-        sendBtn.addEventListener('click', async () => {
+    if (saveBtn && !saveBtn.dataset.listenerAdded) {
+        saveBtn.dataset.listenerAdded = 'true';
+        saveBtn.addEventListener('click', async () => {
             const phone = phoneInput?.value?.trim();
             if (!phone) {
-                alert('Introduceți numărul de telefon');
+                alert('Introduceți numărul de telefon WhatsApp');
                 return;
             }
 
-            sendBtn.disabled = true;
-            const oldHtml = sendBtn.innerHTML;
-            sendBtn.innerHTML = '<i data-lucide="loader-2"></i> Se trimite...';
+            saveBtn.disabled = true;
+            const oldHtml = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i data-lucide="loader-2"></i> Salvare...';
             if (typeof lucide !== 'undefined') lucide.createIcons();
 
             try {
-                // First save phone to settings
+                // Save phone directly without verification
                 const saveRes = await fetch(`${API_URL}/api/settings`, {
                     method: 'PUT',
                     headers: getAuthHeaders(),
                     body: JSON.stringify({ phone })
                 });
 
-                if (saveRes.ok) {
-                    // Now request verification code
-                    const codeRes = await fetch(`${API_URL}/api/auth/resend-phone-code`, {
-                        method: 'POST',
-                        headers: getAuthHeaders()
-                    });
-
-                    const data = await codeRes.json();
-                    if (data.success) {
-                        alert('✅ ' + data.message);
-                        document.getElementById('whatsapp-verification-section').style.display = 'block';
-                        if (typeof lucide !== 'undefined') lucide.createIcons();
-                    } else {
-                        alert('❌ ' + (data.error || 'Eroare la trimiterea codului'));
-                    }
-                } else {
-                    alert('❌ Eroare la salvarea numărului');
-                }
-            } catch (err) {
-                console.error('Eroare trimitere cod WhatsApp:', err);
-                alert('❌ Eroare la trimiterea codului');
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = oldHtml;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }
-        });
-    }
-
-    if (verifyBtn && !verifyBtn.dataset.listenerAdded) {
-        verifyBtn.dataset.listenerAdded = 'true';
-        verifyBtn.addEventListener('click', async () => {
-            const code = codeInput?.value?.trim();
-            if (!code || code.length !== 6) {
-                alert('Introduceți codul de 6 cifre');
-                return;
-            }
-
-            verifyBtn.disabled = true;
-            const oldHtml = verifyBtn.innerHTML;
-            verifyBtn.innerHTML = '<i data-lucide="loader-2"></i> Verificare...';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-
-            try {
-                const res = await fetch(`${API_URL}/api/auth/verify-phone`, {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify({ code })
-                });
-
-                const data = await res.json();
+                const data = await saveRes.json();
                 if (data.success) {
-                    alert('✅ ' + data.message);
-                    // Show verified section
-                    const verifiedSection = document.getElementById('whatsapp-verified-section');
-                    const verifiedNumber = document.getElementById('whatsapp-verified-number');
-                    const verificationSection = document.getElementById('whatsapp-verification-section');
+                    alert('✅ Număr WhatsApp salvat cu succes! Acum puteți trimite mesaje de pe acest număr și vă vom recunoaște automat.');
                     
-                    if (verifiedSection) {
-                        verifiedSection.style.display = 'block';
-                        if (verifiedNumber && phoneInput) {
-                            verifiedNumber.textContent = phoneInput.value;
+                    // Show saved section
+                    const savedSection = document.getElementById('whatsapp-saved-section');
+                    const savedNumber = document.getElementById('whatsapp-saved-number');
+                    
+                    if (savedSection) {
+                        savedSection.style.display = 'block';
+                        if (savedNumber) {
+                            savedNumber.textContent = phone;
                         }
                     }
-                    if (verificationSection) {
-                        verificationSection.style.display = 'none';
-                    }
-                    if (codeInput) codeInput.value = '';
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                 } else {
-                    alert('❌ ' + (data.error || 'Cod invalid'));
+                    alert('❌ ' + (data.error || 'Eroare la salvarea numărului'));
                 }
             } catch (err) {
-                console.error('Eroare verificare cod:', err);
-                alert('❌ Eroare la verificare');
+                console.error('Eroare salvare număr WhatsApp:', err);
+                alert('❌ Eroare la salvarea numărului');
             } finally {
-                verifyBtn.disabled = false;
-                verifyBtn.innerHTML = oldHtml;
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = oldHtml;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         });
-    }
-
-    if (resendBtn && !resendBtn.dataset.listenerAdded) {
-        resendBtn.dataset.listenerAdded = 'true';
-        resendBtn.addEventListener('click', async () => {
-            resendBtn.disabled = true;
-            const oldHtml = resendBtn.innerHTML;
-            resendBtn.innerHTML = '<i data-lucide="loader-2"></i>';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-
-            try {
-                const res = await fetch(`${API_URL}/api/auth/resend-phone-code`, {
-                    method: 'POST',
-                    headers: getAuthHeaders()
-                });
-
-                const data = await res.json();
-                if (data.success) {
-                    alert('✅ ' + data.message);
-                } else {
-                    alert('❌ ' + (data.error || 'Eroare la retrimitere'));
-                }
-            } catch (err) {
-                console.error('Eroare retrimitere cod:', err);
-                alert('❌ Eroare la retrimitere');
-            } finally {
-                resendBtn.disabled = false;
-                resendBtn.innerHTML = oldHtml;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         });
     }

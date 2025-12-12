@@ -133,18 +133,24 @@ async function receiveMessage(req, res) {
 
                 // Procesează mesajul prin AI Chat (același sistem ca pe website)
                 try {
-                  // Verifică dacă numărul de telefon aparține unui utilizator înregistrat ȘI VERIFICAT
+                  // Verifică dacă numărul de telefon aparține unui utilizator înregistrat
                   const user = await prisma.user.findFirst({
                     where: {
-                      phone: from,
-                      phoneVerified: true // IMPORTANT: Doar numere verificate
+                      phone: from
                     }
                   });
 
                   if (user) {
-                    console.log(`👤 Utilizator identificat: ${user.name} (${user.email}) - Telefon verificat ✅`);
+                    console.log(`👤 Utilizator identificat: ${user.name} (${user.email})`);
                   } else {
-                    console.log(`👤 Număr neînregistrat sau neverificat: ${from}`);
+                    console.log(`👤 Număr neînregistrat: ${from}`);
+                    // Trimite mesaj automat pentru utilizatori noi
+                    await sendWhatsAppMessageToPhone(
+                      from,
+                      `👋 Bună! Pentru a accesa toate funcțiile ChatBill (generare facturi, istoric conversații, etc.), vă rugăm să vă creați un cont pe platforma noastră.\n\n🔗 Vizitați: https://chatbill.ro/register\n\nDupă ce vă creați contul, puteți asocia acest număr de WhatsApp în secțiunea Setări > WhatsApp.`
+                    );
+                    res.sendStatus(200);
+                    return;
                   }
 
                   // Găsește sesiunea AI existentă pentru acest număr de telefon
