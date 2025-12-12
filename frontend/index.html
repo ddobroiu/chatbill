@@ -1426,7 +1426,7 @@
         </div>
 
         <!-- Chat GPT Page -->
-        <div id="chat" class="page">
+        <div id="chat" class="page active">
             <div class="page-header">
                 <h2>Chat GPT Asistent</h2>
                 <p>DiscutaÈ›i cu asistentul AI pentru ajutor È™i recomandÄƒri.</p>
@@ -1614,15 +1614,9 @@
                         </div>
                     </div>
                 </div>
-                <div style="text-align: right; padding: 20px 0;">
-                    <button type="submit" class="btn btn-primary">
-                        <i data-lucide="save"></i>
-                        SalveazÄƒ SetÄƒrile
-                    </button>
-                </div>
             </form>
         </div>
-        
+
         <!-- Numbering Settings Page -->
         <div id="numbering-settings" class="page">
             <div class="page-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
@@ -1793,16 +1787,6 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button type="submit" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 2rem; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-                        <i data-lucide="save" style="width: 20px; height: 20px;"></i>
-                        SalveazÄƒ SetÄƒri
-                    </button>
-                    <button type="button" onclick="location.reload()" class="btn btn-secondary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.5rem;">
-                        <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i>
-                        ReseteazÄƒ
-                    </button>
-                </div>
             </form>
         </div>
 
@@ -1882,12 +1866,6 @@
                 </div>
                 </div>
                 
-                <div style="text-align: right; padding: 20px 0;">
-                    <button type="submit" class="btn btn-primary">
-                        <i data-lucide="save"></i>
-                        SalveazÄƒ SetÄƒrile
-                    </button>
-                </div>
             </form>
         </div>
 
@@ -2057,16 +2035,127 @@
 
         <script src="js/app.js"></script>
         <script>
+            // Page Navigation System
+            function showPage(pageId) {
+                // Hide all pages
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+
+                // Show selected page
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                }
+
+                // Update active nav link
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + pageId) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // Handle navigation clicks
+            function initNavigation() {
+                document.querySelectorAll('.nav-link[href^="#"]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const href = link.getAttribute('href');
+                        if (href && href !== '#') {
+                            const pageId = href.substring(1);
+                            showPage(pageId);
+                        }
+                    });
+                });
+
+                // Handle submenu toggles
+                document.querySelectorAll('.nav-parent-link').forEach(parent => {
+                    parent.addEventListener('click', () => {
+                        const submenuId = parent.getAttribute('data-submenu');
+                        const submenu = document.getElementById('submenu-' + submenuId);
+                        if (submenu) {
+                            submenu.classList.toggle('expanded');
+                            const chevron = parent.querySelector('.chevron');
+                            if (chevron) {
+                                chevron.style.transform = submenu.classList.contains('expanded')
+                                    ? 'rotate(180deg)'
+                                    : 'rotate(0deg)';
+                            }
+                        }
+                    });
+                });
+
+                // Handle settings toggle
+                const settingsToggle = document.getElementById('settings-toggle');
+                if (settingsToggle) {
+                    settingsToggle.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const submenu = document.getElementById('settings-submenu');
+                        if (submenu) {
+                            submenu.classList.toggle('expanded');
+                            const chevron = settingsToggle.querySelector('.submenu-icon');
+                            if (chevron) {
+                                chevron.style.transform = submenu.classList.contains('expanded')
+                                    ? 'rotate(180deg)'
+                                    : 'rotate(0deg)';
+                            }
+                        }
+                    });
+                }
+
+                // Handle hash changes
+                window.addEventListener('hashchange', () => {
+                    const hash = window.location.hash.substring(1);
+                    if (hash) {
+                        showPage(hash);
+                    }
+                });
+
+                // Show initial page
+                const initialHash = window.location.hash.substring(1);
+                if (initialHash) {
+                    showPage(initialHash);
+                } else {
+                    showPage('chat'); // Default to chat page
+                    window.location.hash = '#chat';
+                }
+            }
+
             window.addEventListener('DOMContentLoaded', () => {
+                // Initialize navigation
+                initNavigation();
+
+                // Initialize Lucide icons
                 if (typeof lucide !== 'undefined') {
                     lucide.createIcons();
                 }
+
+                // Initialize auth UI
                 if (typeof updateUIBasedOnAuth === 'function') {
                     updateUIBasedOnAuth();
                 }
+
+                // Setup logout button
                 const logoutBtn = document.getElementById('logout-btn');
                 if (logoutBtn && typeof logout === 'function') {
                     logoutBtn.addEventListener('click', logout);
+                }
+
+                // Setup chat functionality
+                const chatSendBtn = document.getElementById('chat-send-btn');
+                const chatInput = document.getElementById('chat-input');
+
+                if (chatSendBtn && typeof sendGPTMessage === 'function') {
+                    chatSendBtn.addEventListener('click', sendGPTMessage);
+                }
+
+                if (chatInput) {
+                    chatInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter' && typeof sendGPTMessage === 'function') {
+                            sendGPTMessage();
+                        }
+                    });
                 }
             });
         </script>
