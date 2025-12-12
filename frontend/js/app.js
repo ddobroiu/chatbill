@@ -980,13 +980,17 @@ async function handleInvoiceSubmit(event) {
         clientData.county = document.getElementById('client-county').value;
     }
     
+    // Generează numărul facturii
+    const invoiceNumber = generateDocumentNumber('invoice');
+
     const invoiceData = {
+        invoiceNumber: invoiceNumber,
         client: clientData,
         products: products
     };
-    
+
     console.log('[Invoice Generator] Invoice data:', invoiceData);
-    
+
     // Show loading
     const submitBtn = event.target.querySelector('button[type="submit"]');
     if (submitBtn) {
@@ -1260,13 +1264,17 @@ async function handleProformaSubmit(event) {
         clientData.county = document.getElementById('proforma-client-county').value;
     }
     
+    // Generează numărul proformei
+    const proformaNumber = generateDocumentNumber('proforma');
+
     const proformaData = {
+        proformaNumber: proformaNumber,
         client: clientData,
         products: products
     };
-    
+
     console.log('[Proforma Generator] Proforma data:', proformaData);
-    
+
     const submitBtn = event.target.querySelector('button[type="submit"]');
     if (submitBtn) {
         submitBtn.disabled = true;
@@ -1519,8 +1527,12 @@ async function handleOfferSubmit(event) {
     
     const formData = new FormData(event.target);
     const clientType = formData.get('offer-client-type');
-    
+
+    // Generează numărul ofertei
+    const quoteNumber = generateDocumentNumber('quote');
+
     const offerData = {
+        quoteNumber: quoteNumber,
         title: formData.get('offer-title'),
         validity: parseInt(formData.get('offer-validity')),
         paymentTerms: formData.get('offer-payment-terms'),
@@ -1541,10 +1553,10 @@ async function handleOfferSubmit(event) {
         },
         products: products
     };
-    
+
     console.log('[Offer Generator] Offer data:', offerData);
-    
-    alert('✅ Oferta a fost generată cu succes!\n\nÎn producție, aceasta va fi salvată în baza de date și va putea fi descărcată ca PDF.');
+
+    alert(`✅ Oferta ${quoteNumber} a fost generată cu succes!\n\nÎn producție, aceasta va fi salvată în baza de date și va putea fi descărcată ca PDF.`);
     
     event.target.reset();
     document.getElementById('offer-products-container').innerHTML = '';
