@@ -1575,6 +1575,9 @@ window.addEventListener('hashchange', () => {
     if (window.location.hash === '#vat-settings') {
         initVATSettingsPage();
     }
+    if (window.location.hash === '#numbering-settings') {
+        initNumberingSettingsPage();
+    }
     if (window.location.hash === '#whatsapp-settings') {
         initWhatsAppSettingsPage();
     }
@@ -1630,6 +1633,10 @@ async function initializeApp() {
 
     if (currentHash === '#vat-settings') {
         initVATSettingsPage();
+    }
+
+    if (currentHash === '#numbering-settings') {
+        initNumberingSettingsPage();
     }
 
     if (currentHash === '#whatsapp-settings') {
@@ -2981,3 +2988,155 @@ function applyVATSettingsToGenerator(containerSelector, productClass) {
     }
 }
 
+
+// ========== NUMBERING SETTINGS MANAGEMENT ==========
+// Funcții pentru gestionarea setărilor de numerotare și generare numere documente
+
+function getNumberingSettings() {
+    // Încearcă să obții setările din localStorage
+    const settings = localStorage.getItem('numberingSettings');
+    if (settings) {
+        try {
+            return JSON.parse(settings);
+        } catch (e) {
+            console.error('Eroare parsare Numbering settings:', e);
+        }
+    }
+
+    // Default settings
+    return {
+        invoice: { series: 'FAC', currentNumber: 1 },
+        proforma: { series: 'PRO', currentNumber: 1 },
+        quote: { series: 'OFF', currentNumber: 1 }
+    };
+}
+
+function saveNumberingSettings(settings) {
+    localStorage.setItem('numberingSettings', JSON.stringify(settings));
+    console.log('✅ Numbering Settings salvate:', settings);
+    return settings;
+}
+
+function generateDocumentNumber(type) {
+    const settings = getNumberingSettings();
+    const typeSettings = settings[type];
+
+    if (!typeSettings) {
+        console.error('❌ Tip document invalid:', type);
+        return 'ERROR000001';
+    }
+
+    // Generează numărul formatat: SERIE + număr cu leading zeros (6 cifre)
+    const series = typeSettings.series || 'DOC';
+    const number = typeSettings.currentNumber || 1;
+    const paddedNumber = number.toString().padStart(6, '0');
+    const documentNumber = `${series}${paddedNumber}`;
+
+    // Incrementează numărul curent pentru următorul document
+    settings[type].currentNumber = number + 1;
+    saveNumberingSettings(settings);
+
+    console.log(`✅ Generat număr ${type}:`, documentNumber);
+    return documentNumber;
+}
+
+function resetDocumentNumber(type, newNumber = 1) {
+    const settings = getNumberingSettings();
+    if (settings[type]) {
+        settings[type].currentNumber = newNumber;
+        saveNumberingSettings(settings);
+        console.log(`✅ Reset număr ${type} la:`, newNumber);
+    }
+}
+
+function updateDocumentSeries(type, newSeries) {
+    const settings = getNumberingSettings();
+    if (settings[type]) {
+        settings[type].series = newSeries.toUpperCase();
+        saveNumberingSettings(settings);
+        console.log(`✅ Actualizat serie ${type} la:`, newSeries);
+    }
+}
+
+// Inițializare pagină Numbering Settings
+function initNumberingSettingsPage() {
+    console.log('[Numbering Settings] Initializing...');
+
+    const form = document.getElementById('numbering-settings-form');
+    if (!form) {
+        console.log('[Numbering Settings] Form not found');
+        return;
+    }
+
+    // Încarcă setările salvate
+    const settings = getNumberingSettings();
+
+    // Populează formul
+    const invoiceSeriesInput = document.getElementById('invoiceSeries');
+    const invoiceStartNumberInput = document.getElementById('invoiceStartNumber');
+    const proformaSeriesInput = document.getElementById('proformaSeries');
+    const proformaStartNumberInput = document.getElementById('proformaStartNumber');
+    const quoteSeriesInput = document.getElementById('quoteSeries');
+    const quoteStartNumberInput = document.getElementById('quoteStartNumber');
+
+    if (invoiceSeriesInput) invoiceSeriesInput.value = settings.invoice.series;
+    if (invoiceStartNumberInput) invoiceStartNumberInput.value = settings.invoice.currentNumber;
+    if (proformaSeriesInput) proformaSeriesInput.value = settings.proforma.series;
+    if (proformaStartNumberInput) proformaStartNumberInput.value = settings.proforma.currentNumber;
+    if (quoteSeriesInput) quoteSeriesInput.value = settings.quote.series;
+    if (quoteStartNumberInput) quoteStartNumberInput.value = settings.quote.currentNumber;
+
+    // Update preview
+    function updatePreviews() {
+        const invoicePreview = document.getElementById('invoice-preview');
+        const proformaPreview = document.getElementById('proforma-preview');
+        const quotePreview = document.getElementById('quote-preview');
+
+        if (invoicePreview && invoiceSeriesInput && invoiceStartNumberInput) {
+            const num = (invoiceStartNumberInput.value || 1).toString().padStart(6, '0');
+            invoicePreview.textContent = `${invoiceSeriesInput.value || 'FAC'}${num}`;
+        }
+
+        if (proformaPreview && proformaSeriesInput && proformaStartNumberInput) {
+            const num = (proformaStartNumberInput.value || 1).toString().padStart(6, '0');
+            proformaPreview.textContent = `${proformaSeriesInput.value || 'PRO'}${num}`;
+        }
+
+        if (quotePreview && quoteSeriesInput && quoteStartNumberInput) {
+            const num = (quoteStartNumberInput.value || 1).toString().padStart(6, '0');
+            quotePreview.textContent = `${quoteSeriesInput.value || 'OFF'}${num}`;
+        }
+    }
+
+    // Event listeners pentru preview live
+    [invoiceSeriesInput, invoiceStartNumberInput, proformaSeriesInput,
+     proformaStartNumberInput, quoteSeriesInput, quoteStartNumberInput].forEach(input => {
+        if (input && !input.dataset.listenerAdded) {
+            input.dataset.listenerAdded = 'true';
+            input.addEventListener('input', () => {
+                updatePreviews();
+                // Auto-save
+                const newSettings = {
+                    invoice: {
+                        series: (invoiceSeriesInput && invoiceSeriesInput.value || 'FAC').toUpperCase(),
+                        currentNumber: parseInt(invoiceStartNumberInput && invoiceStartNumberInput.value || 1)
+                    },
+                    proforma: {
+                        series: (proformaSeriesInput && proformaSeriesInput.value || 'PRO').toUpperCase(),
+                        currentNumber: parseInt(proformaStartNumberInput && proformaStartNumberInput.value || 1)
+                    },
+                    quote: {
+                        series: (quoteSeriesInput && quoteSeriesInput.value || 'OFF').toUpperCase(),
+                        currentNumber: parseInt(quoteStartNumberInput && quoteStartNumberInput.value || 1)
+                    }
+                };
+                saveNumberingSettings(newSettings);
+            });
+        }
+    });
+
+    // Update preview inițial
+    updatePreviews();
+
+    console.log('[Numbering Settings] Initialized with settings:', settings);
+}
