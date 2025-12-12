@@ -9,7 +9,40 @@ console.log('🌐 API URL:', API_URL);
 // ========== AUTHENTICATION ==========
 function checkAuth() {
     const token = localStorage.getItem('token');
-    return token !== null && token !== undefined && token !== '';
+    
+    if (!token) {
+        console.log('❌ checkAuth: Nu există token');
+        return false;
+    }
+    
+    try {
+        // Verifică dacă token-ul e valid (poate fi decodat)
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            console.log('❌ checkAuth: Token invalid (format greșit)');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            return false;
+        }
+        
+        const payload = JSON.parse(atob(parts[1]));
+        
+        // Verifică dacă token-ul a expirat
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+            console.log('❌ checkAuth: Token expirat');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            return false;
+        }
+        
+        console.log('✅ checkAuth: Token valid');
+        return true;
+    } catch (error) {
+        console.error('❌ checkAuth: Eroare validare token:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return false;
+    }
 }
 
 function isLoggedIn() {
@@ -171,31 +204,41 @@ function setupPhoneVerification() {
 }
 
 async function loadUserData() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        console.log('❌ Nu există token - user nelogat');
+    if (!isLoggedIn()) {
+        console.log('❌ loadUserData: User nu e logat');
         return null;
     }
     
+    const token = localStorage.getItem('token');
+    
     try {
-        // Fallback RAPID: decodează token-ul direct
         const tokenParts = token.split('.');
         if (tokenParts.length === 3) {
             const payload = JSON.parse(atob(tokenParts[1]));
+            
+            // Verifică din nou expirarea
+            if (payload.exp && payload.exp * 1000 < Date.now()) {
+                console.log('❌ loadUserData: Token expirat');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.reload();
+                return null;
+            }
+            
             const userData = {
                 id: payload.id,
                 email: payload.email,
                 name: payload.name || payload.email
             };
             
-            console.log('✅ Date user din token:', userData);
+            console.log('✅ loadUserData: Date user încărcate:', userData.email);
             return userData;
         }
     } catch (error) {
-        console.error('❌ Eroare decodare token:', error);
-        // Token invalid - șterge-l
+        console.error('❌ loadUserData: Eroare:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        window.location.reload();
     }
     
     return null;

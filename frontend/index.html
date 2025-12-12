@@ -2067,6 +2067,8 @@
             // Initialize Lucide icons
             lucide.createIcons();
             
+            console.log('🚀 INIT: Verificare autentificare...');
+            
             // Update UI based on authentication status
             if (typeof updateUIBasedOnAuth === 'function') {
                 updateUIBasedOnAuth();
@@ -2074,13 +2076,21 @@
             
             // Load user data if logged in
             if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+                console.log('✅ INIT: Utilizator logat - încărcare date');
                 if (typeof loadUserData === 'function') {
                     loadUserData().then(userData => {
                         if (userData && typeof updateUserInfo === 'function') {
                             updateUserInfo(userData);
+                        } else if (!userData) {
+                            // Token invalid - refresh pentru curățare
+                            console.log('⚠️ INIT: Token invalid - refresh');
+                            setTimeout(() => window.location.reload(), 100);
                         }
                     }).catch(err => {
-                        console.error('Eroare loadUserData:', err);
+                        console.error('❌ INIT: Eroare loadUserData:', err);
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.reload();
                     });
                 }
                 
