@@ -454,7 +454,9 @@ async function updateUIBasedOnAuth() {
         }
     }
     
-    console.log('✅ UI actualizat');
+    console.log('\n🏁 ========================================');
+    console.log('🏁 updateUIBasedOnAuth COMPLETED');
+    console.log('🏁 ========================================\n');
 }
 
 function logout() {
