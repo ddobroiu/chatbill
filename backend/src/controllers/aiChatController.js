@@ -12,6 +12,7 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({
 // Funcție helper pentru căutare companie după CUI
 async function searchCompanyByCUI(cui) {
   try {
+    console.log(`🔍 Caut companie cu CUI: ${cui} la iApp API...`);
     const response = await axios.post(
       `${process.env.IAPP_API_URL}/info/cif`,
       {
@@ -26,8 +27,11 @@ async function searchCompanyByCUI(cui) {
       }
     );
 
+    console.log(`📡 Răspuns iApp API:`, response.data);
+
     if (response.data.status === 'SUCCESS' && response.data.data) {
       const company = response.data.data.output;
+      console.log(`✅ Companie găsită: ${company.nume}`);
       return {
         cui: company.cif,
         name: company.nume,
@@ -37,9 +41,10 @@ async function searchCompanyByCUI(cui) {
         county: company.adresa.judet
       };
     }
+    console.log(`⚠️ Companie negăsită în ANAF pentru CUI: ${cui}`);
     return null;
   } catch (error) {
-    console.error('Eroare căutare companie:', error);
+    console.error('❌ Eroare căutare companie:', error.message);
     return null;
   }
 }
@@ -96,8 +101,9 @@ COMPORTAMENT:
 - Fii prietenos, concis și eficient
 - Cere câte o informație odată
 - Când utilizatorul zice "juridice" sau "juridică" înțelege AUTOMAT "persoană juridică"
-- Validează datele primite (CUI valid = 6-10 cifre)
-- După ce ai CUI-ul, vei căuta automat în ANAF
+- **Pentru CUI: NU valida tu numărul de cifre! Acceptă ORICE secvență de 6-10 cifre pe care o spune utilizatorul**
+- Sistemul va extrage și valida automat CUI-ul din mesaj
+- După ce primești un CUI (orice număr), spune "Verific în ANAF..." și lasă sistemul să facă validarea
 - Confirmă fiecare informație înainte de a trece mai departe
 - La final, rezumă factura și cere confirmare
 

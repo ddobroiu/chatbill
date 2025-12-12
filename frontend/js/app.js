@@ -1627,7 +1627,7 @@ async function sendChatMessage() {
 }
 
 function displayChatMessage(role, message) {
-    const messagesContainer = document.getElementById('chatMessages');
+    const messagesContainer = document.getElementById('chat-messages');
     
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${role}`;
