@@ -37,6 +37,20 @@ async function register(req, res) {
         error: 'Nume, email și parolă sunt obligatorii'
       });
     }
+
+    if (!cui) {
+      return res.status(400).json({
+        success: false,
+        error: 'CUI-ul firmei este obligatoriu'
+      });
+    }
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        error: 'Numărul de telefon este obligatoriu'
+      });
+    }
     
     if (password.length < 6) {
       return res.status(400).json({
@@ -63,6 +77,10 @@ async function register(req, res) {
     // Generează token verificare email
     const verificationToken = crypto.randomBytes(32).toString('hex');
     
+    // Generează cod verificare WhatsApp (6 cifre)
+    const phoneVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const phoneVerificationExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minute
+    
     // Creează utilizator
     const user = await prisma.user.create({
       data: {
@@ -72,10 +90,44 @@ async function register(req, res) {
         company: company || null,
         cui: cui || null,
         phone: phone || null,
+        phoneVerificationCode,
+        phoneVerificationExpiry,
+        phoneVerified: false,
         verificationToken,
-        emailVerified: false // În producție trimite email de verificare
+        emailVerified: false
       }
     });
+
+    // Creează setări companie cu datele de bază
+    try {
+      await prisma.companySettings.upsert({
+        where: { userId: user.id },
+        create: {
+          userId: user.id,
+          cui: cui,
+          name: company || '',
+          phone: phone
+        },
+        update: {
+          cui: cui,
+          name: company || '',
+          phone: phone
+        }
+      });
+      console.log('✅ Setări companie create automat');
+    } catch (settingsError) {
+      console.error('⚠️ Eroare creare setări:', settingsError);
+    }
+    
+    // Trimite cod verificare WhatsApp
+    try {
+      const whatsappService = require('../services/whatsappService');
+      await whatsappService.sendVerificationCode(phone, phoneVerificationCode);
+      console.log('📱 Cod verificare WhatsApp trimis');
+    } catch (whatsappError) {
+      console.error('⚠️ Eroare trimitere WhatsApp:', whatsappError);
+      // Nu oprim înregistrarea dacă WhatsApp dă eroare
+    }
     
     // Generează JWT token
     const token = generateToken(user);
@@ -89,12 +141,11 @@ async function register(req, res) {
       console.log('📧 Emailuri de bun venit și verificare trimise');
     } catch (emailError) {
       console.error('⚠️ Eroare trimitere emailuri:', emailError);
-      // Nu oprim înregistrarea dacă emailul dă eroare
     }
     
     res.status(201).json({
       success: true,
-      message: 'Cont creat cu succes! Verifică-ți emailul pentru activare.',
+      message: 'Cont creat cu succes! Verifică WhatsApp pentru codul de confirmare.',
       token,
       user: {
         id: user.id,
@@ -102,6 +153,8 @@ async function register(req, res) {
         email: user.email,
         company: user.company,
         cui: user.cui,
+        phone: user.phone,
+        phoneVerified: user.phoneVerified,
         role: user.role,
         emailVerified: user.emailVerified
       }
