@@ -26,6 +26,16 @@ const validate = (schema, source = 'body') => {
           message: err.message
         }));
 
+        // Helpful log for debugging failed requests
+        try {
+          console.warn('[Validate] Validation failed', {
+            path: req.path,
+            method: req.method,
+            source,
+            errors: formattedErrors
+          });
+        } catch (_) { /* ignore logging failures */ }
+
         return res.status(400).json({
           success: false,
           message: 'Validare eșuată',
