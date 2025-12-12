@@ -1564,7 +1564,7 @@
                     </div>
                 </div>
                 <div style="text-align: right; padding: 20px 0;">
-                    <button type="submit" id="save-vat-settings-btn" class="btn btn-primary save-settings-btn" style="display: none;">
+                    <button type="submit" class="btn btn-primary">
                         <i data-lucide="save"></i>
                         Salvează Setările
                     </button>
@@ -1743,7 +1743,7 @@
 
                 <!-- Action Buttons -->
                 <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button type="submit" id="save-numbering-settings-btn" class="btn btn-primary save-settings-btn" style="display: none; align-items: center; gap: 0.5rem; padding: 0.875rem 2rem; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                    <button type="submit" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 2rem; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
                         <i data-lucide="save" style="width: 20px; height: 20px;"></i>
                         Salvează Setări
                     </button>
@@ -1832,7 +1832,7 @@
                 </div>
                 
                 <div style="text-align: right; padding: 20px 0;">
-                    <button type="submit" id="save-template-settings-btn" class="btn btn-primary save-settings-btn" style="display: none;">
+                    <button type="submit" class="btn btn-primary">
                         <i data-lucide="save"></i>
                         Salvează Setările
                     </button>
@@ -3509,8 +3509,4 @@
             } else if (currentHash === '#dashboard') {
                 setTimeout(() => loadDashboard(), 100);
             }
-            
-            // Setup settings form change detection
-            if (typeof setupSettingsFormListeners === 'function') {
-                setupSettingsFormListeners();
-            }
+        });
