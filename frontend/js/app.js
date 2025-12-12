@@ -59,6 +59,45 @@ async function updateChatBanners() {
     }
 }
 
+async function loadUserData() {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    
+    try {
+        // Încearcă să obții datele utilizatorului din token
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+            const payload = JSON.parse(atob(tokenParts[1]));
+            return {
+                id: payload.id,
+                email: payload.email,
+                name: payload.name || 'Utilizator'
+            };
+        }
+    } catch (error) {
+        console.error('Eroare decodare token:', error);
+    }
+    
+    return null;
+}
+
+function updateUserInfo(userData) {
+    const userAvatar = document.getElementById('userAvatar');
+    const userName = document.getElementById('userName');
+    const userEmail = document.getElementById('userEmail');
+    
+    if (userData && userName && userEmail && userAvatar) {
+        userName.textContent = userData.name || 'Utilizator';
+        userEmail.textContent = userData.email || '';
+        
+        // Initiale pentru avatar
+        const initials = userData.name
+            ? userData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+            : userData.email[0].toUpperCase();
+        userAvatar.textContent = initials;
+    }
+}
+
 function updateUIBasedOnAuth() {
     const loggedIn = isLoggedIn();
     
@@ -174,9 +213,17 @@ function switchTab(tabName) {
 }
 
 // ========== SETTINGS TAB ==========
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     // Update UI based on authentication status
     updateUIBasedOnAuth();
+    
+    // Load and display user data if logged in
+    if (isLoggedIn()) {
+        const userData = await loadUserData();
+        if (userData) {
+            updateUserInfo(userData);
+        }
+    }
     
     // Update chat banners based on auth status
     updateChatBanners();
