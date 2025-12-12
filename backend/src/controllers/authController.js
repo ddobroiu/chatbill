@@ -84,8 +84,9 @@ async function register(req, res) {
         cui: cui || null,
         phone: null,
         phoneVerified: false,
-        emailVerificationCode,
-        emailVerificationExpiry,
+        // Folosim câmpurile existente pentru a stoca codul + expirarea
+        verificationToken: emailVerificationCode,
+        resetTokenExpiry: emailVerificationExpiry,
         emailVerified: false
       }
     });
@@ -796,8 +797,12 @@ async function verifyEmailCode(req, res) {
       });
     }
 
+    // Suportăm atât câmpurile noi (dacă există), cât și fallback pe cele existente
+    const storedCode = user.emailVerificationCode || user.verificationToken;
+    const expiry = user.emailVerificationExpiry || user.resetTokenExpiry;
+
     // Verifică dacă codul a expirat
-    if (user.emailVerificationExpiry && new Date() > user.emailVerificationExpiry) {
+    if (expiry && new Date() > expiry) {
       return res.status(400).json({
         success: false,
         error: 'Codul a expirat. Te rugăm să soliciți un cod nou.'
@@ -805,7 +810,7 @@ async function verifyEmailCode(req, res) {
     }
 
     // Verifică codul
-    if (user.emailVerificationCode !== code) {
+    if (storedCode !== code) {
       return res.status(400).json({
         success: false,
         error: 'Cod incorect'
@@ -817,8 +822,8 @@ async function verifyEmailCode(req, res) {
       where: { id: user.id },
       data: {
         emailVerified: true,
-        emailVerificationCode: null,
-        emailVerificationExpiry: null
+        verificationToken: null,
+        resetTokenExpiry: null
       }
     });
 
@@ -883,12 +888,12 @@ async function resendEmailVerificationCode(req, res) {
     const emailVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const emailVerificationExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
-    // Actualizează utilizatorul
+    // Actualizează utilizatorul - folosim câmpurile existente
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        emailVerificationCode,
-        emailVerificationExpiry
+        verificationToken: emailVerificationCode,
+        resetTokenExpiry: emailVerificationExpiry
       }
     });
 
