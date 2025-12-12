@@ -2079,30 +2079,30 @@
                         if (userData && typeof updateUserInfo === 'function') {
                             updateUserInfo(userData);
                         }
+                    }).catch(err => {
+                        console.error('Eroare loadUserData:', err);
                     });
                 }
-            }
-            
-            // Update chat banners
-            if (typeof updateChatBanners === 'function') {
-                updateChatBanners();
-            }
-            
-            // Initialize template selector
-            if (typeof initTemplateSelector === 'function') {
-                initTemplateSelector();
-            }
-            
-            // Load settings
-            if (typeof loadSettings === 'function') {
-                loadSettings();
-            }
-            
-            // Check ANAF status if logged in
-            if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+                
+                // Initialize template selector (doar pentru logați)
+                if (typeof initTemplateSelector === 'function') {
+                    initTemplateSelector();
+                }
+                
+                // Load settings (doar pentru logați)
+                if (typeof loadSettings === 'function') {
+                    loadSettings();
+                }
+                
+                // Check ANAF status (doar pentru logați)
                 if (typeof checkANAFStatus === 'function') {
                     checkANAFStatus();
                 }
+            }
+            
+            // Update chat banners (pentru toți)
+            if (typeof updateChatBanners === 'function') {
+                updateChatBanners();
             }
             
             // Check for ANAF callback
@@ -2704,7 +2704,7 @@
             }
         }
 
-        loadSettings();
+        // Nu apela loadSettings aici - e apelat din DOMContentLoaded când e logat
         
         // VAT payer toggle for both pages
         const vatPayer1 = document.getElementById('is-vat-payer');
