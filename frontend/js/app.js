@@ -85,10 +85,17 @@ async function verifyTokenOnServer() {
 
     try {
         console.log('📍 Calling API:', `${API_URL}/api/auth/me`);
+
+        // Timeout de 5 secunde pentru request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch(`${API_URL}/api/auth/me`, {
-            headers: getAuthHeaders()
+            headers: getAuthHeaders(),
+            signal: controller.signal
         });
 
+        clearTimeout(timeoutId);
         console.log('📍 Response status:', response.status);
 
         // Token invalid SAU utilizator șters/inexistent
@@ -118,7 +125,11 @@ async function verifyTokenOnServer() {
         console.log('🌐 ========== verifyTokenOnServer END ==========');
         return true;
     } catch (error) {
-        console.error('❌ verifyTokenOnServer RESULT: Eroare request:', error);
+        if (error.name === 'AbortError') {
+            console.error('❌ verifyTokenOnServer TIMEOUT: Request a durat prea mult (>5s)');
+        } else {
+            console.error('❌ verifyTokenOnServer RESULT: Eroare request:', error);
+        }
         clearAuthData(); // Clear auth și în caz de eroare de rețea
         return false;
     }
@@ -514,6 +525,7 @@ async function updateUIBasedOnAuth() {
             }
 
             console.log('✅ Footer restaurat pentru utilizator logat');
+        }
         }
     } catch (e) {
         console.error('❌ Eroare în updateUIBasedOnAuth:', e);
