@@ -236,38 +236,48 @@ function updateUIBasedOnAuth() {
     
     console.log('🔐 updateUIBasedOnAuth - Status:', loggedIn ? 'LOGAT' : 'GUEST');
     
-    // Elemente care trebuie ascunse pentru utilizatori nelogați
-    const authOnlyElements = [
-        document.querySelector('a[href="#dashboard"]')?.closest('.nav-item'),
-        document.querySelector('.nav-item-parent[data-submenu="generator"]'),
-        document.querySelector('.nav-item-parent[data-submenu="istoric"]'),
-        document.querySelector('#settings-toggle')?.closest('.nav-item-parent'),
-        document.querySelector('.sidebar-footer')
-    ];
-    
-    authOnlyElements.forEach(element => {
-        if (element) {
-            if (loggedIn) {
-                element.style.display = '';
-            } else {
-                element.style.display = 'none';
-            }
-        }
-    });
-    
-    // Afișează doar linkul de chat pentru guest
-    const chatLink = document.querySelector('a[href="#chat"]');
-    if (chatLink) {
-        chatLink.closest('.nav-item').style.display = '';
-    }
-    
-    // Dacă nu e logat și nu e pe chat, redirectează
     if (!loggedIn) {
-        const currentHash = window.location.hash;
-        if (!currentHash || currentHash === '' || currentHash === '#') {
-            console.log('⚡ Redirect către #chat pentru guest');
+        console.log('👤 Utilizator GUEST - afișez doar chat');
+        
+        // Ascunde tot în afară de chat
+        const hideElements = [
+            document.querySelector('a[href="#dashboard"]')?.closest('.nav-item'),
+            document.querySelector('.nav-item-parent[data-submenu="generator"]'),
+            document.querySelector('.nav-item-parent[data-submenu="istoric"]'),
+            document.querySelector('#settings-toggle')?.closest('.nav-item-parent'),
+            document.querySelector('.sidebar-footer')
+        ];
+        
+        hideElements.forEach(el => {
+            if (el) el.style.display = 'none';
+        });
+        
+        // Asigură-te că chat-ul e vizibil
+        const chatLink = document.querySelector('a[href="#chat"]');
+        if (chatLink) {
+            const chatNavItem = chatLink.closest('.nav-item');
+            if (chatNavItem) chatNavItem.style.display = '';
+        }
+        
+        // Du-te automat pe chat
+        if (window.location.hash !== '#chat') {
+            console.log('⚡ Redirect automat către #chat');
             window.location.hash = '#chat';
         }
+    } else {
+        console.log('👤 Utilizator LOGAT - afișez tot');
+        // Afișează tot
+        const showElements = [
+            document.querySelector('a[href="#dashboard"]')?.closest('.nav-item'),
+            document.querySelector('.nav-item-parent[data-submenu="generator"]'),
+            document.querySelector('.nav-item-parent[data-submenu="istoric"]'),
+            document.querySelector('#settings-toggle')?.closest('.nav-item-parent'),
+            document.querySelector('.sidebar-footer')
+        ];
+        
+        showElements.forEach(el => {
+            if (el) el.style.display = '';
+        });
     }
     
     console.log('✅ UI actualizat');
