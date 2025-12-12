@@ -2,6 +2,7 @@ const prisma = require('../db/prismaWrapper');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const axios = require('axios');
 const { 
   sendWelcomeEmail, 
   sendVerificationEmail, 
@@ -11,6 +12,17 @@ const {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'chatbill-jwt-secret-change-in-production';
 const JWT_EXPIRES_IN = '7d'; // Token valid 7 zile
+
+// iApp config (same as settingsController)
+const IAPP_API_URL = process.env.IAPP_API_URL || 'https://api.my.iapp.ro';
+const IAPP_API_USERNAME = process.env.IAPP_API_USERNAME;
+const IAPP_API_PASSWORD = process.env.IAPP_API_PASSWORD;
+const IAPP_EMAIL_RESPONSABIL = process.env.IAPP_EMAIL_RESPONSABIL;
+
+function getIAppAuthHeader() {
+  const credentials = Buffer.from(`${IAPP_API_USERNAME}:${IAPP_API_PASSWORD}`).toString('base64');
+  return `Basic ${credentials}`;
+}
 
 // Helper pentru generare JWT token
 function generateToken(user) {
@@ -92,18 +104,64 @@ async function register(req, res) {
     });
     console.log('[Auth] User created:', user.id, user.email);
 
-    // Creează setări companie cu datele de bază
+    // Creează/completează setările companiei pe baza CUI-ului (iApp)
     try {
-      await prisma.companySettings.create({
-        data: {
-          userId: user.id,
-          cui: cui,
-          name: company || ''
+      const payload = { cif: cui, email_responsabil: IAPP_EMAIL_RESPONSABIL };
+      const iappResponse = await axios.post(
+        `${IAPP_API_URL}/info/cif`,
+        payload,
+        {
+          headers: {
+            'Authorization': getIAppAuthHeader(),
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000
         }
-      });
-      console.log('✅ Setări companie create automat');
+      );
+
+      if (iappResponse.data && iappResponse.data.status === 'SUCCESS') {
+        const companyData = iappResponse.data.data.output;
+        const settingsData = {
+          cui: cui,
+          name: companyData.nume || company || '',
+          regCom: companyData.regcom || '',
+          address: companyData.adresa?.completa || companyData.adresa?.adresa || '',
+          city: companyData.adresa?.oras || '',
+          county: companyData.adresa?.judet || '',
+          postalCode: companyData.adresa?.cod_postal || '',
+          phone: companyData.telefon || ''
+        };
+
+        await prisma.companySettings.upsert({
+          where: { userId: user.id },
+          update: settingsData,
+          create: {
+            userId: user.id,
+            ...settingsData
+          }
+        });
+        console.log('✅ Setări companie completate din iApp la înregistrare');
+      } else {
+        // Fallback la minim dacă iApp nu răspunde cu SUCCESS
+        await prisma.companySettings.upsert({
+          where: { userId: user.id },
+          update: { cui, name: company || '' },
+          create: { userId: user.id, cui, name: company || '' }
+        });
+        console.log('ℹ️ Setări companie create cu date minime');
+      }
     } catch (settingsError) {
-      console.error('⚠️ Eroare creare setări:', settingsError);
+      console.error('⚠️ Eroare completare setări din iApp:', settingsError.response?.data || settingsError.message);
+      // Asigură minimul dacă a eșuat apelul extern
+      try {
+        await prisma.companySettings.upsert({
+          where: { userId: user.id },
+          update: { cui, name: company || '' },
+          create: { userId: user.id, cui, name: company || '' }
+        });
+      } catch (e) {
+        console.error('❌ Eroare creare setări minime:', e.message);
+      }
     }
 
     console.log('✅ Utilizator nou înregistrat:', user.email);

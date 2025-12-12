@@ -177,16 +177,23 @@
 
     <script>
     // API Configuration
-    const API_URL = window.location.hostname === 'localhost'
-      ? 'http://localhost:3000'
-      : window.location.origin;
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : window.location.origin;
+
+                function getAuthHeaders() {
+                        const token = localStorage.getItem('token');
+                        const headers = {};
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
+                        return headers;
+                }
 
         // Încarcă setările la pornire
         window.addEventListener('DOMContentLoaded', loadSettings);
 
         async function loadSettings() {
             try {
-                const response = await fetch('http://localhost:3000/api/settings');
+                const response = await fetch(`${API_URL}/api/settings`, { headers: getAuthHeaders() });
                 const data = await response.json();
                 
                 if (data.success && data.settings) {
@@ -217,7 +224,7 @@
             showMessage('🔍 Căutare date în ANAF...', 'info');
 
             try {
-                const response = await fetch(`http://localhost:3000/api/settings/autocomplete/${cui}`);
+                const response = await fetch(`${API_URL}/api/settings/autocomplete/${cui}`, { headers: getAuthHeaders() });
                 const data = await response.json();
                 
                 if (data.success && data.settings) {
@@ -241,10 +248,11 @@
             showMessage('💾 Salvare setări...', 'info');
 
             try {
-                const response = await fetch('http://localhost:3000/api/settings', {
+                const response = await fetch(`${API_URL}/api/settings`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
                     },
                     body: JSON.stringify(settings)
                 });
