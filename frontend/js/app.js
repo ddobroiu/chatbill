@@ -8,35 +8,45 @@ console.log('🌐 API URL:', API_URL);
 
 // ========== AUTHENTICATION ==========
 function checkAuth() {
+    console.log('🔍 ========== checkAuth START ==========');
     const token = localStorage.getItem('token');
+    console.log('📍 Token din localStorage:', token ? `EXISTS (${token.substring(0, 50)}...)` : 'NULL');
     
     if (!token) {
-        console.log('❌ checkAuth: Nu există token');
+        console.log('❌ checkAuth RESULT: Nu există token');
         return false;
     }
     
     try {
         // Verifică dacă token-ul e valid (poate fi decodat)
         const parts = token.split('.');
+        console.log('📍 Token parts:', parts.length);
         if (parts.length !== 3) {
-            console.log('❌ checkAuth: Token invalid (format greșit)');
+            console.log('❌ checkAuth RESULT: Token invalid (format greșit - trebuie 3 părți)');
             clearAuthData();
             return false;
         }
         
         const payload = JSON.parse(atob(parts[1]));
+        console.log('📍 Token payload:', payload);
         
         // Verifică dacă token-ul a expirat
-        if (payload.exp && payload.exp * 1000 < Date.now()) {
-            console.log('❌ checkAuth: Token expirat');
-            clearAuthData();
-            return false;
+        if (payload.exp) {
+            const exp = payload.exp * 1000;
+            const now = Date.now();
+            console.log('📍 Token expiry:', new Date(exp).toISOString(), 'Now:', new Date(now).toISOString());
+            if (exp < now) {
+                console.log('❌ checkAuth RESULT: Token EXPIRAT');
+                clearAuthData();
+                return false;
+            }
         }
         
-        console.log('✅ checkAuth: Token valid local (format corect, neexpirat)');
+        console.log('✅ checkAuth RESULT: Token VALID local (format corect, neexpirat)');
+        console.log('🔍 ========== checkAuth END ==========');
         return true;
     } catch (error) {
-        console.error('❌ checkAuth: Eroare validare token:', error);
+        console.error('❌ checkAuth RESULT: Eroare la validare:', error);
         clearAuthData();
         return false;
     }
@@ -54,33 +64,40 @@ function isLoggedIn() {
 
 // Verificare token pe server - returnează true dacă e valid, false altfel
 async function verifyTokenOnServer() {
+    console.log('🌐 ========== verifyTokenOnServer START ==========');
     const token = localStorage.getItem('token');
     
     if (!token) {
-        console.log('❌ verifyTokenOnServer: Nu există token');
+        console.log('❌ verifyTokenOnServer RESULT: Nu există token');
         return false;
     }
     
     try {
+        console.log('📍 Calling API:', `${API_URL}/api/auth/me`);
         const response = await fetch(`${API_URL}/api/auth/me`, {
             headers: getAuthHeaders()
         });
         
+        console.log('📍 Response status:', response.status);
+        
         if (response.status === 401 || response.status === 403) {
-            console.log('❌ verifyTokenOnServer: Token invalid pe server');
+            console.log('❌ verifyTokenOnServer RESULT: Token INVALID pe server (401/403)');
             clearAuthData();
             return false;
         }
         
         if (!response.ok) {
-            console.log('⚠️ verifyTokenOnServer: Eroare server:', response.status);
+            console.log('⚠️ verifyTokenOnServer RESULT: Eroare server:', response.status);
             return false;
         }
         
-        console.log('✅ verifyTokenOnServer: Token valid pe server');
+        const data = await response.json();
+        console.log('📍 Server response data:', data);
+        console.log('✅ verifyTokenOnServer RESULT: Token VALID pe server');
+        console.log('🌐 ========== verifyTokenOnServer END ==========');
         return true;
     } catch (error) {
-        console.error('❌ verifyTokenOnServer: Eroare request:', error);
+        console.error('❌ verifyTokenOnServer RESULT: Eroare request:', error);
         return false;
     }
 }
@@ -311,28 +328,34 @@ function updateUserInfo(userData) {
 }
 
 async function updateUIBasedOnAuth() {
-    console.log('🔐 updateUIBasedOnAuth START - verificare status...');
+    console.log('\n\n🚀 ========================================');
+    console.log('🚀 updateUIBasedOnAuth START');
+    console.log('🚀 ========================================');
     
     let loggedIn = isLoggedIn();
-    console.log('📍 Check local token:', loggedIn ? 'EXISTS' : 'NONE');
+    console.log('📍 STEP 1: Check local token result:', loggedIn ? '✅ TOKEN EXISTS' : '❌ NO TOKEN');
     
     // Dacă pare logat, VERIFICĂ OBLIGATORIU pe server ÎNAINTE de orice
     if (loggedIn) {
-        console.log('🔍 Verificare token pe server...');
+        console.log('📍 STEP 2: Token exists locally, checking with server...');
         const serverValid = await verifyTokenOnServer();
-        console.log('📍 Server validation:', serverValid ? 'VALID' : 'INVALID');
+        console.log('📍 STEP 3: Server validation result:', serverValid ? '✅ VALID' : '❌ INVALID');
         
         if (!serverValid) {
-            console.log('❌ TOKEN INVALID - Curățare completă...');
+            console.error('❌❌❌ TOKEN INVALID ON SERVER - Clearing all auth data...');
             clearAuthData();
             loggedIn = false;
         }
+    } else {
+        console.log('📍 STEP 2: SKIPPED (no local token)');
     }
     
-    console.log('🔐 FINAL Status:', loggedIn ? '✅ LOGAT' : '👤 GUEST');
+    console.log('\n🎯 ======================================');
+    console.log('🎯 FINAL AUTH STATUS:', loggedIn ? '✅✅✅ LOGGED IN' : '❌❌❌ GUEST MODE');
+    console.log('🎯 ======================================\n');
     
     if (!loggedIn) {
-        console.log('👤 GUEST MODE - Afișez meniu simplu');
+        console.log('👤👤👤 ENTERING GUEST MODE - Setting up UI...');
         
         // Ascunde tot în afară de chat
         const hideElements = [
@@ -342,8 +365,12 @@ async function updateUIBasedOnAuth() {
             document.querySelector('#settings-toggle')?.closest('.nav-item-parent')
         ];
         
-        hideElements.forEach(el => {
-            if (el) el.style.display = 'none';
+        console.log('📍 Hiding menu items:', hideElements.filter(el => el).length, 'items found');
+        hideElements.forEach((el, idx) => {
+            if (el) {
+                el.style.display = 'none';
+                console.log(`  ✅ Hidden item ${idx + 1}`);
+            }
         });
         
         // Asigură-te că chat-ul e vizibil
@@ -384,7 +411,7 @@ async function updateUIBasedOnAuth() {
             window.location.hash = '#chat';
         }
     } else {
-        console.log('👤 LOGGED MODE - Afișez tot');
+        console.log('👤👤👤 ENTERING LOGGED MODE - Setting up UI...');
         
         // Afișează tot pentru utilizatori logați
         const showElements = [
@@ -394,8 +421,12 @@ async function updateUIBasedOnAuth() {
             document.querySelector('#settings-toggle')?.closest('.nav-item-parent')
         ];
         
-        showElements.forEach(el => {
-            if (el) el.style.display = '';
+        console.log('📍 Showing menu items:', showElements.filter(el => el).length, 'items found');
+        showElements.forEach((el, idx) => {
+            if (el) {
+                el.style.display = '';
+                console.log(`  ✅ Shown item ${idx + 1}`);
+            }
         });
         
         // Restaurează footer-ul original cu user info pentru utilizatori logați
