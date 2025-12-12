@@ -4,6 +4,7 @@ const socketIo = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
+const prisma = require('./db/prismaWrapper');
 require('dotenv').config();
 
 const app = express();
@@ -110,6 +111,16 @@ const gptChatRoutes = require('./routes/gptChat');
 const webhookRoutes = require('./routes/webhookRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const previewRoutes = require('./routes/previewRoutes');
+
+// Health check endpoint (pentru Railway)
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 
 // Use routes
 // IMPORTANT: Webhook routes MUST come before json middleware (already handled above)

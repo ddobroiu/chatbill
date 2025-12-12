@@ -1,3 +1,11 @@
+// ========== API CONFIGURATION ==========
+// Detectează automat URL-ul API-ului
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3000'
+  : window.location.origin;
+
+console.log('🌐 API URL:', API_URL);
+
 // ========== AUTHENTICATION ==========
 function checkAuth() {
     const token = localStorage.getItem('token');
@@ -33,7 +41,7 @@ async function updateChatBanners() {
         // Utilizator logat - verifică setări și abonament
         try {
             // Verifică setările companiei
-            const settingsResponse = await fetch('http://localhost:3000/api/settings', {
+            const settingsResponse = await fetch(`${API_URL}/api/settings`, {
                 headers: getAuthHeaders()
             });
             
@@ -274,7 +282,7 @@ function getProviderData() {
 
 async function loadSettings() {
     try {
-        const response = await fetch('http://localhost:3000/api/settings', {
+        const response = await fetch(`${API_URL}/api/settings`, {
             headers: getAuthHeaders()
         });
         
@@ -350,7 +358,7 @@ async function autoCompleteSettings() {
     showMessage('settingsMessage', '🔍 Căutare date în ANAF...', 'info');
 
     try {
-        const response = await fetch(`http://localhost:3000/api/settings/autocomplete/${cui}`);
+        const response = await fetch(`${API_URL}/api/settings/autocomplete/${cui}`);
         const data = await response.json();
         
         if (data.success && data.settings) {
@@ -376,7 +384,7 @@ async function saveSettings(event) {
     // Încearcă să salvezi în backend (pentru useri autentificați)
     // Dacă eșuează (401), salvează în localStorage
     try {
-        const response = await fetch('http://localhost:3000/api/settings', {
+        const response = await fetch(`${API_URL}/api/settings`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(settings)
@@ -435,7 +443,7 @@ async function searchClient() {
     showMessage('invoiceMessage', '🔍 Căutare client în ANAF...', 'info');
 
     try {
-        const response = await fetch(`http://localhost:3000/api/companies/search/${cui}`);
+        const response = await fetch(`${API_URL}/api/companies/search/${cui}`);
         const data = await response.json();
         
         if (data.found) {
@@ -582,7 +590,7 @@ async function generateInvoice(event) {
     };
 
     try {
-        const response = await fetch('http://localhost:3000/api/invoices/create', {
+        const response = await fetch(`${API_URL}/api/invoices/create`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(invoiceData)
@@ -601,7 +609,7 @@ async function generateInvoice(event) {
             // Oferă opțiunea de download
             setTimeout(() => {
                 if (confirm('Factură generată! Doriți să descărcați PDF-ul?')) {
-                    window.open(`http://localhost:3000/api/invoices/${data.invoice.id}/download`, '_blank');
+                    window.open(`${API_URL}/api/invoices/${data.invoice.id}/download`, '_blank');
                 }
             }, 1000);
         } else {
@@ -631,7 +639,7 @@ async function loadInvoices() {
     invoicesList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Se încarcă facturile...</p>';
     
     try {
-        const response = await fetch('http://localhost:3000/api/invoices', {
+        const response = await fetch(`${API_URL}/api/invoices`, {
             headers: getAuthHeaders()
         });
         const data = await response.json();
@@ -730,7 +738,7 @@ function getStatusLabel(status) {
 
 async function viewInvoice(invoiceId) {
     try {
-        const response = await fetch(`http://localhost:3000/api/invoices/${invoiceId}`);
+        const response = await fetch(`${API_URL}/api/invoices/${invoiceId}`);
         const data = await response.json();
         
         if (data.success && data.invoice) {
@@ -824,7 +832,7 @@ function closeInvoiceDetails() {
 }
 
 function downloadInvoice(invoiceId) {
-    window.open(`http://localhost:3000/api/invoices/${invoiceId}/download`, '_blank');
+    window.open(`${API_URL}/api/invoices/${invoiceId}/download`, '_blank');
 }
 
 // ========== AI CHAT TAB ==========
@@ -832,7 +840,7 @@ let currentChatSessionId = null;
 
 async function startChatSession() {
     try {
-        const response = await fetch('http://localhost:3000/api/ai-chat/start', {
+        const response = await fetch(`${API_URL}/api/ai-chat/start`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ source: 'web' })
@@ -866,7 +874,7 @@ async function sendChatMessage() {
     }
     
     try {
-        const response = await fetch('http://localhost:3000/api/ai-chat/message', {
+        const response = await fetch(`${API_URL}/api/ai-chat/message`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({
@@ -883,7 +891,7 @@ async function sendChatMessage() {
             
             // If invoice generated, show download link
             if (data.invoice) {
-                const downloadMsg = `\n\n<a href="http://localhost:3000/api/invoices/${data.invoice.id}/download" target="_blank" style="color: #667eea; text-decoration: underline;">📥 Click aici pentru download PDF</a>`;
+                const downloadMsg = `\n\n<a href="${API_URL}/api/invoices/${data.invoice.id}/download" target="_blank" style="color: #667eea; text-decoration: underline;">📥 Click aici pentru download PDF</a>`;
                 displayChatMessage('assistant', downloadMsg);
             }
         }
@@ -930,7 +938,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ========== ANAF e-FACTURA INTEGRATION ==========
 async function checkANAFStatus() {
     try {
-        const response = await fetch('http://localhost:3000/api/anaf/status', {
+        const response = await fetch(`${API_URL}/api/anaf/status`, {
             headers: getAuthHeaders()
         });
         const data = await response.json();
@@ -973,7 +981,7 @@ async function checkANAFStatus() {
 
 async function connectToANAF() {
     try {
-        const response = await fetch('http://localhost:3000/api/anaf/connect', {
+        const response = await fetch(`${API_URL}/api/anaf/connect`, {
             headers: getAuthHeaders()
         });
         const data = await response.json();
@@ -999,7 +1007,7 @@ async function disconnectFromANAF() {
     }
     
     try {
-        const response = await fetch('http://localhost:3000/api/anaf/disconnect', {
+        const response = await fetch(`${API_URL}/api/anaf/disconnect`, {
             method: 'POST'
         });
         const data = await response.json();
@@ -1051,7 +1059,7 @@ async function sendGPTMessage() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
     try {
-        const response = await fetch('http://localhost:3000/api/gpt-chat/message', {
+        const response = await fetch(`${API_URL}/api/gpt-chat/message`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({
@@ -1157,7 +1165,7 @@ async function clearGPTHistory() {
     }
     
     try {
-        const response = await fetch('http://localhost:3000/api/gpt-chat/history', {
+        const response = await fetch(`${API_URL}/api/gpt-chat/history`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -1364,7 +1372,7 @@ async function autocompleteOfferClient() {
     }
     
     try {
-        const response = await fetch(`http://localhost:3000/api/settings/autocomplete/${cui}`);
+        const response = await fetch(`${API_URL}/api/settings/autocomplete/${cui}`);
         const data = await response.json();
         
         if (data.success && data.company) {
