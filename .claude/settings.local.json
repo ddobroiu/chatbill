@@ -19,7 +19,8 @@
       "Bash(powershell -Command \"Get-Content ''e:\\chatbill\\frontend\\index.html'' | Select-Object -Last 30\")",
       "Bash(powershell -Command:*)",
       "Bash(cp:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(grep:*)"
     ]
   }
 }

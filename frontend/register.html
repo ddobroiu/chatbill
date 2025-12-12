@@ -224,19 +224,9 @@
       </div>
 
       <div class="form-group">
-        <label for="name">Nume complet</label>
-        <input type="text" id="name" name="name" placeholder="Ion Popescu" required>
-      </div>
-
-      <div class="form-group">
         <label for="email">Email *</label>
         <input type="email" id="email" name="email" placeholder="nume@exemplu.ro" required>
-      </div>
-
-      <div class="form-group">
-        <label for="phone">Telefon *</label>
-        <input type="tel" id="phone" name="phone" placeholder="0721234567" required>
-        <small style="color: #666; font-size: 0.75rem;">Vei primi cod de verificare pe WhatsApp</small>
+        <small style="color: #666; font-size: 0.75rem;">Vei primi un cod de verificare pe email</small>
       </div>
 
       <div class="form-group">
@@ -254,6 +244,31 @@
         Creează cont
       </button>
     </form>
+
+    <!-- Email Verification Section (Hidden by default) -->
+    <div id="verification-section" style="display: none; margin-top: 2rem; padding: 1.5rem; background: #e7f3ff; border-radius: 8px; border: 1px solid #0052cc;">
+      <h3 style="margin-bottom: 1rem; color: var(--primary);">
+        <i data-lucide="mail" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle;"></i>
+        Verifică adresa de email
+      </h3>
+      <p style="margin-bottom: 1rem; font-size: 0.875rem;">
+        Am trimis un cod de verificare la <strong id="email-display"></strong>
+      </p>
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label for="verification-code">Cod de verificare (6 cifre)</label>
+        <input type="text" id="verification-code" maxlength="6" placeholder="123456" style="text-align: center; font-size: 1.25rem; letter-spacing: 0.5rem;">
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" id="verify-btn" class="btn btn-primary" style="flex: 1;">
+          <i data-lucide="check"></i>
+          Verifică
+        </button>
+        <button type="button" id="resend-btn" class="btn" style="flex: 1; background: #6c757d; color: white;">
+          <i data-lucide="refresh-cw"></i>
+          Retrimite cod
+        </button>
+      </div>
+    </div>
 
     <div class="extra-links">
       Ai deja cont? <a href="/login.html">Autentifică-te</a>
@@ -315,25 +330,21 @@
       }
     });
 
+    let userEmail = '';
+    let tempToken = '';
+
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const cui = cuiInput.value.trim();
       const company = companyInput.value.trim();
-      const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
-      const phone = document.getElementById('phone').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
 
       // Validare
       if (!cui) {
         showMessage('CUI-ul este obligatoriu');
-        return;
-      }
-
-      if (!phone) {
-        showMessage('Numărul de telefon este obligatoriu');
         return;
       }
 
@@ -357,30 +368,27 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ 
-            name, 
-            email, 
-            password, 
-            cui, 
-            company,
-            phone 
+          body: JSON.stringify({
+            email,
+            password,
+            cui,
+            company
           })
         });
 
         const data = await response.json();
 
         if (data.success) {
-          showMessage('Cont creat! Verifică WhatsApp pentru codul de confirmare...', 'success');
-          
-          // Autentificare automată
-          if (data.token) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-          }
-          
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 1500);
+          userEmail = email;
+          tempToken = data.tempToken || '';
+
+          // Ascunde formularul și arată secțiunea de verificare
+          registerForm.style.display = 'none';
+          document.getElementById('verification-section').style.display = 'block';
+          document.getElementById('email-display').textContent = email;
+
+          showMessage('Cont creat! Verifică email-ul pentru codul de verificare.', 'success');
+          lucide.createIcons();
         } else {
           throw new Error(data.error || 'Eroare la crearea contului');
         }
@@ -388,6 +396,90 @@
         showMessage(error.message);
         registerBtn.disabled = false;
         registerBtn.innerHTML = '<i data-lucide="user-plus"></i> Creează cont';
+        lucide.createIcons();
+      }
+    });
+
+    // Email Verification
+    const verifyBtn = document.getElementById('verify-btn');
+    const resendBtn = document.getElementById('resend-btn');
+    const verificationCodeInput = document.getElementById('verification-code');
+
+    verifyBtn.addEventListener('click', async () => {
+      const code = verificationCodeInput.value.trim();
+
+      if (!code || code.length !== 6) {
+        showMessage('Introdu un cod valid de 6 cifre');
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      verifyBtn.innerHTML = '<i data-lucide="loader-2"></i> Se verifică...';
+      lucide.createIcons();
+
+      try {
+        const response = await fetch(`${API_URL}/api/auth/verify-email-code`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: userEmail,
+            code: code
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showMessage('Email verificat cu succes! Redirecționare...', 'success');
+
+          // Salvează token-ul și utilizatorul
+          if (data.token) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1500);
+        } else {
+          throw new Error(data.error || 'Cod incorect');
+        }
+      } catch (error) {
+        showMessage(error.message);
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = '<i data-lucide="check"></i> Verifică';
+        lucide.createIcons();
+      }
+    });
+
+    resendBtn.addEventListener('click', async () => {
+      resendBtn.disabled = true;
+      resendBtn.innerHTML = '<i data-lucide="loader-2"></i> Se trimite...';
+      lucide.createIcons();
+
+      try {
+        const response = await fetch(`${API_URL}/api/auth/resend-verification-code`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email: userEmail })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showMessage('Cod retrimis! Verifică email-ul.', 'success');
+        } else {
+          throw new Error(data.error || 'Eroare la retrimitera codului');
+        }
+      } catch (error) {
+        showMessage(error.message);
+      } finally {
+        resendBtn.disabled = false;
+        resendBtn.innerHTML = '<i data-lucide="refresh-cw"></i> Retrimite cod';
         lucide.createIcons();
       }
     });

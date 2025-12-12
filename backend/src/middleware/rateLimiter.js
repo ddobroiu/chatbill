@@ -43,10 +43,10 @@ const loginLimiter = createRateLimiter(
 );
 
 // Rate limiter pentru înregistrare
-// 3 conturi noi per oră per IP
+// 20 conturi noi per oră per IP (development: mai permisiv)
 const registerLimiter = createRateLimiter(
   60 * 60 * 1000, // 1 hour
-  3,
+  20,
   'Prea multe înregistrări. Te rugăm să aștepți 1 oră.'
 );
 

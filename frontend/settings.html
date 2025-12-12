@@ -175,6 +175,11 @@
     </div>
 
     <script>
+    // API Configuration
+    const API_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost:3000'
+      : window.location.origin;
+
         // Încarcă setările la pornire
         window.addEventListener('DOMContentLoaded', loadSettings);
 
