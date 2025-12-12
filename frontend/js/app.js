@@ -3152,3 +3152,116 @@ function initNumberingSettingsPage() {
 
     console.log('[Numbering Settings] Initialized with settings:', settings);
 }
+
+// ========== INVOICE PREVIEW & PDF ==========
+// Funcții pentru preview și generare PDF facturi
+
+async function previewInvoice() {
+    console.log('[Invoice Preview] Starting...');
+
+    // Colectează datele din formular (similar cu handleInvoiceSubmit)
+    const products = [];
+    const productItems = document.querySelectorAll('#products-container .product-item');
+
+    productItems.forEach(item => {
+        const name = item.querySelector('.product-name').value;
+        const unit = item.querySelector('.product-unit').value;
+        const quantity = parseFloat(item.querySelector('.product-quantity').value);
+        const price = parseFloat(item.querySelector('.product-price').value);
+        const vat = parseFloat(item.querySelector('.product-vat').value);
+
+        if (name && quantity && price >= 0) {
+            products.push({ name, unit, quantity, price, vat });
+        }
+    });
+
+    if (products.length === 0) {
+        alert('Adăugați cel puțin un produs/serviciu pentru a vedea preview-ul');
+        return;
+    }
+
+    // Colectează date client
+    const clientType = document.getElementById('client-type').value;
+    const clientData = { type: clientType };
+
+    if (clientType === 'company') {
+        clientData.name = document.getElementById('client-name').value;
+        clientData.cui = document.getElementById('client-cui').value.replace(/^RO/i, '');
+        clientData.regCom = document.getElementById('client-regCom').value;
+        clientData.address = document.getElementById('client-address').value;
+        clientData.city = document.getElementById('client-city').value;
+        clientData.county = document.getElementById('client-county').value;
+    } else {
+        clientData.firstName = document.getElementById('client-firstName').value;
+        clientData.lastName = document.getElementById('client-lastName').value;
+        clientData.cnp = document.getElementById('client-cnp').value;
+        clientData.address = document.getElementById('client-address').value;
+        clientData.city = document.getElementById('client-city').value;
+        clientData.county = document.getElementById('client-county').value;
+    }
+
+    // Obține setările companiei și TVA
+    const companySettings = JSON.parse(localStorage.getItem('companySettings') || '{}');
+    const vatSettings = getVATSettings();
+    const numberingSettings = getNumberingSettings();
+
+    // Generează număr preview
+    const previewNumber = numberingSettings.invoice.series + numberingSettings.invoice.currentNumber.toString().padStart(6, '0');
+
+    // Pregătește datele pentru preview
+    const invoiceData = {
+        invoice: {
+            invoiceNumber: previewNumber,
+            issueDate: new Date().toLocaleDateString('ro-RO'),
+            status: 'unpaid'
+        },
+        company: {
+            name: companySettings.name || 'Compania Mea',
+            cui: companySettings.cui || '',
+            regCom: companySettings.regCom || '',
+            address: companySettings.address || '',
+            city: companySettings.city || '',
+            county: companySettings.county || '',
+            phone: companySettings.phone || '',
+            email: companySettings.email || '',
+            iban: companySettings.iban || '',
+            bank: companySettings.bank || '',
+            isVatPayer: vatSettings.isVatPayer,
+            vatRate: vatSettings.vatRate
+        },
+        client: clientData,
+        products: products,
+        template: 'modern-minimal' // sau 'professional-clean'
+    };
+
+    try {
+        const response = await fetch(API_URL + '/api/invoices/preview', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(invoiceData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Eroare la generarea preview-ului');
+        }
+
+        const html = await response.text();
+
+        // Deschide preview în fereastră nouă
+        const previewWindow = window.open('', '_blank', 'width=1000,height=800');
+        previewWindow.document.write(html);
+        previewWindow.document.close();
+
+        console.log('[Invoice Preview] Preview opened successfully');
+    } catch (error) {
+        console.error('[Invoice Preview] Error:', error);
+        alert('Eroare la generarea preview-ului: ' + error.message);
+    }
+}
+
+async function downloadInvoicePDF() {
+    console.log('[Invoice PDF] Starting download...');
+    alert('Funcționalitatea de download PDF va fi disponibilă în curând!');
+}
