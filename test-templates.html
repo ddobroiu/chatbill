@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Template Settings</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 2rem;
+        }
+        .section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        button {
+            padding: 0.75rem 1.5rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .template-option {
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .template-option:hover {
+            border-color: #3b82f6;
+            background: #f0f7ff;
+        }
+        .template-option.selected {
+            border-color: #3b82f6;
+            background: #e0f0ff;
+            font-weight: 700;
+        }
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            display: none;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Test Template Settings API</h1>
+        
+        <div class="section">
+            <h2>1. Selectează Template-uri</h2>
+            
+            <h3>📄 Facturi</h3>
+            <div class="template-grid">
+                <div class="template-option selected" data-type="invoice" data-template="modern">Modern</div>
+                <div class="template-option" data-type="invoice" data-template="classic">Classic</div>
+                <div class="template-option" data-type="invoice" data-template="premium">Premium</div>
+            </div>
+            
+            <h3>📋 Proformă</h3>
+            <div class="template-grid">
+                <div class="template-option selected" data-type="proforma" data-template="modern">Modern</div>
+                <div class="template-option" data-type="proforma" data-template="classic">Classic</div>
+                <div class="template-option" data-type="proforma" data-template="business">Business</div>
+            </div>
+            
+            <h3>📝 Oferte</h3>
+            <div class="template-grid">
+                <div class="template-option selected" data-type="quote" data-template="modern">Modern</div>
+                <div class="template-option" data-type="quote" data-template="classic">Classic</div>
+                <div class="template-option" data-type="quote" data-template="creative">Creative</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>2. Acțiuni</h2>
+            <button class="btn-primary" onclick="getTemplates()">📥 Încarcă Template-uri</button>
+            <button class="btn-success" onclick="saveTemplates()">💾 Salvează Template-uri</button>
+            <button class="btn-warning" onclick="testLocalStorage()">🔍 Verifică LocalStorage</button>
+            <div id="status" class="status"></div>
+        </div>
+        
+        <div class="section">
+            <h2>3. Rezultate</h2>
+            <pre id="output">Apasă un buton pentru a vedea rezultatele...</pre>
+        </div>
+    </div>
+
+    <script>
+        // Template selection
+        document.querySelectorAll('.template-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const type = this.dataset.type;
+                const template = this.dataset.template;
+                
+                // Remove selected from siblings
+                document.querySelectorAll(`.template-option[data-type="${type}"]`).forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selected to this
+                this.classList.add('selected');
+                
+                // Save to localStorage
+                localStorage.setItem(`template-${type}`, template);
+                
+                showStatus('success', `✅ Template ${type} setat la: ${template}`);
+            });
+        });
+
+        async function getTemplates() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showStatus('error', '❌ Nu ești autentificat. Loghează-te mai întâi.');
+                    return;
+                }
+
+                const response = await fetch('http://localhost:3000/api/settings/templates', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success) {
+                    // Update UI
+                    if (data.templates.invoice) {
+                        const invoiceCard = document.querySelector(`[data-type="invoice"][data-template="${data.templates.invoice}"]`);
+                        if (invoiceCard) invoiceCard.click();
+                    }
+                    if (data.templates.proforma) {
+                        const proformaCard = document.querySelector(`[data-type="proforma"][data-template="${data.templates.proforma}"]`);
+                        if (proformaCard) proformaCard.click();
+                    }
+                    if (data.templates.quote) {
+                        const quoteCard = document.querySelector(`[data-type="quote"][data-template="${data.templates.quote}"]`);
+                        if (quoteCard) quoteCard.click();
+                    }
+                    showStatus('success', '✅ Template-uri încărcate cu succes!');
+                } else {
+                    showStatus('error', '❌ ' + (data.error || 'Eroare necunoscută'));
+                }
+            } catch (error) {
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+                showStatus('error', '❌ Eroare: ' + error.message);
+            }
+        }
+
+        async function saveTemplates() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showStatus('error', '❌ Nu ești autentificat. Loghează-te mai întâi.');
+                    return;
+                }
+
+                const templates = {
+                    invoice: localStorage.getItem('template-invoice') || 'modern',
+                    proforma: localStorage.getItem('template-proforma') || 'modern',
+                    quote: localStorage.getItem('template-quote') || 'modern'
+                };
+
+                const response = await fetch('http://localhost:3000/api/settings/templates', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(templates)
+                });
+
+                const data = await response.json();
+                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success) {
+                    showStatus('success', '✅ Template-uri salvate cu succes!');
+                } else {
+                    showStatus('error', '❌ ' + (data.error || 'Eroare necunoscută'));
+                }
+            } catch (error) {
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+                showStatus('error', '❌ Eroare: ' + error.message);
+            }
+        }
+
+        function testLocalStorage() {
+            const data = {
+                'template-invoice': localStorage.getItem('template-invoice'),
+                'template-proforma': localStorage.getItem('template-proforma'),
+                'template-quote': localStorage.getItem('template-quote'),
+                'token': localStorage.getItem('token') ? 'există' : 'lipsește'
+            };
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            showStatus('success', '✅ LocalStorage verificat!');
+        }
+
+        function showStatus(type, message) {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            
+            setTimeout(() => {
+                status.className = 'status';
+            }, 5000);
+        }
+
+        // Load from localStorage on page load
+        window.addEventListener('load', () => {
+            ['invoice', 'proforma', 'quote'].forEach(type => {
+                const saved = localStorage.getItem(`template-${type}`);
+                if (saved) {
+                    const card = document.querySelector(`[data-type="${type}"][data-template="${saved}"]`);
+                    if (card) {
+                        card.classList.add('selected');
+                        document.querySelectorAll(`.template-option[data-type="${type}"]`).forEach(opt => {
+                            if (opt !== card) opt.classList.remove('selected');
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
