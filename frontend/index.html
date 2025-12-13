@@ -2077,21 +2077,25 @@
                 </div>
             </div>
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <div style="color: var(--secondary-foreground); font-size: 0.875rem;">
+        <!-- Footer Global (apare pe toate paginile) -->
+        <footer style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <a href="terms-of-service.html" style="color: var(--secondary-foreground); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--secondary-foreground)'">
+                    Termeni și Condiții
+                </a>
+                <a href="privacy-policy.html" style="color: var(--secondary-foreground); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--secondary-foreground)'">
+                    Politica de Confidențialitate
+                </a>
+                <a href="data-deletion.html" style="color: var(--secondary-foreground); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--secondary-foreground)'">
+                    Ștergere Date
+                </a>
+            </div>
+            <div style="text-align: center; color: var(--secondary-foreground); font-size: 0.75rem; padding-bottom: 1.5rem;">
                 © 2024 ChatBill. Toate drepturile rezervate.
             </div>
-            <div class="footer-links" style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-                <a href="#" style="color: var(--secondary-foreground); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--secondary-foreground)'">Termeni și Condiții</a>
-                <a href="#" style="color: var(--secondary-foreground); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--secondary-foreground)'">Politica de Confidențialitate</a>
-                <a href="#" style="color: var(--secondary-foreground); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--secondary-foreground)'">Contact</a>
-            </div>
-        </div>
-    </footer>
+        </footer>
+    </main>
 
     <!-- Preview PDF Modal -->
     <div id="pdf-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; padding: 20px;">

@@ -187,6 +187,41 @@
       font-size: 0.875rem;
       color: var(--secondary-foreground);
     }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .toggle-password:hover {
+      background: var(--secondary);
+    }
+
+    .toggle-password svg {
+      width: 20px;
+      height: 20px;
+      color: var(--secondary-foreground);
+    }
+
+    input[type="password"],
+    input[type="text"] {
+      padding-right: 45px !important;
+    }
   </style>
   <link rel="stylesheet" href="/css/theme-chatgpt.css">
 </head>
@@ -232,12 +267,22 @@
 
       <div class="form-group">
         <label for="password">Parolă</label>
-        <input type="password" id="password" name="password" placeholder="Minim 6 caractere" required minlength="6">
+        <div class="input-wrapper">
+          <input type="password" id="password" name="password" placeholder="Minim 6 caractere" required minlength="6">
+          <button type="button" class="toggle-password" data-target="password">
+            <i data-lucide="eye"></i>
+          </button>
+        </div>
       </div>
 
       <div class="form-group">
         <label for="confirmPassword">Confirmă parola</label>
-        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repetă parola" required>
+        <div class="input-wrapper">
+          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repetă parola" required>
+          <button type="button" class="toggle-password" data-target="confirmPassword">
+            <i data-lucide="eye"></i>
+          </button>
+        </div>
       </div>
 
       <button type="submit" class="btn btn-primary" id="registerBtn">
@@ -279,7 +324,25 @@
   <script>
     lucide.createIcons();
 
-    const API_URL = window.location.hostname === 'localhost' 
+    // Password toggle functionality
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const targetId = this.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const icon = this.querySelector('i');
+
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+          input.type = 'password';
+          icon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons();
+      });
+    });
+
+    const API_URL = window.location.hostname === 'localhost'
       ? 'http://localhost:3000'
       : window.location.origin;
 

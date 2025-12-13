@@ -21,7 +21,8 @@
       "Bash(cp:*)",
       "Bash(mv:*)",
       "Bash(grep:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)"
     ]
   }
 }
