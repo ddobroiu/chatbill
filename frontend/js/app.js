@@ -758,6 +758,14 @@ function initInvoiceGenerator() {
     const newForm = document.getElementById('invoice-form');
     
     // Re-attach event listeners AFTER cloning (cloning removes them!)
+    // Add product button - re-attach
+    const newAddProductBtn = document.getElementById('add-product');
+    if (newAddProductBtn) {
+        newAddProductBtn.addEventListener('click', () => {
+            addInvoiceProduct();
+        });
+    }
+    
     // Client type toggle
     const newClientTypeSelect = document.getElementById('client-type');
     if (newClientTypeSelect) {
@@ -765,13 +773,16 @@ function initInvoiceGenerator() {
             const type = newClientTypeSelect.value;
             const companyFields = document.getElementById('company-fields');
             const individualFields = document.getElementById('individual-fields');
+            const cuiField = document.getElementById('cui-field');
             
             if (type === 'company') {
-                companyFields.style.display = 'block';
+                companyFields.style.display = 'contents';
                 individualFields.style.display = 'none';
+                if (cuiField) cuiField.style.display = 'block';
             } else {
                 companyFields.style.display = 'none';
                 individualFields.style.display = 'block';
+                if (cuiField) cuiField.style.display = 'none';
             }
         });
     }
@@ -831,9 +842,17 @@ function initInvoiceGenerator() {
     newForm.addEventListener('submit', handleInvoiceSubmit);
     console.log('[Invoice Generator] ✅ Submit event listener attached to FRESH form');
     
-    // Set default issue date to today
+    // Set default issue date to today and load series
     const issueDateInput = document.getElementById('invoice-issue-date');
     const dueDateInput = document.getElementById('invoice-due-date');
+    const seriesInput = document.getElementById('invoice-series');
+    
+    // Load invoice series from settings
+    if (seriesInput) {
+        const invoiceSeries = localStorage.getItem('invoiceSeries') || 'FAC';
+        seriesInput.value = invoiceSeries;
+        console.log('[Invoice Generator] Set invoice series to:', invoiceSeries);
+    }
     
     if (issueDateInput) {
         const today = new Date();
@@ -908,29 +927,29 @@ function addInvoiceProduct() {
     const vatFieldDisplay = vatSettings.isVatPayer ? 'block' : 'none';
 
     productDiv.innerHTML = `
-        <div class="product-row">
+        <div class="product-row" style="display: grid; grid-template-columns: 3fr 0.6fr 0.7fr 1.2fr 0.7fr auto; gap: 0.8rem; align-items: end; width: 100%;">
             <div class="form-group">
-                <label>Denumire Produs/Serviciu</label>
-                <input type="text" class="product-name" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Denumire Produs/Serviciu</label>
+                <input type="text" class="product-name" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <label>U.M.</label>
-                <input type="text" class="product-unit" value="buc" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">U.M.</label>
+                <input type="text" class="product-unit" value="buc" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <label>Cantitate</label>
-                <input type="number" class="product-quantity" value="1" min="0.01" step="0.01" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Cant.</label>
+                <input type="number" class="product-quantity" value="1" min="0.01" step="0.01" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <label>Preț Unitar (fără TVA)</label>
-                <input type="number" class="product-price" value="0" min="0" step="0.01" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Preț (fără TVA)</label>
+                <input type="number" class="product-price" value="0" min="0" step="0.01" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group" style="display: ${vatFieldDisplay};">
-                <label>TVA (%)</label>
-                <input type="number" class="product-vat" value="${defaultVAT}" min="0" max="100" step="1" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">TVA (%)</label>
+                <input type="number" class="product-vat" value="${defaultVAT}" min="0" max="100" step="1" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <button type="button" class="btn btn-danger btn-icon remove-product" title="Șterge produs">
+                <button type="button" class="btn btn-danger btn-icon remove-product" title="Șterge produs" style="padding: 0.35rem;">
                     <i data-lucide="trash-2"></i>
                 </button>
             </div>
@@ -1204,9 +1223,17 @@ function initProformaGenerator() {
         return;
     }
     
-    // Initialize issue date and due date
+    // Initialize issue date, due date and series
     const issueDateInput = document.getElementById('proforma-issue-date');
     const dueDateInput = document.getElementById('proforma-due-date');
+    const seriesInput = document.getElementById('proforma-series');
+    
+    // Load proforma series from settings
+    if (seriesInput) {
+        const proformaSeries = localStorage.getItem('proformaSeries') || 'PRO';
+        seriesInput.value = proformaSeries;
+        console.log('[Proforma Generator] Set proforma series to:', proformaSeries);
+    }
     
     if (issueDateInput && dueDateInput) {
         // Set issue date to today
@@ -1236,13 +1263,16 @@ function initProformaGenerator() {
             const type = clientTypeSelect.value;
             const companyFields = document.getElementById('proforma-company-fields');
             const individualFields = document.getElementById('proforma-individual-fields');
+            const cuiField = document.getElementById('proforma-cui-field');
             
             if (type === 'company') {
-                companyFields.style.display = 'block';
+                companyFields.style.display = 'contents';
                 individualFields.style.display = 'none';
+                if (cuiField) cuiField.style.display = 'block';
             } else {
                 companyFields.style.display = 'none';
                 individualFields.style.display = 'block';
+                if (cuiField) cuiField.style.display = 'none';
             }
         });
     }
@@ -1332,29 +1362,29 @@ function addProformaProduct() {
     const vatFieldDisplay = vatSettings.isVatPayer ? 'block' : 'none';
 
     productDiv.innerHTML = `
-        <div class="product-row">
+        <div class="product-row" style="display: grid; grid-template-columns: 3fr 0.6fr 0.7fr 1.2fr 0.7fr auto; gap: 0.8rem; align-items: end; width: 100%;">
             <div class="form-group">
-                <label>Denumire Produs/Serviciu</label>
-                <input type="text" class="proforma-product-name" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Denumire Produs/Serviciu</label>
+                <input type="text" class="proforma-product-name" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <label>U.M.</label>
-                <input type="text" class="proforma-product-unit" value="buc" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">U.M.</label>
+                <input type="text" class="proforma-product-unit" value="buc" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <label>Cantitate</label>
-                <input type="number" class="proforma-product-quantity" value="1" min="0.01" step="0.01" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Cant.</label>
+                <input type="number" class="proforma-product-quantity" value="1" min="0.01" step="0.01" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <label>Preț Unitar (fără TVA)</label>
-                <input type="number" class="proforma-product-price" value="0" min="0" step="0.01" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Preț (fără TVA)</label>
+                <input type="number" class="proforma-product-price" value="0" min="0" step="0.01" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group" style="display: ${vatFieldDisplay};">
-                <label>TVA (%)</label>
-                <input type="number" class="proforma-product-vat" value="${defaultVAT}" min="0" max="100" step="1" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">TVA (%)</label>
+                <input type="number" class="proforma-product-vat" value="${defaultVAT}" min="0" max="100" step="1" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <button type="button" class="btn btn-danger btn-icon remove-proforma-product" title="Șterge produs">
+                <button type="button" class="btn btn-danger btn-icon remove-proforma-product" title="Șterge produs" style="padding: 0.35rem;">
                     <i data-lucide="trash-2"></i>
                 </button>
             </div>
@@ -1546,7 +1576,7 @@ function initOfferGenerator() {
             const individualFields = document.getElementById('offer-individual-fields');
             
             if (type === 'company') {
-                companyFields.style.display = 'block';
+                companyFields.style.display = 'contents';
                 individualFields.style.display = 'none';
             } else {
                 companyFields.style.display = 'none';
@@ -1631,25 +1661,29 @@ function addOfferProduct() {
     const vatFieldDisplay = vatSettings.isVatPayer ? 'block' : 'none';
 
     productDiv.innerHTML = `
-        <div class="product-row">
+        <div class="product-row" style="display: grid; grid-template-columns: 3fr 0.6fr 0.7fr 1.2fr 0.7fr auto; gap: 0.8rem; align-items: end; width: 100%;">
             <div class="form-group">
-                <label>Denumire Produs/Serviciu</label>
-                <input type="text" class="offer-product-name" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Denumire Produs/Serviciu</label>
+                <input type="text" class="offer-product-name" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <label>Cantitate</label>
-                <input type="number" class="offer-product-quantity" value="1" min="0.01" step="0.01" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">U.M.</label>
+                <input type="text" class="offer-product-unit" value="buc" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <label>Preț Unitar (fără TVA)</label>
-                <input type="number" class="offer-product-price" value="0" min="0" step="0.01" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Cant.</label>
+                <input type="number" class="offer-product-quantity" value="1" min="0.01" step="0.01" required style="padding: 0.35rem; font-size: 0.9rem;">
+            </div>
+            <div class="form-group">
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Preț (fără TVA)</label>
+                <input type="number" class="offer-product-price" value="0" min="0" step="0.01" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group" style="display: ${vatFieldDisplay};">
-                <label>TVA (%)</label>
-                <input type="number" class="offer-product-vat" value="${defaultVAT}" min="0" max="100" step="1" required>
+                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">TVA (%)</label>
+                <input type="number" class="offer-product-vat" value="${defaultVAT}" min="0" max="100" step="1" required style="padding: 0.35rem; font-size: 0.9rem;">
             </div>
             <div class="form-group">
-                <button type="button" class="btn btn-danger btn-icon remove-offer-product" title="Șterge produs">
+                <button type="button" class="btn btn-danger btn-icon remove-offer-product" title="Șterge produs" style="padding: 0.35rem;">
                     <i data-lucide="trash-2"></i>
                 </button>
             </div>
