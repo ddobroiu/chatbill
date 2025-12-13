@@ -1945,170 +1945,150 @@
 
         <!-- Subscription Page -->
         <div id="subscription" class="page">
-            <div class="page-header">
-                <h2>Planuri de Abonament</h2>
-                <p>Alege planul potrivit pentru afacerea ta</p>
+            <div class="page-header" style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Abonament</h2>
+                <p style="font-size: 0.875rem;">Gestioneaza abonamentul si alege planul potrivit</p>
             </div>
 
-            <!-- Trial Period Card -->
-            <div id="trial-period-card" class="card" style="margin-bottom: 1.5rem; display: none; background: linear-gradient(135deg, #10a37f 0%, #0e8f72 100%); color: white; border: none;">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                    <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i data-lucide="gift" style="width: 28px; height: 28px; color: white;"></i>
-                    </div>
-                    <div>
-                        <h3 style="color: white; font-size: 1.5rem; margin: 0;">Perioada de Proba Gratuita</h3>
-                        <p style="margin: 0.25rem 0 0 0; opacity: 0.9; font-size: 0.875rem;">Testeaza toate functiile premium gratuit!</p>
-                    </div>
-                </div>
-                <div id="trial-details" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
-                    <!-- Populated by JavaScript -->
-                </div>
-                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                    <button class="btn subscribe-btn" data-plan="annual" style="background: white; color: #10a37f; border: none; padding: 0.75rem 1.5rem; font-weight: 600; flex: 1;">
-                        <i data-lucide="crown"></i>
-                        Upgrade la Premium
-                    </button>
-                </div>
-            </div>
-
-            <!-- Current Subscription Status -->
-            <div id="current-subscription-card" class="card" style="margin-bottom: 1.5rem; display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                    <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i data-lucide="check-circle" style="width: 28px; height: 28px; color: white;"></i>
-                    </div>
-                    <div>
-                        <h3 id="subscription-title" style="color: white; font-size: 1.5rem; margin: 0;">Abonament Activ</h3>
-                        <p id="subscription-plan-name" style="margin: 0.25rem 0 0 0; opacity: 0.9; font-size: 0.875rem;"></p>
-                    </div>
-                </div>
-                <div id="subscription-details" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
-                    <!-- Populated by JavaScript -->
-                </div>
-                <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                    <button id="manage-subscription-btn" class="btn" style="background: white; color: #667eea; border: none; padding: 0.75rem 1.5rem; font-weight: 600;">
-                        <i data-lucide="settings"></i>
-                        Gestioneaza
-                    </button>
-                    <button id="cancel-subscription-btn" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.75rem 1.5rem; font-weight: 600;">
-                        <i data-lucide="x-circle"></i>
-                        Anuleaza
-                    </button>
-                </div>
-            </div>
-
-            <!-- Pricing Plans -->
-            <div class="pricing-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-
-                <!-- Monthly Plan -->
-                <div class="pricing-card card" style="text-align: center; padding: 1.5rem; transition: all 0.3s ease; border: 2px solid transparent;">
-                    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                        <i data-lucide="zap" style="color: white; width: 24px; height: 24px;"></i>
-                    </div>
-                    <h3 style="margin-bottom: 0.25rem; font-size: 1.25rem; color: var(--foreground);">Lunar</h3>
-                    <p style="color: var(--secondary-foreground); font-size: 0.875rem; margin-bottom: 1rem;">Perfect pentru inceput</p>
-                    <div style="margin: 1rem 0;">
-                        <div style="font-size: 2.5rem; font-weight: 700; color: #10a37f;">
-                            4.99 EUR
+            <!-- Subscription Status (compact) -->
+            <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                <!-- Trial Period Card (compact) -->
+                <div id="trial-period-card" class="card" style="display: none; background: linear-gradient(135deg, #10a37f 0%, #0e8f72 100%); color: white; border: none; padding: 1rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i data-lucide="gift" style="width: 20px; height: 20px; color: white;"></i>
+                            </div>
+                            <div>
+                                <h3 style="color: white; font-size: 1.1rem; margin: 0;">Perioada de Proba</h3>
+                                <p id="trial-details" style="margin: 0; opacity: 0.9; font-size: 0.8rem;"><!-- Populated by JS --></p>
+                            </div>
                         </div>
-                        <div style="font-size: 0.75rem; color: var(--secondary-foreground);">pe luna</div>
+                        <button class="btn subscribe-btn" data-plan="annual" style="background: white; color: #10a37f; border: none; padding: 0.5rem 1rem; font-weight: 600; font-size: 0.875rem;">
+                            <i data-lucide="crown" style="width: 16px; height: 16px;"></i>
+                            Upgrade
+                        </button>
                     </div>
-                    <ul style="list-style: none; padding: 0; margin: 1.5rem 0; text-align: left; font-size: 0.875rem; color: var(--foreground);">
-                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="check" style="color: #10a37f; width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>Facturi nelimitate</span>
-                        </li>
-                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="check" style="color: #10a37f; width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>Chat GPT facturare</span>
-                        </li>
-                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="check" style="color: #10a37f; width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>Toate sabloanele PDF</span>
-                        </li>
-                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="check" style="color: #10a37f; width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>Integrare ANAF</span>
-                        </li>
-                    </ul>
-                    <button class="btn btn-secondary subscribe-btn" data-plan="monthly" style="width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.9rem;">
-                        Alege Lunar
-                    </button>
                 </div>
 
-                <!-- Annual Plan -->
-                <div class="pricing-card card" style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border: 2px solid var(--primary); position: relative; transform: scale(1.02); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);">
-                    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.25rem 1rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
-ECONOMISESTI 20%
-                    </div>
-                    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                        <i data-lucide="crown" style="color: white; width: 24px; height: 24px;"></i>
-                    </div>
-                    <h3 style="margin-bottom: 0.25rem; font-size: 1.25rem; color: var(--foreground);">Anual</h3>
-                    <p style="color: var(--secondary-foreground); font-size: 0.875rem; margin-bottom: 1rem;">Cea mai buna oferta</p>
-                    <div style="margin: 1rem 0;">
-                        <div style="font-size: 2.5rem; font-weight: 700; color: #10a37f;">
-                            3.99 EUR
+                <!-- Active Subscription Card (compact) -->
+                <div id="current-subscription-card" class="card" style="display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 200px;">
+                            <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i data-lucide="check-circle" style="width: 20px; height: 20px; color: white;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 style="color: white; font-size: 1.1rem; margin: 0;">Abonament Activ</h3>
+                                <p id="subscription-details" style="margin: 0; opacity: 0.9; font-size: 0.8rem;"><!-- Populated by JS --></p>
+                            </div>
                         </div>
-                        <div style="font-size: 0.75rem; color: var(--secondary-foreground);">pe luna</div>
-                        <div style="font-size: 0.75rem; color: #10a37f; font-weight: 600; margin-top: 0.25rem;">
-                            Facturat anual 47.88 EUR
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button id="manage-subscription-btn" class="btn" style="background: white; color: #667eea; border: none; padding: 0.5rem 1rem; font-weight: 600; font-size: 0.875rem;">
+                                <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+                                Gestioneaza
+                            </button>
+                            <button id="cancel-subscription-btn" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.5rem 1rem; font-weight: 600; font-size: 0.875rem;">
+                                <i data-lucide="x-circle" style="width: 16px; height: 16px;"></i>
+                                Anuleaza
+                            </button>
                         </div>
                     </div>
-                    <ul style="list-style: none; padding: 0; margin: 1.5rem 0; text-align: left; font-size: 0.875rem; color: var(--foreground);">
-                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="check" style="color: #10a37f; width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span><strong>Toate din planul lunar</strong></span>
-                        </li>
-                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="check" style="color: #10a37f; width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span><strong>Economisesti 11.88 EUR/an</strong></span>
-                        </li>
-                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="check" style="color: #10a37f; width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>Suport prioritar 24/7</span>
-                        </li>
-                        <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="check" style="color: #10a37f; width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>Functii noi in avans</span>
-                        </li>
-                    </ul>
-                    <button class="btn btn-primary subscribe-btn" data-plan="annual" style="width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.9rem;">
-                        Alege Anual
-                    </button>
                 </div>
             </div>
 
-            <!-- FAQ Section -->
-            <div class="card" style="padding: 1.5rem;">
-                <h3 style="margin-bottom: 1rem; font-size: 1.25rem; color: var(--foreground);">Intrebari Frecvente</h3>
-                <div style="display: grid; gap: 1rem;">
-                    <div style="padding: 1rem; background: var(--background); border-radius: 8px;">
-                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Pot anula abonamentul oricând?</p>
-                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Da, poți anula oricând. Fără costuri ascunse sau penalități.</p>
+            <!-- Pricing Plans (compact) -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--foreground);">Planuri Disponibile</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+
+                    <!-- Monthly Plan (compact) -->
+                    <div class="card" style="padding: 1rem; border: 2px solid transparent; transition: all 0.2s;">
+                        <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i data-lucide="zap" style="color: white; width: 18px; height: 18px;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 0.25rem 0; font-size: 1rem; color: var(--foreground);">Plan Lunar</h4>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #10a37f; line-height: 1;">4.99 EUR<span style="font-size: 0.7rem; font-weight: 400; color: var(--secondary-foreground);">/luna</span></div>
+                            </div>
+                        </div>
+                        <ul style="list-style: none; padding: 0; margin: 0.75rem 0; font-size: 0.8rem; color: var(--foreground);">
+                            <li style="padding: 0.3rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                                <i data-lucide="check" style="color: #10a37f; width: 14px; height: 14px; flex-shrink: 0;"></i>
+                                <span>Facturi nelimitate</span>
+                            </li>
+                            <li style="padding: 0.3rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                                <i data-lucide="check" style="color: #10a37f; width: 14px; height: 14px; flex-shrink: 0;"></i>
+                                <span>Chat GPT + Toate sabloanele</span>
+                            </li>
+                            <li style="padding: 0.3rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                                <i data-lucide="check" style="color: #10a37f; width: 14px; height: 14px; flex-shrink: 0;"></i>
+                                <span>Integrare ANAF e-Factura</span>
+                            </li>
+                        </ul>
+                        <button class="btn btn-secondary subscribe-btn" data-plan="monthly" style="width: 100%; padding: 0.6rem; font-weight: 600; font-size: 0.85rem; margin-top: 0.5rem;">
+                            Alege Lunar
+                        </button>
                     </div>
 
-                    <div style="padding: 1rem; background: var(--background); border-radius: 8px;">
-                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Ce se întâmplă dacă anulez?</p>
-                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Vei avea acces până la sfârșitul perioadei plătite.</p>
-                    </div>
-
-                    <div style="padding: 1rem; background: var(--background); border-radius: 8px;">
-                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary); font-size: 0.9rem;">Ce metode de plată acceptați?</p>
-                        <p style="margin: 0; color: var(--secondary-foreground); font-size: 0.875rem;">Toate cardurile majore (Visa, Mastercard, Amex) prin Stripe.</p>
+                    <!-- Annual Plan (compact) -->
+                    <div class="card" style="padding: 1rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border: 2px solid var(--primary); position: relative;">
+                        <div style="position: absolute; top: -10px; right: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.2rem 0.6rem; border-radius: 0.5rem; font-size: 0.65rem; font-weight: 600;">
+                            -20%
+                        </div>
+                        <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i data-lucide="crown" style="color: white; width: 18px; height: 18px;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 0.25rem 0; font-size: 1rem; color: var(--foreground);">Plan Anual</h4>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #10a37f; line-height: 1;">3.99 EUR<span style="font-size: 0.7rem; font-weight: 400; color: var(--secondary-foreground);">/luna</span></div>
+                                <div style="font-size: 0.7rem; color: #10a37f; font-weight: 500; margin-top: 0.15rem;">47.88 EUR facturat anual</div>
+                            </div>
+                        </div>
+                        <ul style="list-style: none; padding: 0; margin: 0.75rem 0; font-size: 0.8rem; color: var(--foreground);">
+                            <li style="padding: 0.3rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                                <i data-lucide="check" style="color: #10a37f; width: 14px; height: 14px; flex-shrink: 0;"></i>
+                                <span><strong>Toate din planul lunar</strong></span>
+                            </li>
+                            <li style="padding: 0.3rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                                <i data-lucide="check" style="color: #10a37f; width: 14px; height: 14px; flex-shrink: 0;"></i>
+                                <span><strong>Economie de 11.88 EUR/an</strong></span>
+                            </li>
+                            <li style="padding: 0.3rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                                <i data-lucide="check" style="color: #10a37f; width: 14px; height: 14px; flex-shrink: 0;"></i>
+                                <span>Suport prioritar + Functii noi</span>
+                            </li>
+                        </ul>
+                        <button class="btn btn-primary subscribe-btn" data-plan="annual" style="width: 100%; padding: 0.6rem; font-weight: 600; font-size: 0.85rem; margin-top: 0.5rem;">
+                            Alege Anual
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Trust Badges -->
-            <div style="margin-top: 1.5rem; text-align: center; padding: 1rem; background: var(--background); border-radius: 8px;">
-                <p style="font-size: 0.75rem; color: var(--secondary-foreground); margin-bottom: 0.75rem;">Plățile procesate securizat prin</p>
-                <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                    <div style="font-size: 1.25rem; font-weight: 700; color: #635bff;">Stripe</div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <div style="padding: 0.25rem 0.75rem; background: white; border-radius: 6px; font-weight: 600; font-size: 0.75rem; color: #1a1f71;">VISA</div>
-                        <div style="padding: 0.25rem 0.75rem; background: white; border-radius: 6px; font-weight: 600; font-size: 0.75rem; color: #eb001b;">Mastercard</div>
+            <!-- FAQ Section (compact) -->
+            <div class="card" style="padding: 1rem;">
+                <h3 style="margin-bottom: 0.75rem; font-size: 1rem; color: var(--foreground);">Intrebari Frecvente</h3>
+                <div style="display: grid; gap: 0.75rem; font-size: 0.8rem;">
+                    <div style="padding: 0.75rem; background: var(--background); border-radius: 6px;">
+                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary);">Pot anula abonamentul oricand?</p>
+                        <p style="margin: 0; color: var(--secondary-foreground);">Da, oricand. Fara costuri ascunse sau penalitati. Ai acces pana la sfarsitul perioadei platite.</p>
+                    </div>
+                    <div style="padding: 0.75rem; background: var(--background); border-radius: 6px;">
+                        <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--primary);">Ce metode de plata acceptati?</p>
+                        <p style="margin: 0; color: var(--secondary-foreground);">Toate cardurile majore (Visa, Mastercard, Amex) procesate securizat prin Stripe.</p>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; text-align: center; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; font-size: 0.75rem; color: var(--secondary-foreground);">
+                        <span>Plati securizate prin</span>
+                        <div style="font-size: 1rem; font-weight: 700; color: #635bff;">Stripe</div>
+                        <div style="display: flex; gap: 0.4rem;">
+                            <div style="padding: 0.2rem 0.5rem; background: var(--background); border-radius: 4px; font-weight: 600; font-size: 0.7rem; color: #1a1f71;">VISA</div>
+                            <div style="padding: 0.2rem 0.5rem; background: var(--background); border-radius: 4px; font-weight: 600; font-size: 0.7rem; color: #eb001b;">MC</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2327,56 +2307,30 @@ ECONOMISESTI 20%
                     const subscriptionCard = document.getElementById('current-subscription-card');
                     const trialDetails = document.getElementById('trial-details');
                     const subscriptionDetails = document.getElementById('subscription-details');
-                    const subscriptionPlanName = document.getElementById('subscription-plan-name');
 
                     // Get subscription status
                     const subscriptionStatus = getSubscriptionStatus();
 
                     if (subscriptionStatus.isTrial) {
-                        // Show trial card
+                        // Show trial card (compact)
                         if (trialCard) {
                             trialCard.style.display = 'block';
                             const daysRemaining = subscriptionStatus.daysRemaining;
                             const expiryDate = subscriptionStatus.expiryDate;
 
-                            trialDetails.innerHTML = `
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                    <span style="color: white; opacity: 0.9; font-size: 0.875rem;">Perioada de proba expira in:</span>
-                                    <span style="color: white; font-size: 1.5rem; font-weight: 700;">${daysRemaining} zile</span>
-                                </div>
-                                <div style="color: white; opacity: 0.8; font-size: 0.75rem; text-align: center; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.2);">
-                                    Data expirare: ${expiryDate}
-                                </div>
-                            `;
+                            trialDetails.textContent = `Expira in ${daysRemaining} zile (${expiryDate})`;
                         }
                         if (subscriptionCard) subscriptionCard.style.display = 'none';
                     } else if (subscriptionStatus.isActive) {
-                        // Show subscription card
+                        // Show subscription card (compact)
                         if (subscriptionCard) {
                             subscriptionCard.style.display = 'block';
                             const planName = subscriptionStatus.planType === 'annual' ? 'Plan Anual Pro' : 'Plan Lunar Pro';
                             const daysRemaining = subscriptionStatus.daysRemaining;
                             const renewalDate = subscriptionStatus.renewalDate;
 
-                            if (subscriptionPlanName) {
-                                subscriptionPlanName.textContent = planName;
-                            }
+                            subscriptionDetails.textContent = `${planName} • Expira in ${daysRemaining} zile • Reinnoieste: ${renewalDate}`;
 
-                            subscriptionDetails.innerHTML = `
-                                <div style="display: grid; gap: 0.75rem;">
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span style="color: white; opacity: 0.9;">Tip abonament:</span>
-                                        <span style="color: white; font-weight: 600;">${planName}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span style="color: white; opacity: 0.9;">Expira in:</span>
-                                        <span style="color: white; font-size: 1.5rem; font-weight: 700;">${daysRemaining} zile</span>
-                                    </div>
-                                    <div style="color: white; opacity: 0.8; font-size: 0.75rem; text-align: center; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.2);">
-                                        Urmatoarea facturare: ${renewalDate}
-                                    </div>
-                                </div>
-                            `;
                             if (typeof lucide !== 'undefined') {
                                 lucide.createIcons();
                             }
