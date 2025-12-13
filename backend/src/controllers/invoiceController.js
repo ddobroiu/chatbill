@@ -168,7 +168,8 @@ async function createInvoice(req, res) {
       subtotal: invoiceSubtotal,
       tvaAmount: invoiceVatAmount,
       total: invoiceTotal,
-      issueDate: new Date(),
+      issueDate: req.body.issueDate ? new Date(req.body.issueDate) : new Date(),
+      dueDate: req.body.dueDate ? new Date(req.body.dueDate) : null,
       status: 'generated',
       template: finalTemplate, // Adaugă template-ul selectat
       

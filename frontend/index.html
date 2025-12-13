@@ -1159,7 +1159,7 @@
                         </li>
                         <li class="nav-item">
                             <a href="#vat-settings" class="nav-link">
-                                <span>Setări TVA</span>
+                                <span>Setări Generale</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1275,6 +1275,22 @@
                 <p>Completați detaliile de mai jos pentru a emite o nouă factură.</p>
             </div>
             <form id="invoice-form">
+                <div class="card">
+                    <h3>Detalii Factură</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="invoice-issue-date">📅 Data Emiterii</label>
+                            <input type="date" id="invoice-issue-date" name="invoice-issue-date" required>
+                            <small style="color: #666; font-size: 0.85em; margin-top: 5px; display: block;">Data când este emisă factura</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="invoice-due-date">⏰ Data Scadenței</label>
+                            <input type="date" id="invoice-due-date" name="invoice-due-date" required>
+                            <small style="color: #666; font-size: 0.85em; margin-top: 5px; display: block;">Termenul limită de plată</small>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <h3>Detalii Client</h3>
                     <div class="form-grid">
@@ -1878,26 +1894,41 @@
         <!-- VAT Settings Page -->
         <div id="vat-settings" class="page">
             <div class="page-header">
-                <h2>Setări TVA</h2>
-                <p>Configurați plătitorul de TVA și cota aplicată.</p>
+                <h2>⚙️ Setări Generale</h2>
+                <p>Configurați setările generale ale sistemului de facturare.</p>
             </div>
             <form id="vat-settings-form" class="settings-form">
-                <div class="card">
-                    <h3>Setări TVA</h3>
-                    <p>Configurați dacă compania este plătitoare de TVA și cota aplicată.</p>
-                    <br>
-                    <div class="form-grid">
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="checkbox" id="is-vat-payer-2" name="isVatPayer" style="width: auto; margin: 0;">
-                                <span>Compania este plătitoare de TVA</span>
-                            </label>
-                            <p style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">Dacă compania NU este plătitoare de TVA, nu se va aplica și afișa TVA pe facturi și proforme.</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <h3>📋 Setări TVA</h3>
+                        <p>Configurați dacă compania este plătitoare de TVA și cota aplicată.</p>
+                        <br>
+                        <div class="form-grid">
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="checkbox" id="is-vat-payer-2" name="isVatPayer" style="width: auto; margin: 0;">
+                                    <span>Compania este plătitoare de TVA</span>
+                                </label>
+                                <p style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">Dacă compania NU este plătitoare de TVA, nu se va aplica și afișa TVA pe facturi și proforme.</p>
+                            </div>
+                            <div class="form-group" id="vat-rate-group-2">
+                                <label for="vat-rate-2">Cotă TVA (%)</label>
+                                <input type="number" id="vat-rate-2" name="vatRate" value="21" min="0" max="100" step="0.01">
+                                <p style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">Cota standard în România: 21%</p>
+                            </div>
                         </div>
-                        <div class="form-group" id="vat-rate-group-2">
-                            <label for="vat-rate-2">Cotă TVA (%)</label>
-                            <input type="number" id="vat-rate-2" name="vatRate" value="21" min="0" max="100" step="0.01">
-                            <p style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">Cota standard în România: 21%</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>⏰ Scadență Plăți</h3>
+                        <p>Configurați termenul standard de plată pentru facturile emise.</p>
+                        <br>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="payment-terms">Zile până la scadență</label>
+                                <input type="number" id="payment-terms" name="paymentTerms" value="30" min="0" max="365" step="1">
+                                <p style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">Câte zile după emitere scade factura (implicit: 30 zile)</p>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -826,6 +826,42 @@ function initInvoiceGenerator() {
     newForm.addEventListener('submit', handleInvoiceSubmit);
     console.log('[Invoice Generator] ✅ Submit event listener attached to FRESH form');
     
+    // Set default issue date to today
+    const issueDateInput = document.getElementById('invoice-issue-date');
+    const dueDateInput = document.getElementById('invoice-due-date');
+    
+    if (issueDateInput) {
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        issueDateInput.value = todayStr;
+        console.log('[Invoice Generator] Set default issue date to:', todayStr);
+        
+        // Get payment terms from settings
+        const paymentTermsDays = parseInt(localStorage.getItem('paymentTerms') || '30');
+        console.log('[Invoice Generator] Payment terms from settings:', paymentTermsDays, 'days');
+        
+        // Set due date based on payment terms
+        if (dueDateInput) {
+            const dueDate = new Date(today);
+            dueDate.setDate(dueDate.getDate() + paymentTermsDays);
+            const dueDateStr = dueDate.toISOString().split('T')[0];
+            dueDateInput.value = dueDateStr;
+            console.log('[Invoice Generator] Set default due date to:', dueDateStr, '(' + paymentTermsDays + ' days)');
+        }
+        
+        // Update due date when issue date changes
+        issueDateInput.addEventListener('change', function() {
+            if (dueDateInput) {
+                const paymentDays = parseInt(localStorage.getItem('paymentTerms') || '30');
+                const issueDate = new Date(this.value);
+                const newDueDate = new Date(issueDate);
+                newDueDate.setDate(newDueDate.getDate() + paymentDays);
+                dueDateInput.value = newDueDate.toISOString().split('T')[0];
+                console.log('[Invoice Generator] Updated due date to:', dueDateInput.value, '(' + paymentDays + ' days from issue date)');
+            }
+        });
+    }
+    
     // Add initial product
     if (invoiceProducts.length === 0) {
         addInvoiceProduct();
@@ -1038,8 +1074,18 @@ async function handleInvoiceSubmit(event) {
     const invoiceNumber = generateDocumentNumber('invoice');
     console.log('[Invoice Generator] Generated invoice number:', invoiceNumber);
 
+    // Obține data emiterii și scadenței
+    const issueDateInput = document.getElementById('invoice-issue-date');
+    const dueDateInput = document.getElementById('invoice-due-date');
+    const issueDate = issueDateInput ? issueDateInput.value : new Date().toISOString().split('T')[0];
+    const dueDate = dueDateInput ? dueDateInput.value : null;
+    console.log('[Invoice Generator] Issue date:', issueDate);
+    console.log('[Invoice Generator] Due date:', dueDate);
+
     const invoiceData = {
         invoiceNumber: invoiceNumber,
+        issueDate: issueDate,
+        dueDate: dueDate,
         provider: providerData,
         client: clientData,
         products: items
@@ -3158,6 +3204,7 @@ function initVATSettingsPage() {
     const isVatPayerCheckbox = document.getElementById('is-vat-payer-2');
     const vatRateInput = document.getElementById('vat-rate-2');
     const vatRateGroup = document.getElementById('vat-rate-group-2');
+    const paymentTermsInput = document.getElementById('payment-terms');
     
     if (!form) {
         console.log('[VAT Settings] Form not found');
@@ -3171,6 +3218,13 @@ function initVATSettingsPage() {
     }
     if (vatRateInput) {
         vatRateInput.value = settings.vatRate;
+    }
+    
+    // Încarcă payment terms
+    const paymentTerms = localStorage.getItem('paymentTerms') || '30';
+    if (paymentTermsInput) {
+        paymentTermsInput.value = paymentTerms;
+        console.log('[VAT Settings] Loaded payment terms:', paymentTerms);
     }
     
     // Toggle vizibilitate câmp VAT rate
@@ -3197,6 +3251,23 @@ function initVATSettingsPage() {
         vatRateInput.addEventListener('change', () => {
             const isVatPayer = isVatPayerCheckbox ? isVatPayerCheckbox.checked : true;
             saveVATSettings(isVatPayer, vatRateInput.value);
+        });
+    }
+    
+    // Event listener pentru payment terms
+    if (paymentTermsInput && !paymentTermsInput.dataset.listenerAdded) {
+        paymentTermsInput.dataset.listenerAdded = 'true';
+        paymentTermsInput.addEventListener('change', () => {
+            const days = parseInt(paymentTermsInput.value) || 30;
+            localStorage.setItem('paymentTerms', days);
+            console.log('[VAT Settings] ✅ Payment terms saved:', days, 'days');
+            
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px 25px; border-radius: 8px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-weight: 600;';
+            successMsg.textContent = '✅ Scadență salvată: ' + days + ' zile';
+            document.body.appendChild(successMsg);
+            setTimeout(() => successMsg.remove(), 3000);
         });
     }
     
