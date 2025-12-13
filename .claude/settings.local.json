@@ -25,7 +25,8 @@
       "Bash(npm run dev:*)",
       "Bash(\")",
       "Bash(node fix-encoding.js:*)",
-      "Bash(del e:chatbillfix-encoding.js)"
+      "Bash(del e:chatbillfix-encoding.js)",
+      "Bash(node replace-template-section.js:*)"
     ]
   }
 }
