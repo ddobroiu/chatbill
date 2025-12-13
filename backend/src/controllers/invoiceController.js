@@ -106,10 +106,11 @@ async function createInvoice(req, res) {
 
       // Handle both 'vat' and 'vatRate' aliases
       // Dacă nu e plătitor de TVA, TVA = 0
-      const vatRate = isVatPayer ? (parseFloat(product.vat || product.vatRate) / 100) : 0;
+      const vatRatePercent = isVatPayer ? parseFloat(product.vat || product.vatRate || vatRateFromSettings) : 0;
+      const vatRateDecimal = vatRatePercent / 100; // pentru calcule
 
       const subtotal = quantity * price;
-      const vatAmount = subtotal * vatRate;
+      const vatAmount = subtotal * vatRateDecimal;
       const total = subtotal + vatAmount;
 
       return {
@@ -117,7 +118,7 @@ async function createInvoice(req, res) {
         unit: product.unit || 'buc',
         quantity,
         price,
-        vatRate,
+        vatRate: vatRatePercent, // salvează ca procent (19, nu 0.19)
         subtotal,
         vatAmount,
         total
