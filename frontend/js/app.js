@@ -1086,13 +1086,18 @@ async function handleInvoiceSubmit(event) {
                 addInvoiceProduct();
                 calculateInvoiceTotals();
                 
-                // Redirect to history
+                // Redirect to history and reload invoices
                 console.log('[Invoice Generator] Redirecting to invoice history...');
-                window.location.hash = '#invoices';
                 
-                // Reload invoices list
-                if (typeof loadInvoices === 'function') {
-                    setTimeout(() => loadInvoices(), 500);
+                // Switch to invoices tab directly instead of using hash
+                if (typeof switchTab === 'function') {
+                    switchTab('invoices');
+                } else {
+                    window.location.hash = '#invoices';
+                    // Reload invoices list as fallback
+                    if (typeof loadInvoices === 'function') {
+                        setTimeout(() => loadInvoices(), 500);
+                    }
                 }
             } else {
                 console.log('[Invoice Generator] ❌ ERROR from server:', data);
@@ -1902,18 +1907,32 @@ function initTemplateSelector() {
 }
 
 // ========== TAB SWITCHING ==========
-function switchTab(tabName) {
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
+function switchTab(tabName, event) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
     });
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('active');
     });
 
-    // Show selected tab
-    document.getElementById(tabName + 'Tab').classList.add('active');
-    event.target.classList.add('active');
+    // Show selected page (without 'Tab' suffix - ID is just the tabName)
+    const targetPage = document.getElementById(tabName);
+    if (targetPage) {
+        targetPage.classList.add('active');
+    } else {
+        console.error(`❌ Page with ID "${tabName}" not found!`);
+    }
+    
+    if (event && event.target) {
+        event.target.classList.add('active');
+    } else {
+        // If no event, find and activate the tab button
+        const tabButton = document.querySelector(`[onclick*="switchTab('${tabName}')"]`);
+        if (tabButton) {
+            tabButton.classList.add('active');
+        }
+    }
     
     // Load invoices when switching to invoices tab
     if (tabName === 'invoices') {
@@ -2336,22 +2355,36 @@ function showMessage(elementId, text, type) {
 
 // ========== INVOICES LIST TAB ==========
 async function loadInvoices() {
+    console.log('🔵 loadInvoices called');
     const invoicesList = document.getElementById('invoicesList');
+    if (!invoicesList) {
+        console.error('❌ Element #invoicesList not found!');
+        return;
+    }
+    console.log('✅ Found invoicesList element');
     invoicesList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Se încarcă facturile...</p>';
     
     try {
+        console.log('📤 Fetching invoices from:', `${API_URL}/api/invoices`);
         const response = await fetch(`${API_URL}/api/invoices`, {
             headers: getAuthHeaders()
         });
+        console.log('📥 Response status:', response.status);
         const data = await response.json();
+        console.log('📦 Response data:', data);
+        console.log('📊 data.success:', data.success);
+        console.log('📊 data.invoices:', data.invoices);
+        console.log('📊 data.invoices.length:', data.invoices?.length);
         
         if (data.success && data.invoices && data.invoices.length > 0) {
+            console.log('✅ Displaying', data.invoices.length, 'invoices');
             displayInvoicesTable(data.invoices);
         } else {
+            console.log('⚠️ No invoices to display');
             invoicesList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">📋 Nu există facturi generate încă.</p>';
         }
     } catch (error) {
-        console.error('Eroare încărcare facturi:', error);
+        console.error('❌ Eroare încărcare facturi:', error);
         invoicesList.innerHTML = '<p style="text-align: center; color: #dc3545; padding: 40px;">❌ Eroare la încărcarea facturilor</p>';
     }
 }
