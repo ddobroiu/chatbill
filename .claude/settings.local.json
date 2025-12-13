@@ -23,7 +23,9 @@
       "Bash(grep:*)",
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
-      "Bash(\")"
+      "Bash(\")",
+      "Bash(node fix-encoding.js:*)",
+      "Bash(del e:chatbillfix-encoding.js)"
     ]
   }
 }
