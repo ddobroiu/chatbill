@@ -30,7 +30,8 @@
       "Bash(node test_invoice.js:*)",
       "Bash(timeout 10 bash:*)",
       "Bash(curl:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(timeout 5 bash:*)"
     ]
   }
 }

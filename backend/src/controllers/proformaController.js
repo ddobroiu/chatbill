@@ -91,17 +91,19 @@ module.exports = {
 		// Calculează totaluri pentru fiecare produs
 		const itemsData = products.map(product => {
 			const quantity = parseFloat(product.quantity);
-			const price = parseFloat(product.price);
-			
+			// Handle both 'price' and 'unitPrice' aliases
+			const price = parseFloat(product.price || product.unitPrice);
+
+			// Handle both 'vat' and 'vatRate' aliases
 			// Dacă nu e plătitor de TVA, TVA = 0
-			const vatRate = isVatPayer ? (parseFloat(product.vat) / 100) : 0;
-			
+			const vatRate = isVatPayer ? (parseFloat(product.vat || product.vatRate) / 100) : 0;
+
 			const subtotal = quantity * price;
 			const vatAmount = subtotal * vatRate;
 			const total = subtotal + vatAmount;
 
 			return {
-				name: product.name,
+				name: product.name || product.description,
 				unit: product.unit || 'buc',
 				quantity,
 				price,
@@ -172,9 +174,12 @@ module.exports = {
 				clientCNP: client.type === 'individual' ? client.cnp : null,
 				clientFirstName: client.type === 'individual' ? client.firstName : null,
 				clientLastName: client.type === 'individual' ? client.lastName : null,
-				clientAddress: client.address || '',
-				clientCity: client.city || '',
-				clientCounty: client.county || '',
+				// Handle address - convert object to string if needed
+				clientAddress: typeof client.address === 'object' && client.address !== null
+					? client.address.street || client.address.completa || ''
+					: client.address || '',
+				clientCity: client.city || (typeof client.address === 'object' ? client.address.city : '') || '',
+				clientCounty: client.county || (typeof client.address === 'object' ? client.address.county : '') || '',
 				
 				// Produse/servicii
 				items: {
