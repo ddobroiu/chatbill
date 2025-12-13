@@ -37,7 +37,7 @@ module.exports = {
 				});
 			}
 
-			const { client, products, template: requestTemplate } = req.body;
+			const { client, products, template: requestTemplate, issueDate, dueDate } = req.body;
 			const userId = req.user?.id; // Optional - poate fi null pentru useri neautentificați
 
 			// Validare date client
@@ -149,7 +149,8 @@ module.exports = {
 			subtotal: proformaSubtotal,
 			tvaAmount: proformaVatAmount,
 				total: proformaTotal,
-				issueDate: new Date(),
+				issueDate: issueDate ? new Date(issueDate) : new Date(),
+				dueDate: dueDate ? new Date(dueDate) : null,
 				status: 'draft',
 				template: finalTemplate,
 				

@@ -806,6 +806,11 @@ function initInvoiceGenerator() {
                     document.getElementById('client-address').value = data.settings.address || '';
                     document.getElementById('client-city').value = data.settings.city || '';
                     document.getElementById('client-county').value = data.settings.county || '';
+                    // Populăm și câmpurile noi dacă sunt disponibile
+                    if (data.settings.phone) document.getElementById('client-phone').value = data.settings.phone;
+                    if (data.settings.email) document.getElementById('client-email').value = data.settings.email;
+                    if (data.settings.iban) document.getElementById('client-iban').value = data.settings.iban;
+                    if (data.settings.bank) document.getElementById('client-bank').value = data.settings.bank;
                     alert('✅ Date completate automat din ANAF');
                 } else {
                     alert('❌ Nu s-au găsit informații pentru acest CUI');
@@ -1027,6 +1032,11 @@ async function handleInvoiceSubmit(event) {
     const clientAddress = document.getElementById('client-address').value || '';
     const clientCity = document.getElementById('client-city').value || '';
     const clientCounty = document.getElementById('client-county').value || '';
+    const clientPhone = document.getElementById('client-phone').value || '';
+    const clientEmail = document.getElementById('client-email').value || '';
+    const clientIban = document.getElementById('client-iban').value || '';
+    const clientBank = document.getElementById('client-bank').value || '';
+    const clientContact = document.getElementById('client-contact').value || '';
 
     const clientData = {
         type: clientType,
@@ -1035,7 +1045,12 @@ async function handleInvoiceSubmit(event) {
             city: clientCity,
             county: clientCounty,
             country: 'România'
-        }
+        },
+        phone: clientPhone,
+        email: clientEmail,
+        iban: clientIban,
+        bank: clientBank,
+        contact: clientContact
     };
 
     if (clientType === 'company') {
@@ -1043,8 +1058,10 @@ async function handleInvoiceSubmit(event) {
         clientData.cui = document.getElementById('client-cui').value.replace(/^RO/i, '');
         clientData.registrationNumber = document.getElementById('client-regCom').value;
     } else {
-        clientData.firstName = document.getElementById('client-firstName').value;
-        clientData.lastName = document.getElementById('client-lastName').value;
+        const fullName = document.getElementById('client-fullname').value;
+        clientData.name = fullName;
+        clientData.firstName = fullName.split(' ')[0] || '';
+        clientData.lastName = fullName.split(' ').slice(1).join(' ') || '';
         clientData.cnp = document.getElementById('client-cnp').value;
     }
     
@@ -1187,6 +1204,32 @@ function initProformaGenerator() {
         return;
     }
     
+    // Initialize issue date and due date
+    const issueDateInput = document.getElementById('proforma-issue-date');
+    const dueDateInput = document.getElementById('proforma-due-date');
+    
+    if (issueDateInput && dueDateInput) {
+        // Set issue date to today
+        const today = new Date();
+        issueDateInput.valueAsDate = today;
+        
+        // Get payment terms from settings (default 30 days)
+        const paymentTerms = parseInt(localStorage.getItem('paymentTerms') || '30');
+        
+        // Calculate and set due date
+        const dueDate = new Date(today);
+        dueDate.setDate(dueDate.getDate() + paymentTerms);
+        dueDateInput.valueAsDate = dueDate;
+        
+        // Update due date when issue date changes
+        issueDateInput.addEventListener('change', () => {
+            const newIssueDate = new Date(issueDateInput.value);
+            const newDueDate = new Date(newIssueDate);
+            newDueDate.setDate(newDueDate.getDate() + paymentTerms);
+            dueDateInput.valueAsDate = newDueDate;
+        });
+    }
+    
     // Client type toggle
     if (clientTypeSelect) {
         clientTypeSelect.addEventListener('change', () => {
@@ -1233,6 +1276,11 @@ function initProformaGenerator() {
                     document.getElementById('proforma-client-address').value = data.settings.address || '';
                     document.getElementById('proforma-client-city').value = data.settings.city || '';
                     document.getElementById('proforma-client-county').value = data.settings.county || '';
+                    // Populăm și câmpurile noi dacă sunt disponibile
+                    if (data.settings.phone) document.getElementById('proforma-client-phone').value = data.settings.phone;
+                    if (data.settings.email) document.getElementById('proforma-client-email').value = data.settings.email;
+                    if (data.settings.iban) document.getElementById('proforma-client-iban').value = data.settings.iban;
+                    if (data.settings.bank) document.getElementById('proforma-client-bank').value = data.settings.bank;
                     alert('✅ Date completate automat din ANAF');
                 } else {
                     alert('❌ Nu s-au găsit informații pentru acest CUI');
@@ -1391,20 +1439,38 @@ async function handleProformaSubmit(event) {
         clientData.address = document.getElementById('proforma-client-address').value;
         clientData.city = document.getElementById('proforma-client-city').value;
         clientData.county = document.getElementById('proforma-client-county').value;
+        clientData.phone = document.getElementById('proforma-client-phone').value;
+        clientData.email = document.getElementById('proforma-client-email').value;
+        clientData.iban = document.getElementById('proforma-client-iban').value;
+        clientData.bank = document.getElementById('proforma-client-bank').value;
+        clientData.contact = document.getElementById('proforma-client-contact').value;
     } else {
-        clientData.firstName = document.getElementById('proforma-client-firstName').value;
-        clientData.lastName = document.getElementById('proforma-client-lastName').value;
+        const fullName = document.getElementById('proforma-client-fullname').value;
+        clientData.name = fullName;
+        clientData.firstName = fullName.split(' ')[0] || '';
+        clientData.lastName = fullName.split(' ').slice(1).join(' ') || '';
         clientData.cnp = document.getElementById('proforma-client-cnp').value;
         clientData.address = document.getElementById('proforma-client-address').value;
         clientData.city = document.getElementById('proforma-client-city').value;
         clientData.county = document.getElementById('proforma-client-county').value;
+        clientData.phone = document.getElementById('proforma-client-phone').value;
+        clientData.email = document.getElementById('proforma-client-email').value;
+        clientData.iban = document.getElementById('proforma-client-iban').value;
+        clientData.bank = document.getElementById('proforma-client-bank').value;
+        clientData.contact = document.getElementById('proforma-client-contact').value;
     }
     
     // Generează numărul proformei
     const proformaNumber = generateDocumentNumber('proforma');
+    
+    // Get dates from form
+    const issueDate = document.getElementById('proforma-issue-date').value;
+    const dueDate = document.getElementById('proforma-due-date').value;
 
     const proformaData = {
         proformaNumber: proformaNumber,
+        issueDate: issueDate,
+        dueDate: dueDate,
         client: clientData,
         products: products
     };

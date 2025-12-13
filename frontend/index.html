@@ -1293,47 +1293,76 @@
 
                 <div class="card">
                     <h3>Detalii Client</h3>
-                    <div class="form-grid">
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem;">
+                        <!-- RÂNDUL 1 -->
                         <div class="form-group">
-                            <label for="client-type">Tip Client</label>
-                            <select id="client-type" name="client-type">
-                                <option value="company">Persoană Juridică</option>
-                                <option value="individual">Persoană Fizică</option>
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Tip</label>
+                            <select id="client-type" name="client-type" style="padding: 0.35rem; font-size: 0.9rem;">
+                                <option value="company">Companie</option>
+                                <option value="individual">Persoană</option>
                             </select>
                         </div>
-                        <div class="form-group" id="company-fields">
-                            <label for="client-name">Nume Companie</label>
-                            <input type="text" id="client-name" name="client-name" required>
-                            <label for="client-cui">CUI</label>
-                            <div class="input-with-button">
-                                <input type="text" id="client-cui" name="client-cui" required placeholder="ex: RO12345678">
-                                <button type="button" id="autocomplete-client-btn" class="btn btn-secondary btn-icon" title="Auto-completare date din ANAF">
-                                    <i data-lucide="sparkles"></i>
-                                </button>
+                        <div id="company-fields" style="display: contents;">
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Nume Companie*</label>
+                                <input type="text" id="client-name" name="client-name" required style="padding: 0.35rem; font-size: 0.9rem;">
                             </div>
-                            <label for="client-regCom">Reg. Com.</label>
-                            <input type="text" id="client-regCom" name="client-regCom">
+                            <div class="form-group">
+                                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">CUI*</label>
+                                <div class="input-with-button">
+                                    <input type="text" id="client-cui" name="client-cui" required placeholder="RO123" style="padding: 0.35rem; font-size: 0.9rem;">
+                                    <button type="button" id="autocomplete-client-btn" class="btn btn-secondary btn-icon" title="ANAF" style="padding: 0.35rem;">
+                                        <i data-lucide="sparkles"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Reg.Com.</label>
+                                <input type="text" id="client-regCom" name="client-regCom" style="padding: 0.35rem; font-size: 0.9rem;">
+                            </div>
                         </div>
-                         <div class="form-group" id="individual-fields" style="display: none;">
-                            <label for="client-firstName">Prenume</label>
-                            <input type="text" id="client-firstName" name="client-firstName">
-                            <label for="client-lastName">Nume</label>
-                            <input type="text" id="client-lastName" name="client-lastName">
-                             <label for="client-cnp">CNP</label>
-                            <input type="text" id="client-cnp" name="client-cnp">
+                        <div id="individual-fields" style="display: none; grid-column: span 3;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Nume Complet*</label>
+                                    <input type="text" id="client-fullname" name="client-fullname" placeholder="Ion Popescu" required style="padding: 0.35rem; font-size: 0.9rem;">
+                                </div>
+                                <div class="form-group">
+                                    <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">CNP</label>
+                                    <input type="text" id="client-cnp" name="client-cnp" style="padding: 0.35rem; font-size: 0.9rem;">
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label for="client-address">Adresă</label>
-                            <input type="text" id="client-address" name="client-address">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Telefon</label>
+                            <input type="tel" id="client-phone" name="client-phone" placeholder="+40 123" style="padding: 0.35rem; font-size: 0.9rem;">
+                        </div>
+                        
+                        <!-- RÂNDUL 2 -->
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Adresă*</label>
+                            <input type="text" id="client-address" name="client-address" required style="padding: 0.35rem; font-size: 0.9rem;">
                         </div>
                         <div class="form-group">
-                            <label for="client-city">Oraș</label>
-                            <input type="text" id="client-city" name="client-city">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Județ*</label>
+                            <input type="text" id="client-county" name="client-county" required style="padding: 0.35rem; font-size: 0.9rem;">
                         </div>
                         <div class="form-group">
-                            <label for="client-county">Județ</label>
-                            <input type="text" id="client-county" name="client-county">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Localitate*</label>
+                            <input type="text" id="client-city" name="client-city" required style="padding: 0.35rem; font-size: 0.9rem;">
                         </div>
+                        <div class="form-group">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Email</label>
+                            <input type="email" id="client-email" name="client-email" placeholder="email@ex.com" style="padding: 0.35rem; font-size: 0.9rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">IBAN</label>
+                            <input type="text" id="client-iban" name="client-iban" placeholder="RO49..." style="padding: 0.35rem; font-size: 0.9rem;">
+                        </div>
+                        
+                        <!-- Hidden fields -->
+                        <input type="text" id="client-bank" name="client-bank" style="display: none;">
+                        <input type="text" id="client-contact" name="client-contact" style="display: none;">
                     </div>
                 </div>
 
@@ -1568,48 +1597,93 @@
             </div>
             <form id="proforma-form">
                 <div class="card">
-                    <h3>Detalii Client</h3>
+                    <h3>Detalii Proformă</h3>
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="proforma-client-type">Tip Client</label>
-                            <select id="proforma-client-type" name="proforma-client-type">
-                                <option value="company">Persoană Juridică</option>
-                                <option value="individual">Persoană Fizică</option>
+                            <label for="proforma-issue-date">📅 Data Emiterii</label>
+                            <input type="date" id="proforma-issue-date" name="proforma-issue-date" required>
+                            <small style="color: #666; font-size: 0.85em; margin-top: 5px; display: block;">Data când este emisă proforma</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="proforma-due-date">⏰ Data Scadenței</label>
+                            <input type="date" id="proforma-due-date" name="proforma-due-date" required>
+                            <small style="color: #666; font-size: 0.85em; margin-top: 5px; display: block;">Termenul limită de plată</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Detalii Client</h3>
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem;">
+                        <!-- RÂNDUL 1 -->
+                        <div class="form-group">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Tip</label>
+                            <select id="proforma-client-type" name="proforma-client-type" style="padding: 0.35rem; font-size: 0.9rem;">
+                                <option value="company">Companie</option>
+                                <option value="individual">Persoană</option>
                             </select>
                         </div>
-                        <div class="form-group" id="proforma-company-fields">
-                            <label for="proforma-client-name">Nume Companie</label>
-                            <input type="text" id="proforma-client-name" name="proforma-client-name" required>
-                            <label for="proforma-client-cui">CUI</label>
-                            <div class="input-with-button">
-                                <input type="text" id="proforma-client-cui" name="proforma-client-cui" required placeholder="ex: RO12345678">
-                                <button type="button" id="autocomplete-proforma-client-btn" class="btn btn-secondary btn-icon" title="Auto-completare date din ANAF">
-                                    <i data-lucide="sparkles"></i>
-                                </button>
+                        <div id="proforma-company-fields" style="display: contents;">
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Nume Companie*</label>
+                                <input type="text" id="proforma-client-name" name="proforma-client-name" required style="padding: 0.35rem; font-size: 0.9rem;">
                             </div>
-                            <label for="proforma-client-regCom">Reg. Com.</label>
-                            <input type="text" id="proforma-client-regCom" name="proforma-client-regCom">
+                            <div class="form-group">
+                                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">CUI*</label>
+                                <div class="input-with-button">
+                                    <input type="text" id="proforma-client-cui" name="proforma-client-cui" required placeholder="RO123" style="padding: 0.35rem; font-size: 0.9rem;">
+                                    <button type="button" id="autocomplete-proforma-client-btn" class="btn btn-secondary btn-icon" title="ANAF" style="padding: 0.35rem;">
+                                        <i data-lucide="sparkles"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Reg.Com.</label>
+                                <input type="text" id="proforma-client-regCom" name="proforma-client-regCom" style="padding: 0.35rem; font-size: 0.9rem;">
+                            </div>
                         </div>
-                         <div class="form-group" id="proforma-individual-fields" style="display: none;">
-                            <label for="proforma-client-firstName">Prenume</label>
-                            <input type="text" id="proforma-client-firstName" name="proforma-client-firstName">
-                            <label for="proforma-client-lastName">Nume</label>
-                            <input type="text" id="proforma-client-lastName" name="proforma-client-lastName">
-                             <label for="proforma-client-cnp">CNP</label>
-                            <input type="text" id="proforma-client-cnp" name="proforma-client-cnp">
+                        <div id="proforma-individual-fields" style="display: none; grid-column: span 3;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Nume Complet*</label>
+                                    <input type="text" id="proforma-client-fullname" name="proforma-client-fullname" placeholder="Ion Popescu" required style="padding: 0.35rem; font-size: 0.9rem;">
+                                </div>
+                                <div class="form-group">
+                                    <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">CNP</label>
+                                    <input type="text" id="proforma-client-cnp" name="proforma-client-cnp" style="padding: 0.35rem; font-size: 0.9rem;">
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label for="proforma-client-address">Adresă</label>
-                            <input type="text" id="proforma-client-address" name="proforma-client-address">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Telefon</label>
+                            <input type="tel" id="proforma-client-phone" name="proforma-client-phone" placeholder="+40 123" style="padding: 0.35rem; font-size: 0.9rem;">
+                        </div>
+                        
+                        <!-- RÂNDUL 2 -->
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Adresă*</label>
+                            <input type="text" id="proforma-client-address" name="proforma-client-address" required style="padding: 0.35rem; font-size: 0.9rem;">
                         </div>
                         <div class="form-group">
-                            <label for="proforma-client-city">Oraș</label>
-                            <input type="text" id="proforma-client-city" name="proforma-client-city">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Județ*</label>
+                            <input type="text" id="proforma-client-county" name="proforma-client-county" required style="padding: 0.35rem; font-size: 0.9rem;">
                         </div>
                         <div class="form-group">
-                            <label for="proforma-client-county">Județ</label>
-                            <input type="text" id="proforma-client-county" name="proforma-client-county">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Localitate*</label>
+                            <input type="text" id="proforma-client-city" name="proforma-client-city" required style="padding: 0.35rem; font-size: 0.9rem;">
                         </div>
+                        <div class="form-group">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Email</label>
+                            <input type="email" id="proforma-client-email" name="proforma-client-email" placeholder="email@ex.com" style="padding: 0.35rem; font-size: 0.9rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">IBAN</label>
+                            <input type="text" id="proforma-client-iban" name="proforma-client-iban" placeholder="RO49..." style="padding: 0.35rem; font-size: 0.9rem;">
+                        </div>
+                        
+                        <!-- Hidden fields -->
+                        <input type="text" id="proforma-client-bank" name="proforma-client-bank" style="display: none;">
+                        <input type="text" id="proforma-client-contact" name="proforma-client-contact" style="display: none;">
                     </div>
                 </div>
                 <div class="card">
