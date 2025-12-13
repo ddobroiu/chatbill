@@ -813,8 +813,14 @@ function initInvoiceGenerator() {
     
     // Form submit
     if (form && !form.dataset.invoiceListenerAdded) {
+        console.log('[Invoice Generator] Attaching submit event listener to form');
         form.dataset.invoiceListenerAdded = 'true';
         form.addEventListener('submit', handleInvoiceSubmit);
+        console.log('[Invoice Generator] ✅ Submit event listener attached');
+    } else if (form) {
+        console.log('[Invoice Generator] ⚠️ Event listener already attached');
+    } else {
+        console.log('[Invoice Generator] ❌ Form not found!');
     }
     
     // Add initial product
@@ -933,7 +939,9 @@ function calculateInvoiceTotals() {
 }
 
 async function handleInvoiceSubmit(event) {
+    console.log('[Invoice Generator] 🚀 handleInvoiceSubmit CALLED');
     event.preventDefault();
+    console.log('[Invoice Generator] ✅ preventDefault called');
     console.log('[Invoice Generator] Form submitted');
     
     // Collect products - Format pentru backend schema
