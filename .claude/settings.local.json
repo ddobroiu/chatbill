@@ -22,7 +22,8 @@
       "Bash(mv:*)",
       "Bash(grep:*)",
       "Bash(npm install:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(\")"
     ]
   }
 }
