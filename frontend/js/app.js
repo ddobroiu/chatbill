@@ -1029,18 +1029,26 @@ async function handleInvoiceSubmit(event) {
 
     // Show loading
     const submitBtn = event.target.querySelector('button[type="submit"]');
+    console.log('[Invoice Generator] Submit button found:', submitBtn);
+
     if (submitBtn) {
+        console.log('[Invoice Generator] Disabling button and showing loading...');
         submitBtn.disabled = true;
         const oldHtml = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i data-lucide="loader-2"></i> Generare...';
         if (typeof lucide !== 'undefined') lucide.createIcons();
-        
+
         try {
+            console.log('[Invoice Generator] Sending request to:', `${API_URL}/api/invoices`);
+            console.log('[Invoice Generator] Request data:', JSON.stringify(invoiceData, null, 2));
+
             const resp = await fetch(`${API_URL}/api/invoices`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(invoiceData)
             });
+
+            console.log('[Invoice Generator] Response received, status:', resp.status);
             
             const data = await resp.json();
             console.log('[Invoice Generator] Response:', data);
@@ -1061,14 +1069,21 @@ async function handleInvoiceSubmit(event) {
                 alert('❌ Eroare: ' + (data.message || 'Nu s-a putut genera factura'));
             }
         } catch (err) {
-            console.error('[Invoice Generator] Error:', err);
-            alert('❌ Eroare la generarea facturii');
+            console.error('[Invoice Generator] ❌❌❌ CATCH ERROR:', err);
+            console.error('[Invoice Generator] Error details:', err.message, err.stack);
+            alert('❌ Eroare la generarea facturii: ' + err.message);
         } finally {
+            console.log('[Invoice Generator] Finally block - re-enabling button');
             submitBtn.disabled = false;
             submitBtn.innerHTML = oldHtml;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
+    } else {
+        console.error('[Invoice Generator] ❌ Submit button NOT FOUND!');
+        alert('❌ Eroare: Butonul de submit nu a fost găsit!');
     }
+
+    console.log('[Invoice Generator] 🏁 handleInvoiceSubmit COMPLETED');
 }
 
 // ========== PROFORMA GENERATOR ==========
