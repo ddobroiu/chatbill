@@ -1692,28 +1692,6 @@
                         </div>
                     </div>
                 </div>
-                        <div class="form-group">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Adresă*</label>
-                            <input type="text" id="proforma-client-address" name="proforma-client-address" required style="padding: 0.35rem; font-size: 0.9rem;">
-                        </div>
-                        <div class="form-group">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Județ*</label>
-                            <input type="text" id="proforma-client-county" name="proforma-client-county" required style="padding: 0.35rem; font-size: 0.9rem;">
-                        </div>
-                        <div class="form-group">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Loc.*</label>
-                            <input type="text" id="proforma-client-city" name="proforma-client-city" required style="padding: 0.35rem; font-size: 0.9rem;">
-                        </div>
-                        <div class="form-group">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Banca</label>
-                            <input type="text" id="proforma-client-bank" name="proforma-client-bank" placeholder="BCR" style="padding: 0.35rem; font-size: 0.9rem;">
-                        </div>
-                        <div class="form-group">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Contact</label>
-                            <input type="text" id="proforma-client-contact" name="proforma-client-contact" placeholder="Nume" style="padding: 0.35rem; font-size: 0.9rem;">
-                        </div>
-                    </div>
-                </div>
                 <div class="card">
                     <h3>Produse / Servicii</h3>
                     <div id="proforma-products-container">
@@ -1962,32 +1940,69 @@
                 <p>Asociați numărul de telefon WhatsApp la contul dumneavoastră pentru notificări și facturare automată</p>
             </div>
             
-            <div class="card">
-                <h3>Număr WhatsApp</h3>
-                <p style="margin-bottom: 1.5rem; color: var(--secondary-foreground);">
-                    Introduceți numărul de telefon WhatsApp pe care îl utilizați. Când veți trimite mesaje de pe acest număr, vă vom recunoaște automat și puteți emite facturi direct din conversație.
-                </p>
-                
-                <div class="form-grid" style="margin-bottom: 1.5rem;">
-                    <div class="form-group">
-                        <label for="whatsapp-phone">Număr Telefon WhatsApp</label>
-                        <input type="tel" id="whatsapp-phone" placeholder="+40 7xx xxx xxx" style="font-size: 1rem;">
-                        <p style="font-size: 0.8rem; color: var(--secondary-foreground); margin-top: 0.25rem;">Format: +40 7xx xxx xxx</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="card">
+                    <h3>Număr WhatsApp</h3>
+                    <p style="margin-bottom: 1.5rem; color: var(--secondary-foreground);">
+                        Introduceți numărul de telefon WhatsApp pe care îl utilizați. Când veți trimite mesaje de pe acest număr, vă vom recunoaște automat și puteți emite facturi direct din conversație.
+                    </p>
+                    
+                    <div class="form-grid" style="margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label for="whatsapp-phone">Număr Telefon WhatsApp</label>
+                            <input type="tel" id="whatsapp-phone" placeholder="+40 7xx xxx xxx" style="font-size: 1rem;">
+                            <p style="font-size: 0.8rem; color: var(--secondary-foreground); margin-top: 0.25rem;">Format: +40 7xx xxx xxx</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="button" id="save-whatsapp-phone-btn" class="btn btn-primary">
+                            <i data-lucide="save"></i>
+                            Salvează Număr WhatsApp
+                        </button>
+                    </div>
+                    
+                    <div id="whatsapp-saved-section" style="display: none; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i data-lucide="check-circle" style="width: 32px; height: 32px; color: #059669;"></i>
+                            <div>
+                                <h4 style="margin: 0; color: #065f46;">Număr WhatsApp Asociat</h4>
+                                <p style="margin: 0.25rem 0 0 0; color: #047857;" id="whatsapp-saved-number"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <button type="button" id="save-whatsapp-phone-btn" class="btn btn-primary">
-                    <i data-lucide="save"></i>
-                    Salvează Număr WhatsApp
-                </button>
-                
-                <div id="whatsapp-saved-section" style="display: none; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <i data-lucide="check-circle" style="width: 32px; height: 32px; color: #059669;"></i>
-                        <div>
-                            <h4 style="margin: 0; color: #065f46;">Număr WhatsApp Asociat</h4>
-                            <p style="margin: 0.25rem 0 0 0; color: #047857;" id="whatsapp-saved-number"></p>
+
+                <div class="card" style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #22c55e;">
+                    <div style="display: flex; align-items: start; gap: 1.5rem;">
+                        <div style="background: #22c55e; padding: 1rem; border-radius: 12px; flex-shrink: 0;">
+                            <i data-lucide="message-circle" style="width: 32px; height: 32px; color: white;"></i>
                         </div>
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0 0 0.75rem 0; color: #166534;">🤖 Asistent AI pe WhatsApp</h3>
+                            <p style="margin: 0 0 1rem 0; color: #166534; line-height: 1.6;">
+                                După ce îți asociezi numărul de telefon, poți discuta direct pe WhatsApp cu asistentul nostru AI care te recunoaște automat 
+                                și știe datele firmei tale. Emite facturi, proforme și oferte instant, direct din conversație!
+                            </p>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                                <span style="background: rgba(255,255,255,0.7); padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.9rem; color: #166534;">
+                                    🤖 AI care te recunoaște automat
+                                </span>
+                                <span style="background: rgba(255,255,255,0.7); padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.9rem; color: #166534;">
+                                    📄 Emite facturi direct din WhatsApp
+                                </span>
+                                <span style="background: rgba(255,255,255,0.7); padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.9rem; color: #166534;">
+                                    ⚡ Proforme și oferte instant
+                                </span>
+                            </div>
+                            <a href="https://wa.me/40750251115" target="_blank" class="btn" style="background: #25D366; color: white; display: inline-flex; align-items: center; gap: 0.5rem; width: 100%;">
+                                <i data-lucide="message-circle"></i>
+                                Deschide Conversație WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
                     </div>
                 </div>
             </div>
@@ -2522,7 +2537,7 @@
             </div>
         </div>
 
-                <!-- Subscription Page -->
+        <!-- Subscription Page -->
         <div id="subscription" class="page">
             <div class="page-header" style="margin-bottom: 1.5rem;">
                 <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Abonament</h2>
