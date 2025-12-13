@@ -393,8 +393,8 @@ function drawModernTable(doc, invoice, startY, colors) {
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
-  
-  const products = invoice.products;
+
+  const products = invoice.products || invoice.items || [];
   const tableTop = startY;
   const itemX = 50;
   const descX = 150;
@@ -472,8 +472,8 @@ function drawClassicTable(doc, invoice, startY, colors) {
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
-  
-  const products = invoice.products;
+
+  const products = invoice.products || invoice.items || [];
   
   // Similar cu modern dar mai sobru
   const tableTop = startY;
@@ -542,8 +542,8 @@ function drawMinimalTable(doc, invoice, startY, colors) {
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
-  
-  const products = invoice.products;
+
+  const products = invoice.products || invoice.items || [];
   let y = startY;
   
   // Header simplu (doar linie)
@@ -602,8 +602,8 @@ function drawElegantTable(doc, invoice, startY, colors) {
   const useRoboto = registerFonts(doc);
   const regularFont = useRoboto ? 'Roboto' : 'Helvetica';
   const boldFont = useRoboto ? 'Roboto-Bold' : 'Helvetica-Bold';
-  
-  const products = invoice.products;
+
+  const products = invoice.products || invoice.items || [];
   const tableTop = startY;
   
   // Header decorativ

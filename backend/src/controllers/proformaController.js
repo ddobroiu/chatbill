@@ -79,9 +79,8 @@ module.exports = {
 					proformaStartNumber: 1
 				};
 			}
-		}
 
-	// Determină template-ul final (folosește proformaTemplate)
+		// Determină template-ul final (folosește proformaTemplate)
 	const finalTemplate = requestTemplate || companySettings.proformaTemplate || 'modern';
 	console.log('🔵 Template final selectat pentru proformă:', finalTemplate);		// Verifică dacă compania este plătitoare de TVA
 		const isVatPayer = companySettings.isVatPayer !== false; // default true
@@ -205,7 +204,8 @@ module.exports = {
 			const proformaForTemplate = {
 				...proforma,
 				number: proforma.proformaNumber, // alias pentru compatibilitate
-				date: proforma.issueDate
+				date: proforma.issueDate,
+				products: proforma.items // template-urile așteaptă "products" nu "items"
 			};
 
 			const companyForTemplate = {
