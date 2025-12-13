@@ -736,9 +736,11 @@ function initInvoiceGenerator() {
     const autocompleteClientBtn = document.getElementById('autocomplete-client-btn');
     
     if (!form) {
-        console.log('[Invoice Generator] Form not found');
+        console.error('[Invoice Generator] ❌ Form not found - element with id "invoice-form" does not exist');
         return;
     }
+    
+    console.log('[Invoice Generator] ✅ Form found:', form);
     
     // Load company settings to auto-populate issuer data
     loadCompanySettingsForInvoice();
@@ -811,17 +813,15 @@ function initInvoiceGenerator() {
         });
     }
     
-    // Form submit
-    if (form && !form.dataset.invoiceListenerAdded) {
-        console.log('[Invoice Generator] Attaching submit event listener to form');
-        form.dataset.invoiceListenerAdded = 'true';
-        form.addEventListener('submit', handleInvoiceSubmit);
-        console.log('[Invoice Generator] ✅ Submit event listener attached');
-    } else if (form) {
-        console.log('[Invoice Generator] ⚠️ Event listener already attached');
-    } else {
-        console.log('[Invoice Generator] ❌ Form not found!');
-    }
+    // Remove old event listener if exists
+    const oldClone = form.cloneNode(true);
+    form.parentNode.replaceChild(oldClone, form);
+    const newForm = document.getElementById('invoice-form');
+    
+    // Form submit - attach fresh event listener
+    console.log('[Invoice Generator] Attaching NEW submit event listener to form');
+    newForm.addEventListener('submit', handleInvoiceSubmit);
+    console.log('[Invoice Generator] ✅ Submit event listener attached to FRESH form');
     
     // Add initial product
     if (invoiceProducts.length === 0) {
@@ -940,20 +940,29 @@ function calculateInvoiceTotals() {
 
 async function handleInvoiceSubmit(event) {
     console.log('[Invoice Generator] 🚀 handleInvoiceSubmit CALLED');
+    console.log('[Invoice Generator] Event:', event);
+    console.log('[Invoice Generator] Event target:', event.target);
+    
     event.preventDefault();
+    event.stopPropagation();
+    
     console.log('[Invoice Generator] ✅ preventDefault called');
     console.log('[Invoice Generator] Form submitted');
     
     // Collect products - Format pentru backend schema
     const items = [];
     const productItems = document.querySelectorAll('#products-container .product-item');
+    
+    console.log('[Invoice Generator] Found product items:', productItems.length);
 
-    productItems.forEach(item => {
+    productItems.forEach((item, index) => {
         const description = item.querySelector('.product-name').value;
         const unit = item.querySelector('.product-unit').value;
         const quantity = parseFloat(item.querySelector('.product-quantity').value);
         const unitPrice = parseFloat(item.querySelector('.product-price').value);
         const vatRate = parseFloat(item.querySelector('.product-vat').value);
+        
+        console.log(`[Invoice Generator] Product ${index}:`, { description, unit, quantity, unitPrice, vatRate });
 
         if (description && quantity && unitPrice >= 0) {
             items.push({
@@ -965,9 +974,12 @@ async function handleInvoiceSubmit(event) {
             });
         }
     });
+    
+    console.log('[Invoice Generator] Total valid items:', items.length);
 
     if (items.length === 0) {
         alert('Adăugați cel puțin un produs/serviciu');
+        console.log('[Invoice Generator] ❌ No items - aborting');
         return;
     }
 
@@ -996,6 +1008,8 @@ async function handleInvoiceSubmit(event) {
         clientData.lastName = document.getElementById('client-lastName').value;
         clientData.cnp = document.getElementById('client-cnp').value;
     }
+    
+    console.log('[Invoice Generator] Client data:', clientData);
 
     // Obține datele companiei (provider)
     const companySettings = JSON.parse(localStorage.getItem('companySettings') || '{}');
@@ -1014,9 +1028,12 @@ async function handleInvoiceSubmit(event) {
         iban: companySettings.iban || '',
         bankName: companySettings.bank || ''
     };
+    
+    console.log('[Invoice Generator] Provider data:', providerData);
 
     // Generează numărul facturii
     const invoiceNumber = generateDocumentNumber('invoice');
+    console.log('[Invoice Generator] Generated invoice number:', invoiceNumber);
 
     const invoiceData = {
         invoiceNumber: invoiceNumber,
@@ -1025,35 +1042,38 @@ async function handleInvoiceSubmit(event) {
         items: items
     };
 
-    console.log('[Invoice Generator] Invoice data:', invoiceData);
+    console.log('[Invoice Generator] Complete invoice data:', invoiceData);
 
     // Show loading
     const submitBtn = event.target.querySelector('button[type="submit"]');
-    console.log('[Invoice Generator] Submit button found:', submitBtn);
+    console.log('[Invoice Generator] Submit button:', submitBtn);
 
     if (submitBtn) {
         console.log('[Invoice Generator] Disabling button and showing loading...');
         submitBtn.disabled = true;
         const oldHtml = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i data-lucide="loader-2"></i> Generare...';
+        submitBtn.innerHTML = '<i data-lucide="loader-2"></i> Se generează...';
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         try {
-            console.log('[Invoice Generator] Sending request to:', `${API_URL}/api/invoices`);
+            console.log('[Invoice Generator] 📤 Sending request to:', `${API_URL}/api/invoices`);
+            console.log('[Invoice Generator] Request headers:', getAuthHeaders());
             console.log('[Invoice Generator] Request data:', JSON.stringify(invoiceData, null, 2));
 
-            const resp = await fetch(`${API_URL}/api/invoices`, {
+            const resp = await fetch(`${API_URL}/api/invoices/create`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(invoiceData)
             });
 
-            console.log('[Invoice Generator] Response received, status:', resp.status);
+            console.log('[Invoice Generator] 📥 Response received, status:', resp.status);
+            console.log('[Invoice Generator] Response OK:', resp.ok);
             
             const data = await resp.json();
-            console.log('[Invoice Generator] Response:', data);
+            console.log('[Invoice Generator] 📦 Response data:', data);
             
             if (resp.ok && data.success) {
+                console.log('[Invoice Generator] ✅ SUCCESS!');
                 alert(`✅ Factura ${data.invoice.invoiceNumber} a fost generată cu succes!`);
                 
                 // Reset form
@@ -1064,13 +1084,22 @@ async function handleInvoiceSubmit(event) {
                 calculateInvoiceTotals();
                 
                 // Redirect to history
-                window.location.hash = '#invoice-history';
+                console.log('[Invoice Generator] Redirecting to invoice history...');
+                window.location.hash = '#invoices';
+                
+                // Reload invoices list
+                if (typeof loadInvoices === 'function') {
+                    setTimeout(() => loadInvoices(), 500);
+                }
             } else {
-                alert('❌ Eroare: ' + (data.message || 'Nu s-a putut genera factura'));
+                console.log('[Invoice Generator] ❌ ERROR from server:', data);
+                alert('❌ Eroare: ' + (data.message || data.error || 'Nu s-a putut genera factura'));
             }
         } catch (err) {
             console.error('[Invoice Generator] ❌❌❌ CATCH ERROR:', err);
-            console.error('[Invoice Generator] Error details:', err.message, err.stack);
+            console.error('[Invoice Generator] Error name:', err.name);
+            console.error('[Invoice Generator] Error message:', err.message);
+            console.error('[Invoice Generator] Error stack:', err.stack);
             alert('❌ Eroare la generarea facturii: ' + err.message);
         } finally {
             console.log('[Invoice Generator] Finally block - re-enabling button');
@@ -1080,6 +1109,8 @@ async function handleInvoiceSubmit(event) {
         }
     } else {
         console.error('[Invoice Generator] ❌ Submit button NOT FOUND!');
+        console.error('[Invoice Generator] Event target:', event.target);
+        console.error('[Invoice Generator] Event target HTML:', event.target.outerHTML);
         alert('❌ Eroare: Butonul de submit nu a fost găsit!');
     }
 

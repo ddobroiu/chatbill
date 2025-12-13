@@ -10,6 +10,8 @@ const { documentGenerationLimiter, downloadLimiter, apiLimiter } = require('../m
 // Crearea și preview sunt publice (cu optionalAuth), restul necesită autentificare
 
 // Rute publice - nu necesită autentificare (folosesc optionalAuth)
+// Compat: acceptă POST pe rădăcina /api/invoices, precum și aliasuri
+router.post('/', optionalAuth, documentGenerationLimiter, validateBody(createInvoiceSchema), invoiceController.createInvoice);
 router.post('/create', optionalAuth, documentGenerationLimiter, validateBody(createInvoiceSchema), invoiceController.createInvoice);
 router.post('/genereaza/factura', optionalAuth, documentGenerationLimiter, validateBody(createInvoiceSchema), invoiceController.createInvoice);
 

@@ -6,6 +6,18 @@ const {
   renderModernTemplate,
   renderClassicTemplate
 } = require('../services/pdfTemplates');
+const axios = require('axios');
+
+// iApp ANAF config (reused from companyController)
+const IAPP_API_URL = process.env.IAPP_API_URL || 'https://api.my.iapp.ro';
+const IAPP_API_USERNAME = process.env.IAPP_API_USERNAME;
+const IAPP_API_PASSWORD = process.env.IAPP_API_PASSWORD;
+const IAPP_EMAIL_RESPONSABIL = process.env.IAPP_EMAIL_RESPONSABIL;
+
+function getIAppAuthHeader() {
+  const credentials = Buffer.from(`${IAPP_API_USERNAME}:${IAPP_API_PASSWORD}`).toString('base64');
+  return `Basic ${credentials}`;
+}
 
 // Director pentru salvarea facturilor PDF
 const invoicesDir = path.join(__dirname, '../../invoices');
@@ -51,6 +63,32 @@ async function createInvoice(req, res) {
         success: false, 
         error: 'Date invalide. Verificați clientul și produsele.' 
       });
+    }
+
+    // Dacă clientul este companie și are CUI dar îi lipsesc datele, încearcă auto-completarea din ANAF (iApp)
+    if (client?.type === 'company' && client?.cui && (!client.name || !client.address || !client.city)) {
+      try {
+        const cleanCUI = String(client.cui).replace(/[^0-9]/g, '');
+        if (cleanCUI && cleanCUI.length >= 6 && IAPP_API_USERNAME && IAPP_API_PASSWORD) {
+          const payload = { cif: cleanCUI, email_responsabil: IAPP_EMAIL_RESPONSABIL };
+          const iappResponse = await axios.post(`${IAPP_API_URL}/info/cif`, payload, {
+            headers: { Authorization: getIAppAuthHeader(), 'Content-Type': 'application/json' }
+          });
+          if (iappResponse.data && iappResponse.data.status === 'SUCCESS') {
+            const companyData = iappResponse.data.data.output;
+            client.name = client.name || companyData.nume || '';
+            client.address = client.address || companyData.adresa?.completa || companyData.adresa?.adresa || '';
+            client.city = client.city || companyData.adresa?.oras || '';
+            client.county = client.county || companyData.adresa?.judet || '';
+            client.regCom = client.regCom || companyData.regcom || '';
+            console.log('✅ Client auto-completat din ANAF pentru CUI', cleanCUI);
+          } else {
+            console.log('⚠️ ANAF/iApp nu a returnat SUCCESS pentru CUI', cleanCUI);
+          }
+        }
+      } catch (autoErr) {
+        console.log('⚠️ Eșec auto-completare ANAF:', autoErr.response?.data || autoErr.message);
+      }
     }
 
     // Obține setările companiei emitente
@@ -275,7 +313,7 @@ async function generateInvoicePDF(invoice) {
         phone: invoice.providerPhone,
         email: invoice.providerEmail,
         bank: invoice.providerBank,
-        iban: invoice.providerIban,
+        iban: invoice.providerIBAN || invoice.providerIban,
         capital: invoice.providerCapital
       };
 
