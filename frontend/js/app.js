@@ -1720,6 +1720,10 @@ async function initializeApp() {
     // Initialize page-specific handlers based on current hash
     const currentHash = window.location.hash;
 
+    if (currentHash === '#invoices') {
+        switchTab('invoices');
+    }
+
     if (currentHash === '#company-settings') {
         initCompanySettingsPage();
     }
@@ -2479,67 +2483,97 @@ function getStatusLabel(status) {
 }
 
 async function viewInvoice(invoiceId) {
+    console.log('🔍 viewInvoice called with ID:', invoiceId);
+    
+    const headers = getAuthHeaders();
+    console.log('📋 Auth headers:', headers);
+    console.log('📋 Token from localStorage:', localStorage.getItem('token'));
+    
     try {
-        const response = await fetch(`${API_URL}/api/invoices/${invoiceId}`);
+        console.log('📤 Fetching invoice details from:', `${API_URL}/api/invoices/${invoiceId}`);
+        const response = await fetch(`${API_URL}/api/invoices/${invoiceId}`, {
+            headers: headers
+        });
+        console.log('📥 Response status:', response.status);
+        
+        if (response.status === 401) {
+            alert('❌ Nu ești autentificat! Te rugăm să te loghezi din nou.');
+            return;
+        }
+        
         const data = await response.json();
+        console.log('📦 Invoice data:', data);
         
         if (data.success && data.invoice) {
             displayInvoiceDetails(data.invoice);
         } else {
-            alert('Eroare la încărcarea detaliilor facturii');
+            alert('Eroare la încărcarea detaliilor facturii: ' + (data.error || 'Unknown error'));
         }
     } catch (error) {
-        console.error('Eroare vizualizare factură:', error);
-        alert('Eroare la încărcarea facturii');
+        console.error('❌ Eroare vizualizare factură:', error);
+        alert('Eroare la încărcarea facturii: ' + error.message);
     }
 }
 
 function displayInvoiceDetails(invoice) {
+    console.log('📊 Displaying invoice details:', invoice);
+    
+    // Verifică dacă există items
+    if (!invoice.items || invoice.items.length === 0) {
+        alert('⚠️ Factura nu are produse asociate');
+        return;
+    }
+    
     const itemsTable = invoice.items.map(item => `
         <tr>
-            <td>${item.name}</td>
-            <td>${item.unit}</td>
-            <td>${item.quantity}</td>
-            <td>${formatCurrency(item.price)}</td>
-            <td>${item.vatRate}%</td>
-            <td>${formatCurrency(item.total)}</td>
+            <td>${item.description || item.name || 'N/A'}</td>
+            <td>${item.unit || 'buc'}</td>
+            <td style="text-align: right;">${item.quantity || 0}</td>
+            <td style="text-align: right;">${formatCurrency(item.unitPrice || item.price || 0)}</td>
+            <td style="text-align: right;">${item.vatRate || 0}%</td>
+            <td style="text-align: right;">${formatCurrency(item.total || 0)}</td>
         </tr>
     `).join('');
     
     const detailsHTML = `
-        <div style="background: white; padding: 30px; max-width: 800px; margin: 20px auto; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: #667eea;">Factură ${invoice.invoiceNumber}</h2>
-                <button onclick="closeInvoiceDetails()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">✕ Închide</button>
+        <div style="background: white; padding: 30px; max-width: 900px; margin: 20px auto; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #0052cc; padding-bottom: 15px;">
+                <h2 style="color: #0052cc; margin: 0;">📄 Factură ${invoice.invoiceNumber}</h2>
+                <button onclick="closeInvoiceDetails()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">✕ Închide</button>
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-                <div>
-                    <h3 style="color: #667eea; margin-bottom: 10px;">Furnizor</h3>
-                    <p><strong>${invoice.providerName}</strong></p>
-                    <p>CUI: ${invoice.providerCUI}</p>
-                    <p>${invoice.providerAddress}</p>
-                    <p>${invoice.providerCity}, ${invoice.providerCounty}</p>
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <h3 style="color: #0052cc; margin-bottom: 10px; font-size: 1.1em;">Furnizor</h3>
+                    <p style="margin: 5px 0;"><strong>${invoice.providerName || 'N/A'}</strong></p>
+                    <p style="margin: 5px 0;">CUI: ${invoice.providerCUI || 'N/A'}</p>
+                    <p style="margin: 5px 0;">${invoice.providerAddress || ''}</p>
+                    <p style="margin: 5px 0;">${invoice.providerCity || ''}, ${invoice.providerCounty || ''}</p>
                 </div>
-                <div>
-                    <h3 style="color: #667eea; margin-bottom: 10px;">Client</h3>
-                    <p><strong>${getClientName(invoice)}</strong></p>
-                    ${invoice.clientType === 'company' ? `<p>CUI: ${invoice.clientCUI}</p>` : `<p>CNP: ${invoice.clientCNP || ''}</p>`}
-                    <p>${invoice.clientAddress || ''}</p>
-                    <p>${invoice.clientCity || ''}, ${invoice.clientCounty || ''}</p>
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <h3 style="color: #0052cc; margin-bottom: 10px; font-size: 1.1em;">Client</h3>
+                    <p style="margin: 5px 0;"><strong>${invoice.clientName || getClientName(invoice)}</strong></p>
+                    ${invoice.clientType === 'company' ? `<p style="margin: 5px 0;">CUI: ${invoice.clientCUI || 'N/A'}</p>` : `<p style="margin: 5px 0;">CNP: ${invoice.clientCNP || 'N/A'}</p>`}
+                    <p style="margin: 5px 0;">${invoice.clientAddress || ''}</p>
+                    <p style="margin: 5px 0;">${invoice.clientCity || ''}, ${invoice.clientCounty || ''}</p>
                 </div>
             </div>
             
-            <h3 style="color: #667eea; margin-bottom: 10px;">Produse/Servicii</h3>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 5px 0;"><strong>Data emitere:</strong> ${formatDate(invoice.issueDate || invoice.createdAt)}</p>
+                <p style="margin: 5px 0;"><strong>Status:</strong> <span class="status-badge status-${invoice.status}">${getStatusLabel(invoice.status)}</span></p>
+            </div>
+            
+            <h3 style="color: #0052cc; margin-bottom: 10px;">Produse/Servicii</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #dee2e6;">
                 <thead>
-                    <tr style="background: #f8f9ff;">
-                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #667eea;">Denumire</th>
-                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #667eea;">UM</th>
-                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">Cant.</th>
-                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">Preț</th>
-                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">TVA</th>
-                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">Total</th>
+                    <tr style="background: #0052cc; color: white;">
+                        <th style="padding: 12px; text-align: left;">Denumire</th>
+                        <th style="padding: 12px; text-align: left;">UM</th>
+                        <th style="padding: 12px; text-align: right;">Cant.</th>
+                        <th style="padding: 12px; text-align: right;">Preț</th>
+                        <th style="padding: 12px; text-align: right;">TVA</th>
+                        <th style="padding: 12px; text-align: right;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2547,23 +2581,32 @@ function displayInvoiceDetails(invoice) {
                 </tbody>
             </table>
             
-            <div style="text-align: right; background: #f8f9ff; padding: 20px; border-radius: 10px;">
-                <p style="margin: 5px 0;"><strong>Subtotal:</strong> ${formatCurrency(invoice.subtotal)}</p>
-                <p style="margin: 5px 0;"><strong>TVA:</strong> ${formatCurrency(invoice.totalVat)}</p>
-                <h3 style="color: #667eea; margin-top: 10px;">Total: ${formatCurrency(invoice.total)}</h3>
+            <div style="text-align: right; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 2px solid #0052cc;">
+                <p style="margin: 8px 0; font-size: 1.1em;"><strong>Subtotal:</strong> ${formatCurrency(invoice.subtotal || 0)}</p>
+                <p style="margin: 8px 0; font-size: 1.1em;"><strong>TVA:</strong> ${formatCurrency(invoice.totalVat || invoice.vat || 0)}</p>
+                <h3 style="color: #0052cc; margin-top: 15px; font-size: 1.5em;">Total de plată: ${formatCurrency(invoice.total)}</h3>
             </div>
             
             <div style="margin-top: 20px; text-align: center;">
-                <button onclick="downloadInvoice('${invoice.id}')" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 16px;">⬇️ Descarcă PDF</button>
+                <button onclick="downloadInvoice('${invoice.id}')" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 15px 40px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);">⬇️ Descarcă PDF</button>
             </div>
         </div>
     `;
     
     const overlay = document.createElement('div');
     overlay.id = 'invoiceDetailsOverlay';
-    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;';
+    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; overflow-y: auto; padding: 20px;';
     overlay.innerHTML = detailsHTML;
+    
+    // Închide la click pe fundal
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closeInvoiceDetails();
+        }
+    });
+    
     document.body.appendChild(overlay);
+    console.log('✅ Invoice details overlay added to DOM');
 }
 
 function closeInvoiceDetails() {
@@ -2574,7 +2617,77 @@ function closeInvoiceDetails() {
 }
 
 function downloadInvoice(invoiceId) {
-    window.open(`${API_URL}/api/invoices/${invoiceId}/download`, '_blank');
+    console.log('⬇️ downloadInvoice called with ID:', invoiceId);
+    
+    // Get token and create download URL with auth header via fetch
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('❌ Nu ești autentificat. Te rugăm să te autentifici din nou.');
+        return;
+    }
+    
+    // Show loading message
+    const loadingMsg = document.createElement('div');
+    loadingMsg.id = 'downloadLoading';
+    loadingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #0052cc; color: white; padding: 15px 25px; border-radius: 8px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-weight: 600;';
+    loadingMsg.textContent = '⏳ Se descarcă factura...';
+    document.body.appendChild(loadingMsg);
+    
+    console.log('📥 Fetching PDF from:', `${API_URL}/api/invoices/${invoiceId}/download`);
+    
+    // Download using fetch to include auth header
+    fetch(`${API_URL}/api/invoices/${invoiceId}/download`, {
+        headers: getAuthHeaders()
+    })
+    .then(response => {
+        console.log('📥 Download response status:', response.status);
+        if (!response.ok) {
+            throw new Error('Eroare la descărcare: ' + response.status);
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        console.log('✅ PDF blob received, size:', blob.size);
+        
+        // Remove loading message
+        if (loadingMsg.parentNode) {
+            loadingMsg.remove();
+        }
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px 25px; border-radius: 8px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-weight: 600;';
+        successMsg.textContent = '✅ Factură descărcată cu succes!';
+        document.body.appendChild(successMsg);
+        setTimeout(() => successMsg.remove(), 3000);
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `factura_${invoiceId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        
+        console.log('✅ Download triggered successfully');
+    })
+    .catch(error => {
+        console.error('❌ Eroare descărcare:', error);
+        
+        // Remove loading message
+        if (loadingMsg.parentNode) {
+            loadingMsg.remove();
+        }
+        
+        // Show error message
+        const errorMsg = document.createElement('div');
+        errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #dc3545; color: white; padding: 15px 25px; border-radius: 8px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-weight: 600;';
+        errorMsg.textContent = '❌ Eroare la descărcarea facturii!';
+        document.body.appendChild(errorMsg);
+        setTimeout(() => errorMsg.remove(), 5000);
+    });
 }
 
 // ========== AI CHAT TAB ==========
