@@ -264,8 +264,121 @@ async function autoCompleteCompanySettings(req, res) {
   }
 }
 
+// Actualizează template-urile pentru documente
+async function updateTemplates(req, res) {
+  try {
+    const userId = req.user.id;
+    const { invoice, proforma, quote } = req.body;
+
+    // Validare
+    const validTemplates = ['modern', 'classic', 'premium', 'business', 'creative'];
+    
+    if (invoice && !validTemplates.includes(invoice)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Template invalid pentru facturi' 
+      });
+    }
+    
+    if (proforma && !validTemplates.includes(proforma)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Template invalid pentru proformă' 
+      });
+    }
+    
+    if (quote && !validTemplates.includes(quote)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Template invalid pentru oferte' 
+      });
+    }
+
+    // Actualizează sau creează setările
+    const settings = await prisma.companySettings.upsert({
+      where: { userId },
+      update: {
+        invoiceTemplate: invoice || undefined,
+        proformaTemplate: proforma || undefined,
+        quoteTemplate: quote || undefined,
+      },
+      create: {
+        userId,
+        invoiceTemplate: invoice || 'modern',
+        proformaTemplate: proforma || 'modern',
+        quoteTemplate: quote || 'modern',
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Template-uri salvate cu succes',
+      templates: {
+        invoice: settings.invoiceTemplate,
+        proforma: settings.proformaTemplate,
+        quote: settings.quoteTemplate
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Eroare salvare template-uri:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Eroare la salvarea template-urilor',
+      details: error.message
+    });
+  }
+}
+
+// Obține template-urile salvate
+async function getTemplates(req, res) {
+  try {
+    const userId = req.user.id;
+
+    const settings = await prisma.companySettings.findUnique({
+      where: { userId },
+      select: {
+        invoiceTemplate: true,
+        proformaTemplate: true,
+        quoteTemplate: true
+      }
+    });
+
+    if (!settings) {
+      // Returnează defaulturile
+      return res.json({
+        success: true,
+        templates: {
+          invoice: 'modern',
+          proforma: 'modern',
+          quote: 'modern'
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      templates: {
+        invoice: settings.invoiceTemplate || 'modern',
+        proforma: settings.proformaTemplate || 'modern',
+        quote: settings.quoteTemplate || 'modern'
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Eroare obținere template-uri:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Eroare la obținerea template-urilor',
+      details: error.message
+    });
+  }
+}
+
 module.exports = {
   getCompanySettings,
   updateCompanySettings,
-  autoCompleteCompanySettings
+  autoCompleteCompanySettings,
+  updateTemplates,
+  getTemplates
 };

@@ -3,7 +3,9 @@ const router = express.Router();
 const {
   getCompanySettings,
   updateCompanySettings,
-  autoCompleteCompanySettings
+  autoCompleteCompanySettings,
+  updateTemplates,
+  getTemplates
 } = require('../controllers/settingsController');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const { validateBody, validateParams } = require('../middleware/validate');
@@ -21,5 +23,9 @@ router.get('/', apiLimiter, getCompanySettings);
 
 // Actualizează setările companiei emitente
 router.put('/', apiLimiter, validateBody(updateSettingsSchema), updateCompanySettings);
+
+// Template-uri pentru documente
+router.get('/templates', apiLimiter, getTemplates);
+router.put('/templates', apiLimiter, updateTemplates);
 
 module.exports = router;
