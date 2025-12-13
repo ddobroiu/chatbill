@@ -1662,6 +1662,9 @@ function previewOffer() {
 // ========== GLOBAL INITIALIZATION ==========
 // Re-initialize when hash changes
 window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#invoices') {
+        switchTab('invoices');
+    }
     if (window.location.hash === '#invoice-generator') {
         initInvoiceGenerator();
     }
@@ -2373,12 +2376,17 @@ async function loadInvoices() {
         const data = await response.json();
         console.log('📦 Response data:', data);
         console.log('📊 data.success:', data.success);
+        console.log('📊 data.data:', data.data);
         console.log('📊 data.invoices:', data.invoices);
-        console.log('📊 data.invoices.length:', data.invoices?.length);
         
-        if (data.success && data.invoices && data.invoices.length > 0) {
-            console.log('✅ Displaying', data.invoices.length, 'invoices');
-            displayInvoicesTable(data.invoices);
+        // Backend returnează datele în data.data (paginare) sau data.invoices (legacy)
+        const invoices = data.data || data.invoices || [];
+        console.log('📊 invoices array:', invoices);
+        console.log('📊 invoices.length:', invoices.length);
+        
+        if (data.success && invoices.length > 0) {
+            console.log('✅ Displaying', invoices.length, 'invoices');
+            displayInvoicesTable(invoices);
         } else {
             console.log('⚠️ No invoices to display');
             invoicesList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">📋 Nu există facturi generate încă.</p>';
