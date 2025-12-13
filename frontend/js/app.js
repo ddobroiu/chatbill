@@ -745,10 +745,24 @@ function initInvoiceGenerator() {
     // Load company settings to auto-populate issuer data
     loadCompanySettingsForInvoice();
     
+    // Add product
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', () => {
+            addInvoiceProduct();
+        });
+    }
+    
+    // Remove old event listener if exists
+    const oldClone = form.cloneNode(true);
+    form.parentNode.replaceChild(oldClone, form);
+    const newForm = document.getElementById('invoice-form');
+    
+    // Re-attach event listeners AFTER cloning (cloning removes them!)
     // Client type toggle
-    if (clientTypeSelect) {
-        clientTypeSelect.addEventListener('change', () => {
-            const type = clientTypeSelect.value;
+    const newClientTypeSelect = document.getElementById('client-type');
+    if (newClientTypeSelect) {
+        newClientTypeSelect.addEventListener('change', () => {
+            const type = newClientTypeSelect.value;
             const companyFields = document.getElementById('company-fields');
             const individualFields = document.getElementById('individual-fields');
             
@@ -762,9 +776,10 @@ function initInvoiceGenerator() {
         });
     }
     
-    // Autocomplete client from ANAF
-    if (autocompleteClientBtn) {
-        autocompleteClientBtn.addEventListener('click', async () => {
+    // Autocomplete client from ANAF - re-attach to NEW button
+    const newAutocompleteBtn = document.getElementById('autocomplete-client-btn');
+    if (newAutocompleteBtn) {
+        newAutocompleteBtn.addEventListener('click', async () => {
             const cuiInput = document.getElementById('client-cui');
             const cui = cuiInput.value.trim().replace(/^RO/i, '');
             
@@ -773,9 +788,9 @@ function initInvoiceGenerator() {
                 return;
             }
             
-            autocompleteClientBtn.disabled = true;
-            const oldHtml = autocompleteClientBtn.innerHTML;
-            autocompleteClientBtn.innerHTML = '<i data-lucide="loader-2"></i>';
+            newAutocompleteBtn.disabled = true;
+            const oldHtml = newAutocompleteBtn.innerHTML;
+            newAutocompleteBtn.innerHTML = '<i data-lucide="loader-2"></i>';
             if (typeof lucide !== 'undefined') lucide.createIcons();
             
             try {
@@ -799,24 +814,12 @@ function initInvoiceGenerator() {
                 console.error('Eroare autocomplete:', err);
                 alert('❌ Eroare la căutarea datelor');
             } finally {
-                autocompleteClientBtn.disabled = false;
-                autocompleteClientBtn.innerHTML = oldHtml;
+                newAutocompleteBtn.disabled = false;
+                newAutocompleteBtn.innerHTML = oldHtml;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         });
     }
-    
-    // Add product
-    if (addProductBtn) {
-        addProductBtn.addEventListener('click', () => {
-            addInvoiceProduct();
-        });
-    }
-    
-    // Remove old event listener if exists
-    const oldClone = form.cloneNode(true);
-    form.parentNode.replaceChild(oldClone, form);
-    const newForm = document.getElementById('invoice-form');
     
     // Form submit - attach fresh event listener
     console.log('[Invoice Generator] Attaching NEW submit event listener to form');
@@ -1039,7 +1042,7 @@ async function handleInvoiceSubmit(event) {
         invoiceNumber: invoiceNumber,
         provider: providerData,
         client: clientData,
-        items: items
+        products: items
     };
 
     console.log('[Invoice Generator] Complete invoice data:', invoiceData);

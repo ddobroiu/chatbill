@@ -6,18 +6,6 @@ const {
   renderModernTemplate,
   renderClassicTemplate
 } = require('../services/pdfTemplates');
-const axios = require('axios');
-
-// iApp ANAF config (reused from companyController)
-const IAPP_API_URL = process.env.IAPP_API_URL || 'https://api.my.iapp.ro';
-const IAPP_API_USERNAME = process.env.IAPP_API_USERNAME;
-const IAPP_API_PASSWORD = process.env.IAPP_API_PASSWORD;
-const IAPP_EMAIL_RESPONSABIL = process.env.IAPP_EMAIL_RESPONSABIL;
-
-function getIAppAuthHeader() {
-  const credentials = Buffer.from(`${IAPP_API_USERNAME}:${IAPP_API_PASSWORD}`).toString('base64');
-  return `Basic ${credentials}`;
-}
 
 // Director pentru salvarea facturilor PDF
 const invoicesDir = path.join(__dirname, '../../invoices');
@@ -47,7 +35,8 @@ async function createInvoice(req, res) {
       });
     }
 
-    const { client, products, template: requestTemplate, provider } = req.body;
+    const { client, template: requestTemplate, provider } = req.body;
+    const products = req.body.products || req.body.items || [];
     const userId = req.user?.id; // Optional - poate fi null pentru useri neautentificați
 
     console.log('🔵 Client:', client);
@@ -65,69 +54,39 @@ async function createInvoice(req, res) {
       });
     }
 
-    // Dacă clientul este companie și are CUI dar îi lipsesc datele, încearcă auto-completarea din ANAF (iApp)
-    if (client?.type === 'company' && client?.cui && (!client.name || !client.address || !client.city)) {
-      try {
-        const cleanCUI = String(client.cui).replace(/[^0-9]/g, '');
-        if (cleanCUI && cleanCUI.length >= 6 && IAPP_API_USERNAME && IAPP_API_PASSWORD) {
-          const payload = { cif: cleanCUI, email_responsabil: IAPP_EMAIL_RESPONSABIL };
-          const iappResponse = await axios.post(`${IAPP_API_URL}/info/cif`, payload, {
-            headers: { Authorization: getIAppAuthHeader(), 'Content-Type': 'application/json' }
-          });
-          if (iappResponse.data && iappResponse.data.status === 'SUCCESS') {
-            const companyData = iappResponse.data.data.output;
-            client.name = client.name || companyData.nume || '';
-            client.address = client.address || companyData.adresa?.completa || companyData.adresa?.adresa || '';
-            client.city = client.city || companyData.adresa?.oras || '';
-            client.county = client.county || companyData.adresa?.judet || '';
-            client.regCom = client.regCom || companyData.regcom || '';
-            console.log('✅ Client auto-completat din ANAF pentru CUI', cleanCUI);
-          } else {
-            console.log('⚠️ ANAF/iApp nu a returnat SUCCESS pentru CUI', cleanCUI);
-          }
-        }
-      } catch (autoErr) {
-        console.log('⚠️ Eșec auto-completare ANAF:', autoErr.response?.data || autoErr.message);
-      }
-    }
-
     // Obține setările companiei emitente
     let companySettings = null;
-    
+
     if (userId) {
-      // User autentificat - folosește setările salvate
       companySettings = await prisma.companySettings.findUnique({
         where: { userId },
       });
     }
-    
-    // Dacă nu există setări (user neautentificat sau setări neconfigurate), folosește datele din provider
-    if (!companySettings && !provider) {
-      return res.status(400).json({
-        success: false,
-        error: 'Vă rugăm să completați datele companiei emitente.',
-      });
+
+    // Fallback prietenos ca la proforma: dacă nu există setări, folosim valori implicite
+    if (!companySettings) {
+      companySettings = {
+        companyName: provider?.name || 'Compania Ta SRL',
+        name: provider?.name || 'Compania Ta SRL',
+        cui: provider?.cui || '12345678',
+        regCom: provider?.regCom || 'J00/1234/2024',
+        address: provider?.address || 'Str. Exemplu, Nr. 1',
+        city: provider?.city || 'București',
+        county: provider?.county || 'București',
+        email: provider?.email || 'contact@companie.ro',
+        phone: provider?.phone || '+40 123 456 789',
+        iban: provider?.iban || 'RO00BANK0000000000000000',
+        bank: provider?.bank || 'Banca Exemplu',
+        invoiceTemplate: provider?.template || 'modern',
+        isVatPayer: provider?.isVatPayer !== false,
+        vatRate: provider?.vatRate || 19,
+        invoiceSeries: provider?.series || 'FAC',
+        invoiceStartNumber: provider?.startNumber || 1
+      };
     }
     
     // Construiește setările finale (din DB sau din request)
-    const finalSettings = companySettings || {
-      cui: provider?.cui,
-      name: provider?.name,
-      regCom: provider?.regCom,
-      address: provider?.address,
-      city: provider?.city,
-      county: provider?.county,
-      phone: provider?.phone,
-      email: provider?.email,
-      bank: provider?.bank,
-      iban: provider?.iban,
-      capital: provider?.capital,
-      isVatPayer: provider?.isVatPayer !== false,
-      vatRate: provider?.vatRate || 19,
-      invoiceTemplate: provider?.template || 'modern',
-      invoiceSeries: provider?.series || 'FAC',
-      invoiceStartNumber: provider?.startNumber || 1
-    };
+    const finalSettings = companySettings;
     
     // Determină template-ul final (folosește invoiceTemplate în loc de preferredTemplate)
     const finalTemplate = requestTemplate || finalSettings.invoiceTemplate || 'modern';
@@ -171,20 +130,18 @@ async function createInvoice(req, res) {
     // Generare număr factură bazat pe setări
     const invoiceSeries = finalSettings.invoiceSeries || 'FAC';
     const startNumber = finalSettings.invoiceStartNumber || 1;
-    
-    // Găsește ultima factură pentru acest user (dacă e autentificat)
-    const lastInvoice = userId ? await prisma.invoice.findFirst({
-      where: { 
-        userId,
-        invoiceNumber: { startsWith: invoiceSeries } 
-      },
+
+    // Găsește ultima factură pentru acest user sau global (pentru guest)
+    const whereClause = userId ? { userId, invoiceNumber: { startsWith: invoiceSeries } } : { invoiceNumber: { startsWith: invoiceSeries } };
+    const lastInvoice = await prisma.invoice.findFirst({
+      where: whereClause,
       orderBy: { createdAt: 'desc' }
-    }) : null;
+    });
     
     let invoiceNumber;
-    if (lastInvoice && lastInvoice.number) {
+    if (lastInvoice && lastInvoice.invoiceNumber) {
       // Extrage numărul din ultima factură (presupunem format SERIE-NUMAR)
-      const match = lastInvoice.number.match(/(\d+)$/);
+      const match = lastInvoice.invoiceNumber.match(/(\d+)$/);
       if (match) {
         const lastNum = parseInt(match[1]);
         invoiceNumber = `${invoiceSeries}-${(lastNum + 1).toString().padStart(4, '0')}`;
@@ -215,10 +172,9 @@ async function createInvoice(req, res) {
       providerPhone: finalSettings.phone || '',
       providerEmail: finalSettings.email || '',
       providerBank: finalSettings.bank || '',
-      providerIBAN: finalSettings.iban || '',
+      providerIban: finalSettings.iban || '',
       providerCapital: finalSettings.capital || '',
-      providerLegalRep: finalSettings.legalRep || '',
-      
+
       // Date client/beneficiar
       clientType: client.type,
       clientName: client.type === 'company' ? client.name : `${client.firstName} ${client.lastName}`,

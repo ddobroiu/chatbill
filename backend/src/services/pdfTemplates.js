@@ -5,13 +5,31 @@ const path = require('path');
 // Funcție helper pentru înregistrarea fonturilor Roboto
 function registerFonts(doc) {
   const fontsPath = path.join(__dirname, '../../assets/fonts');
-  
+
   try {
-    doc.registerFont('Roboto', path.join(fontsPath, 'Roboto-Regular.ttf'));
-    doc.registerFont('Roboto-Bold', path.join(fontsPath, 'Roboto-Bold.ttf'));
-    doc.registerFont('Roboto-Italic', path.join(fontsPath, 'Roboto-Italic.ttf'));
-    doc.registerFont('Roboto-Medium', path.join(fontsPath, 'Roboto-Medium.ttf'));
-    doc.registerFont('Roboto-Light', path.join(fontsPath, 'Roboto-Light.ttf'));
+    // Verifică dacă fișierele există ÎNAINTE de a le înregistra
+    const robotoRegular = path.join(fontsPath, 'Roboto-Regular.ttf');
+    const robotoBold = path.join(fontsPath, 'Roboto-Bold.ttf');
+
+    if (!fs.existsSync(robotoRegular) || !fs.existsSync(robotoBold)) {
+      console.warn('⚠️ Fonturile Roboto nu sunt găsite, se folosește Helvetica');
+      return false;
+    }
+
+    doc.registerFont('Roboto', robotoRegular);
+    doc.registerFont('Roboto-Bold', robotoBold);
+
+    // Optional fonts (dacă nu există, nu-i problemă)
+    if (fs.existsSync(path.join(fontsPath, 'Roboto-Italic.ttf'))) {
+      doc.registerFont('Roboto-Italic', path.join(fontsPath, 'Roboto-Italic.ttf'));
+    }
+    if (fs.existsSync(path.join(fontsPath, 'Roboto-Medium.ttf'))) {
+      doc.registerFont('Roboto-Medium', path.join(fontsPath, 'Roboto-Medium.ttf'));
+    }
+    if (fs.existsSync(path.join(fontsPath, 'Roboto-Light.ttf'))) {
+      doc.registerFont('Roboto-Light', path.join(fontsPath, 'Roboto-Light.ttf'));
+    }
+
     console.log('✅ Fonturile Roboto au fost înregistrate cu succes');
     return true;
   } catch (error) {

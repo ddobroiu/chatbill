@@ -26,7 +26,11 @@
       "Bash(\")",
       "Bash(node fix-encoding.js:*)",
       "Bash(del e:chatbillfix-encoding.js)",
-      "Bash(node replace-template-section.js:*)"
+      "Bash(node replace-template-section.js:*)",
+      "Bash(node test_invoice.js:*)",
+      "Bash(timeout 10 bash:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)"
     ]
   }
 }

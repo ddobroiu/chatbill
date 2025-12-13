@@ -38,7 +38,7 @@ module.exports = {
 			}
 
 			const { client, products, template: requestTemplate } = req.body;
-			const userId = req.user?.id || 1; // Default user pentru testing
+			const userId = req.user?.id; // Optional - poate fi null pentru useri neautentificați
 
 			// Validare date client
 			if (!client || !products || products.length === 0) {
@@ -50,9 +50,13 @@ module.exports = {
 			}
 
 			// Obține setările companiei
-			let companySettings = await prisma.companySettings.findUnique({
-				where: { userId }
-			});
+			let companySettings = null;
+
+			if (userId) {
+				companySettings = await prisma.companySettings.findUnique({
+					where: { userId }
+				});
+			}
 
 			if (!companySettings) {
 				console.log('⚠️ Nu există setări companie, folosim valorile implicite');
@@ -63,13 +67,18 @@ module.exports = {
 					regCom: 'J00/1234/2024',
 					address: 'Str. Exemplu, Nr. 1',
 					city: 'București',
-				county: 'București',
-				email: 'contact@companie.ro',
-				phone: '+40 123 456 789',
-				iban: 'RO00BANK0000000000000000',
-				bank: 'Banca Exemplu',
-				proformaTemplate: 'modern'
-			};
+					county: 'București',
+					email: 'contact@companie.ro',
+					phone: '+40 123 456 789',
+					iban: 'RO00BANK0000000000000000',
+					bank: 'Banca Exemplu',
+					proformaTemplate: 'modern',
+					isVatPayer: true,
+					vatRate: 19,
+					proformaSeries: 'PRO',
+					proformaStartNumber: 1
+				};
+			}
 		}
 
 	// Determină template-ul final (folosește proformaTemplate)

@@ -62,7 +62,7 @@ const companySchema = z.object({
   legalRepresentative: z.string().optional()
 });
 
-// Client schemas (for invoices/proformas)
+// Client schemas (for invoices/proformas) - FLEXIBIL pentru frontend
 const clientSchema = z.object({
   type: z.enum(['company', 'individual'], {
     errorMap: () => ({ message: 'Tipul clientului trebuie să fie "company" sau "individual"' })
@@ -71,43 +71,47 @@ const clientSchema = z.object({
   name: z.string().min(1, 'Numele este obligatoriu').optional(),
   cui: z.string().optional(),
   registrationNumber: z.string().optional(),
+  regCom: z.string().optional(), // alias pentru registrationNumber
   // Individual fields
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  cnp: z.string().regex(/^[0-9]{13}$/, 'CNP invalid').optional(),
+  cnp: z.string().optional(), // mai permisiv
   idSeries: z.string().optional(),
   idNumber: z.string().optional(),
-  // Common fields
-  address: addressSchema,
-  phone: phoneSchema,
-  email: emailSchema.optional()
-}).refine(data => {
-  if (data.type === 'company') {
-    return data.name && data.cui;
-  } else {
-    return data.firstName && data.lastName;
-  }
-}, {
-  message: 'Date client incomplete',
-  path: ['type']
-});
+  // Common fields - acceptă atât obiect cât și string
+  address: z.union([addressSchema, z.string()]).optional(),
+  city: z.string().optional(),
+  county: z.string().optional(),
+  phone: z.string().optional(), // mai permisiv
+  email: z.string().optional()
+}).passthrough(); // permite câmpuri suplimentare
 
-// Product/Item schema
+// Product/Item schema - FLEXIBIL pentru frontend (acceptă și "name"/"price" și "description"/"unitPrice")
 const itemSchema = z.object({
-  description: z.string().min(1, 'Descrierea este obligatorie'),
+  description: z.string().min(1, 'Descrierea este obligatorie').optional(),
+  name: z.string().min(1, 'Numele este obligatoriu').optional(), // alias pentru description
   unit: z.string().min(1, 'Unitatea de măsură este obligatorie'),
   quantity: z.number().positive('Cantitatea trebuie să fie pozitivă'),
-  unitPrice: z.number().min(0, 'Prețul unitar nu poate fi negativ'),
-  vatRate: z.number().min(0).max(100, 'Cota TVA trebuie să fie între 0 și 100').default(19),
+  unitPrice: z.number().min(0, 'Prețul unitar nu poate fi negativ').optional(),
+  price: z.number().min(0, 'Prețul nu poate fi negativ').optional(), // alias pentru unitPrice
+  vatRate: z.number().min(0).max(100, 'Cota TVA trebuie să fie între 0 și 100').optional(),
+  vat: z.number().min(0).max(100).optional(), // alias pentru vatRate
   vatAmount: z.number().min(0).optional(),
   total: z.number().min(0).optional()
+}).passthrough().refine(data => data.name || data.description, {
+  message: 'Trebuie să existe nume sau descriere',
+  path: ['name']
+}).refine(data => data.price !== undefined || data.unitPrice !== undefined, {
+  message: 'Trebuie să existe preț',
+  path: ['price']
 });
 
-// Invoice schema
+// Invoice schema - FLEXIBIL pentru frontend
 const createInvoiceSchema = z.object({
-  provider: companySchema,
+  provider: z.any().optional(), // mai permisiv - controller-ul va prelua din DB sau default
   client: clientSchema,
-  items: z.array(itemSchema).min(1, 'Trebuie să existe cel puțin un produs/serviciu'),
+  items: z.array(itemSchema).min(1, 'Trebuie să existe cel puțin un produs/serviciu').optional(),
+  products: z.array(itemSchema).min(1, 'Trebuie să existe cel puțin un produs/serviciu').optional(), // alias pentru items
   invoiceNumber: z.string().optional(),
   invoiceDate: z.string().datetime().or(z.date()).optional(),
   dueDate: z.string().datetime().or(z.date()).optional(),
@@ -115,16 +119,20 @@ const createInvoiceSchema = z.object({
   totalVat: z.number().min(0).optional(),
   total: z.number().positive('Totalul trebuie să fie pozitiv').optional(),
   notes: z.string().optional(),
-  template: z.enum(['modern', 'classic', 'minimal', 'elegant']).default('modern'),
+  template: z.enum(['modern', 'classic', 'minimal', 'elegant']).optional(),
   currency: z.string().default('RON'),
   language: z.string().default('ro')
+}).passthrough().refine(data => data.items || data.products, {
+  message: 'Trebuie să existe items sau products',
+  path: ['items']
 });
 
-// Proforma schema (similar to invoice)
+// Proforma schema (similar to invoice) - FLEXIBIL pentru frontend
 const createProformaSchema = z.object({
-  provider: companySchema,
+  provider: z.any().optional(), // mai permisiv - controller-ul va prelua din DB sau default
   client: clientSchema,
-  items: z.array(itemSchema).min(1, 'Trebuie să existe cel puțin un produs/serviciu'),
+  items: z.array(itemSchema).min(1, 'Trebuie să existe cel puțin un produs/serviciu').optional(),
+  products: z.array(itemSchema).min(1, 'Trebuie să există cel puțin un produs/serviciu').optional(), // alias pentru items
   proformaNumber: z.string().optional(),
   proformaDate: z.string().datetime().or(z.date()).optional(),
   validUntil: z.string().datetime().or(z.date()).optional(),
@@ -132,10 +140,13 @@ const createProformaSchema = z.object({
   totalVat: z.number().min(0).optional(),
   total: z.number().positive('Totalul trebuie să fie pozitiv').optional(),
   notes: z.string().optional(),
-  template: z.enum(['modern', 'classic', 'minimal', 'elegant']).default('modern'),
+  template: z.enum(['modern', 'classic', 'minimal', 'elegant']).optional(),
   currency: z.string().default('RON'),
   language: z.string().default('ro'),
   status: z.enum(['draft', 'sent', 'accepted', 'rejected', 'converted']).default('draft')
+}).passthrough().refine(data => data.items || data.products, {
+  message: 'Trebuie să existe items sau products',
+  path: ['items']
 });
 
 // Settings schema
