@@ -820,17 +820,35 @@
 
     </style>
     <link rel="stylesheet" href="/css/theme-chatgpt.css">
+    <link rel="stylesheet" href="/css/mobile-responsive.css">
 </head>
 <body>
 
-    <!-- Mobile Menu Toggle Button -->
-    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
-        <i data-lucide="menu" style="width: 24px; height: 24px;"></i>
-        <span style="font-weight: 600;">Meniu</span>
-    </button>
+    <!-- Mobile Header (visible doar pe mobil) -->
+    <header class="mobile-header">
+        <div class="mobile-header-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>ChatBill</span>
+        </div>
+        <div class="mobile-header-actions">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </header>
 
-    <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <!-- Sidebar Overlay (pentru mobil) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -2060,7 +2078,21 @@
             </div>
         </div>
     </main>
-    
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="color: var(--secondary-foreground); font-size: 0.875rem;">
+                © 2024 ChatBill. Toate drepturile rezervate.
+            </div>
+            <div class="footer-links" style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                <a href="#" style="color: var(--secondary-foreground); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--secondary-foreground)'">Termeni și Condiții</a>
+                <a href="#" style="color: var(--secondary-foreground); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--secondary-foreground)'">Politica de Confidențialitate</a>
+                <a href="#" style="color: var(--secondary-foreground); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--secondary-foreground)'">Contact</a>
+            </div>
+        </div>
+    </footer>
+
     <!-- Preview PDF Modal -->
     <div id="pdf-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; padding: 20px;">
         <div style="max-width: 1200px; margin: 0 auto; height: 100%; display: flex; flex-direction: column;">
@@ -2207,6 +2239,47 @@
                         }
                     });
                 }
+
+                // Mobile Navigation
+                const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+                const sidebar = document.getElementById('sidebar');
+                const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+                function toggleMobileMenu() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                    document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+                }
+
+                function closeMobileMenu() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+
+                if (mobileMenuToggle) {
+                    mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+                }
+
+                if (sidebarOverlay) {
+                    sidebarOverlay.addEventListener('click', closeMobileMenu);
+                }
+
+                // Close mobile menu when clicking a nav link
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth <= 768) {
+                            closeMobileMenu();
+                        }
+                    });
+                });
+
+                // Close menu on window resize to desktop
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth > 768) {
+                        closeMobileMenu();
+                    }
+                });
             });
         </script>
 </body></html>
