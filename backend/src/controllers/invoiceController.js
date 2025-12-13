@@ -130,32 +130,37 @@ async function createInvoice(req, res) {
     const invoiceVatAmount = isVatPayer ? itemsData.reduce((sum, item) => sum + item.vatAmount, 0) : 0;
     const invoiceTotal = invoiceSubtotal + invoiceVatAmount;
 
-    // Generare număr factură bazat pe setări
-    const invoiceSeries = finalSettings.invoiceSeries || 'FAC';
-    const startNumber = finalSettings.invoiceStartNumber || 1;
-
-    // Găsește ultima factură pentru acest user sau global (pentru guest)
-    const whereClause = userId ? { userId, invoiceNumber: { startsWith: invoiceSeries } } : { invoiceNumber: { startsWith: invoiceSeries } };
-    const lastInvoice = await prisma.invoice.findFirst({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' }
-    });
-    
+    // Folosește numărul de factură din request dacă există, altfel generează automat
     let invoiceNumber;
-    if (lastInvoice && lastInvoice.invoiceNumber) {
-      // Extrage numărul din ultima factură (presupunem format SERIE-NUMAR)
-      const match = lastInvoice.invoiceNumber.match(/(\d+)$/);
-      if (match) {
-        const lastNum = parseInt(match[1]);
-        invoiceNumber = `${invoiceSeries}-${(lastNum + 1).toString().padStart(4, '0')}`;
+    if (req.body.invoiceNumber) {
+      invoiceNumber = req.body.invoiceNumber;
+      console.log('🔵 Folosesc număr factură din request:', invoiceNumber);
+    } else {
+      // Generare număr factură bazat pe setări
+      const invoiceSeries = finalSettings.invoiceSeries || 'FAC';
+      const startNumber = finalSettings.invoiceStartNumber || 1;
+
+      // Găsește ultima factură pentru acest user sau global (pentru guest)
+      const whereClause = userId ? { userId, invoiceNumber: { startsWith: invoiceSeries } } : { invoiceNumber: { startsWith: invoiceSeries } };
+      const lastInvoice = await prisma.invoice.findFirst({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' }
+      });
+      
+      if (lastInvoice && lastInvoice.invoiceNumber) {
+        // Extrage numărul din ultima factură (presupunem format SERIE-NUMAR)
+        const match = lastInvoice.invoiceNumber.match(/(\d+)$/);
+        if (match) {
+          const lastNum = parseInt(match[1]);
+          invoiceNumber = `${invoiceSeries}-${(lastNum + 1).toString().padStart(4, '0')}`;
+        } else {
+          invoiceNumber = `${invoiceSeries}-${startNumber.toString().padStart(4, '0')}`;
+        }
       } else {
         invoiceNumber = `${invoiceSeries}-${startNumber.toString().padStart(4, '0')}`;
       }
-    } else {
-      invoiceNumber = `${invoiceSeries}-${startNumber.toString().padStart(4, '0')}`;
+      console.log('🔵 Număr factură generat automat de backend:', invoiceNumber);
     }
-
-    console.log('🔵 Număr factură generat automat de backend:', invoiceNumber);
 
     // Pregătește datele pentru factură
     const invoiceData = {
